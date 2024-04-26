@@ -73,7 +73,7 @@ const AboutModal = ({ buildNumber, versionNumber, commitHash }) => {
   );
   return (
     <div>
-      {renderRowTitle('Important Links')}
+      {/* {renderRowTitle('Important Links')}
       <div className="mb-8 flex">
         <Link
           href="https://community.ohif.org/"
@@ -97,11 +97,11 @@ const AboutModal = ({ buildNumber, versionNumber, commitHash }) => {
             More details
           </Link>
         </span>
-      </div>
+      </div> */}
 
       {renderRowTitle('Version Information')}
       <div className="flex flex-col">
-        <Row
+        {/* <Row
           title="Repository URL"
           value="https://github.com/OHIF/Viewers/"
           link="https://github.com/OHIF/Viewers/"
@@ -110,7 +110,7 @@ const AboutModal = ({ buildNumber, versionNumber, commitHash }) => {
           title="Data Citation"
           value="https://github.com/OHIF/Viewers/blob/master/DATACITATION.md"
           link="https://github.com/OHIF/Viewers/blob/master/DATACITATION.md"
-        />
+        /> */}
         {/* <Row
           title="Last Master Commits"
           value="https://github.com/OHIF/Viewers/"
@@ -126,12 +126,12 @@ const AboutModal = ({ buildNumber, versionNumber, commitHash }) => {
             value={buildNumber}
           />
         )}
-        {commitHash && (
+        {/* {commitHash && (
           <Row
             title="Commit Hash"
             value={commitHash}
           />
-        )}
+        )} */}
         <Row
           title="Browser"
           value={browser}
