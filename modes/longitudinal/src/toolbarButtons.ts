@@ -630,7 +630,7 @@ const toolbarButtons: Button[] = [
 
         _createActionButton(
           'Download',
-          'chevron-down',
+          'icon-download',
           'Download Studies',
           [
             {
