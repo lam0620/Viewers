@@ -13,20 +13,30 @@ function validDicomUid(subject) {
 }
 
 function getActiveServerFromServersStore(store) {
-  const servers = resolveObjectPath(store, 'servers');
+  const servers = resolveObjectPath(store, 'dataSources');
   if (Array.isArray(servers) && servers.length > 0) {
     return servers.find(server => resolveObjectPath(server, 'active') === true);
   }
 }
 
 function getDicomWebClientFromConfig(config) {
-  const servers = resolveObjectPath(config, 'servers.dicomWeb');
+  //const servers = resolveObjectPath(config, 'servers.dicomWeb');
+  const servers = resolveObjectPath(config, 'dataSources');
   if (Array.isArray(servers) && servers.length > 0) {
-    const server = servers[0];
+    const server = servers[0].configuration;
     return new api.DICOMwebClient({
       url: server.wadoRoot,
       headers: DICOMWeb.getAuthorizationHeader(server),
     });
+  }
+}
+
+function getActiveServerFromConfig(config) {
+  //const servers = resolveObjectPath(config, 'servers.dicomWeb');
+  const servers = resolveObjectPath(config, 'dataSources');
+  if (Array.isArray(servers) && servers.length > 0) {
+    const server = servers[0].configuration;
+    return server;
   }
 }
 
@@ -46,4 +56,5 @@ export {
   validDicomUid,
   getDicomWebClientFromConfig,
   getDicomWebClientFromContext,
+  getActiveServerFromConfig,
 };

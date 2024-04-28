@@ -1,7 +1,8 @@
-import { getDicomWebClientFromConfig } from './utils';
-import { getCommands } from './commandsModule';
+import { getDicomWebClientFromConfig, getActiveServerFromConfig } from './utils';
+import commandsModule from './commandsModule';
 import { version } from '../package.json';
 import toolbarModule from './toolbarModule';
+import { id } from './id.js';
 
 /**
  * Constants
@@ -15,14 +16,19 @@ const sharedContext = {
   dicomWebClient: null,
 };
 
+const sharedServer = {
+  server: null,
+};
+
 /**
  * Extension
  */
-export default {
+//const extension: Types.Extensions.Extension = {
+const downloadStudyExtension = {
   /**
    * Only required property. Should be a unique value across all extensions.
    */
-  id: 'dicom-downloader',
+  id,
   version,
 
   /**
@@ -34,6 +40,11 @@ export default {
     if (dicomWebClient) {
       sharedContext.dicomWebClient = dicomWebClient;
     }
+
+    const server = getActiveServerFromConfig(appConfig);
+    if (server) {
+      sharedServer.server = server;
+    }
   },
 
   /**
@@ -41,10 +52,12 @@ export default {
    */
 
   getCommandsModule({ servicesManager, extensionManager }) {
-    return getCommands(sharedContext, servicesManager, extensionManager);
+    return commandsModule(sharedContext, sharedServer, servicesManager, extensionManager);
   },
 
-  getToolbarModule() {
-    return toolbarModule;
-  },
+  //getToolbarModule() {
+  //  return toolbarModule;
+  //},
 };
+
+export default downloadStudyExtension;

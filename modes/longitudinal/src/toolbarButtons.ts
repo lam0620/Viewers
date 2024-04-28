@@ -627,6 +627,20 @@ const toolbarButtons: Button[] = [
           ],
           'Dicom Tag Browser'
         ),
+
+        _createActionButton(
+          'Download',
+          'chevron-down',
+          'Download Studies',
+          [
+            {
+              commandName: 'downloadAndZipStudyOnActiveViewport',
+              commandOptions: {},
+              context: 'VIEWER',
+            },
+          ],
+          'Download Studies'
+        ),
       ],
     },
   },

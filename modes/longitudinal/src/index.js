@@ -55,6 +55,7 @@ const extensionDependencies = {
   '@ohif/extension-cornerstone-dicom-rt': '^3.0.0',
   '@ohif/extension-dicom-pdf': '^3.0.1',
   '@ohif/extension-dicom-video': '^3.0.1',
+  '@ohif/extension-dicom-study-downloader': '^1.0.0',
 };
 
 function modeFactory({ modeConfiguration }) {

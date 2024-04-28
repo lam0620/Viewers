@@ -60,9 +60,12 @@ const DownloadModal = ({ dicomWebClient, StudyInstanceUID, onClose }) => {
           <p>{'Size: ' + size}</p>
           <p>{'DICOM images: ' + numberOfFiles}</p>
           <p>
-            <button type="button" className="btn btn-primary" onClick={onClose}>
+            {/* <button type="button" className="btn btn-primary" onClick={onClose}>
               Ok
-            </button>
+            </button> */}
+            <br></br>
+            <button onClick={onClose} className="box-content inline-flex flex-row items-center justify-center gap-[5px] justify center px-[10px] outline-none rounded leading-[1.2] font-sans text-center whitespace-nowrap font-semibold bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-80 active:bg-customblue-40 h-[32px] text-[14px] min-w-[32px] ml-2" data-cy="undefined-btn">
+              OK</button>
           </p>
         </span>
       );
@@ -72,9 +75,12 @@ const DownloadModal = ({ dicomWebClient, StudyInstanceUID, onClose }) => {
         <span>
           <p>{status.text}</p>
           <p>
-            <button type="button" className="btn btn-danger" onClick={onClose}>
+            {/* <button type="button" className="btn btn-danger" onClick={onClose}>
               Ok
-            </button>
+            </button> */}
+            <br></br>
+            <button onClick={onClose} className="box-content inline-flex flex-row items-center justify-center gap-[5px] justify center px-[10px] outline-none rounded leading-[1.2] font-sans text-center whitespace-nowrap font-semibold bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-80 active:bg-customblue-40 h-[32px] text-[14px] min-w-[32px] ml-2" data-cy="undefined-btn">
+              OK</button>
           </p>
         </span>
       );
@@ -83,10 +89,13 @@ const DownloadModal = ({ dicomWebClient, StudyInstanceUID, onClose }) => {
       info = status.text;
   }
   return (
-    <div className="download-study-modal-container">
-      <p>Status: {status.notificationType}</p>
-      <p>{info}</p>
-    </div>
+    <>
+      <div className="mb-3 border-b-2 border-black"></div>
+      <div className="download-study-modal-container">
+        <p>Status: {status.notificationType}</p>
+        <p>{info}</p>
+      </div>
+    </>
   );
 };
 
