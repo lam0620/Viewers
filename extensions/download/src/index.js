@@ -1,7 +1,5 @@
 import { getDicomWebClientFromConfig, getActiveServerFromConfig } from './utils';
 import commandsModule from './commandsModule';
-import { version } from '../package.json';
-import toolbarModule from './toolbarModule';
 import { id } from './id.js';
 
 /**
@@ -29,7 +27,6 @@ const downloadStudyExtension = {
    * Only required property. Should be a unique value across all extensions.
    */
   id,
-  version,
 
   /**
    * LIFECYCLE HOOKS

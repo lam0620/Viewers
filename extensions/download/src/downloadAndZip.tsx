@@ -40,29 +40,50 @@ function formatBytes(bytes, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-async function downloadAndZip(dicomWebClient, studyInstanceUID, status) {
+async function downloadAndZip(dicomWebClient, studyInstanceUID, seriesInstanceUID, status) {
   if (dicomWebClient instanceof api.DICOMwebClient) {
     if (!isDicomUid(studyInstanceUID)) {
       throw new Error(
         'Download requires at least a "StudyInstanceUID" property'
       );
     }
-    let buffers = await dicomWebClient.retrieveStudy({
-      studyInstanceUID,
-      progressCallback: function(pe) {
-        if (pe.lengthComputable) {
-          status(
-            'downloading',
-            formatBytes(pe.loaded) + ' of ' + formatBytes(pe.total)
-          );
-        } else {
-          status('downloading', formatBytes(pe.loaded));
-        }
-      },
-    });
+
+    let buffers;
+    if (isDicomUid(seriesInstanceUID)) {
+      buffers = await dicomWebClient.retrieveSeries({
+        studyInstanceUID,
+        seriesInstanceUID,
+        progressCallback: function (pe) {
+          if (pe.lengthComputable) {
+            status(
+              'Downloading',
+              formatBytes(pe.loaded) + ' of ' + formatBytes(pe.total)
+            );
+          } else {
+            status('Downloading', formatBytes(pe.loaded));
+          }
+        },
+      });
+
+    } else {
+
+      buffers = await dicomWebClient.retrieveStudy({
+        studyInstanceUID,
+        progressCallback: function (pe) {
+          if (pe.lengthComputable) {
+            status(
+              'Downloading',
+              formatBytes(pe.loaded) + ' of ' + formatBytes(pe.total)
+            );
+          } else {
+            status('Downloading', formatBytes(pe.loaded));
+          }
+        },
+      });
+    }
     const zip = new JSZip();
     OHIF.log.info('Adding DICOM P10 files to archive:', buffers.length);
-    status('zipping', buffers.length);
+    status('Zipping', buffers.length);
     buffers.forEach((buffer, i) => {
       const path = buildPath(buffer) || `${i}.dcm`;
       zip.file(path, buffer);

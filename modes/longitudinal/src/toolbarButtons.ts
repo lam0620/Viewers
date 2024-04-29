@@ -631,7 +631,7 @@ const toolbarButtons: Button[] = [
         _createActionButton(
           'Download',
           'icon-download',
-          'Download Studies',
+          'Download Study',
           [
             {
               commandName: 'downloadAndZipStudyOnActiveViewport',
@@ -639,7 +639,7 @@ const toolbarButtons: Button[] = [
               context: 'VIEWER',
             },
           ],
-          'Download Studies'
+          'Download Study'
         ),
       ],
     },

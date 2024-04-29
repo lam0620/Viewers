@@ -2,6 +2,7 @@ import { OHIF, DicomMetadataStore } from '@ohif/core';
 import DownloadModal from './DownloadModal';
 import React from 'react';
 import { getDicomWebClientFromContext } from './utils';
+import * as cs from '@cornerstonejs/core';
 
 const {
   utils: { Queue },
@@ -9,7 +10,20 @@ const {
 
 function commandsModule(context, servers, servicesManager, extensionManager) {
   const queue = new Queue(1);
-  const { UIModalService, viewportGridService } = servicesManager.services;
+  const { UIModalService, viewportGridService, displaySetService } = servicesManager.services;
+
+  // const utilityModule = extensionManager.getModuleEntry(
+  //   '@ohif/extension-cornerstone.utilityModule.common'
+  // );
+
+  // const { getEnabledElement } = utilityModule.exports;
+
+  // function _getActiveViewportsEnabledElement() {
+  //   const { activeViewportId } = viewportGridService.getState();
+  //   const { element } = getEnabledElement(activeViewportId) || {};
+  //   const enabledElement = cs.getEnabledElement(element);
+  //   return enabledElement;
+  // }
 
   const actions = {
     //downloadAndZipStudyOnActiveViewport({ servers, viewports, progress }) {
@@ -17,26 +31,28 @@ function commandsModule(context, servers, servicesManager, extensionManager) {
       const studies = DicomMetadataStore.getStudyInstanceUIDs();
       const { activeViewportId, viewports } = viewportGridService.getState();
 
+      const displaySetInstanceUID = viewports.get(activeViewportId).displaySetInstanceUIDs[0];
+
+      const displaySet = displaySetService.getDisplaySetByUID(displaySetInstanceUID);
+      const seriesInstanceUid = displaySet.SeriesInstanceUID;
+
       const dicomWebClient = getDicomWebClientFromContext(context, servers);
+      //const { viewport } = _getActiveViewportsEnabledElement();
 
       // const { activeViewportIndex, viewportSpecificData } = viewports;
       // const activeViewportSpecificData =
       //   viewportSpecificData[activeViewportIndex];
       //const activeViewportSpecificData = viewports.get(activeViewportId);
-      const StudyInstanceUID = studies[0];
+      const studyInstanceUID = studies[0];
 
       const WrappedDownloadModal = () => {
         return (
           <DownloadModal
             dicomWebClient={dicomWebClient}
-            StudyInstanceUID={StudyInstanceUID}
+            studyInstanceUID={studyInstanceUID}
+            seriesInstanceUID={seriesInstanceUid}
             onClose={UIModalService.hide}
           />
-          // <>          <div className="download-study-modal-container">
-          //   <p>Status: test</p>
-          //   <p>test</p>
-          // </div></>
-
         );
 
       };
