@@ -4,7 +4,7 @@ import downloadAndZip from './downloadAndZip';
 import PropTypes from 'prop-types';
 import { saveAs } from 'file-saver';
 
-const DownloadModal2 = ({ dicomWebClient, studyInstanceUID, seriesInstanceUID, onClose }) => {
+const DownloadModal = ({ dicomWebClient, studyInstanceUID, seriesInstanceUID, onClose }) => {
   const [status, setStatus] = useState({ notificationType: '', text: '' });
   const [size, setSize] = useState('');
   const [numberOfFiles, setNumberOfFiles] = useState('');
@@ -119,10 +119,10 @@ const DownloadModal2 = ({ dicomWebClient, studyInstanceUID, seriesInstanceUID, o
   );
 };
 
-DownloadModal2.propTypes = {
+DownloadModal.propTypes = {
   dicomWebClient: PropTypes.object.isRequired,
   StudyInstanceUID: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
 };
 
-export default DownloadModal2;
+export default DownloadModal;

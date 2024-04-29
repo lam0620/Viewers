@@ -2,7 +2,7 @@ import { OHIF, DicomMetadataStore } from '@ohif/core';
 import DownloadModal from './DownloadModal';
 import React from 'react';
 import { getDicomWebClientFromContext } from './utils';
-import * as cs from '@cornerstonejs/core';
+//import * as cs from '@cornerstonejs/core';
 
 const {
   utils: { Queue },
@@ -61,10 +61,11 @@ function commandsModule(context, servers, servicesManager, extensionManager) {
       UIModalService.show({
         content: WrappedDownloadModal,
         title: `Download Study`,
-        fullscreen: false,
-        noScroll: true,
+        //fullscreen: false,
+        //noScroll: true,
         shouldCloseOnEsc: false,
         closeButton: false,
+        shouldCloseOnOverlayClick: false
       });
     },
   };
