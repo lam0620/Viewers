@@ -28,14 +28,21 @@ function commandsModule(context, servers, servicesManager, extensionManager) {
   const actions = {
     //downloadAndZipStudyOnActiveViewport({ servers, viewports, progress }) {
     downloadAndZipStudyOnActiveViewport({ servers, progress }) {
-      const studies = DicomMetadataStore.getStudyInstanceUIDs();
+      //const studies = DicomMetadataStore.getStudyInstanceUIDs();
+      //const studyInstanceUID = studies[0];
       const { activeViewportId, viewports } = viewportGridService.getState();
 
-      const displaySetInstanceUID = viewports.get(activeViewportId).displaySetInstanceUIDs[0];
-
-      const displaySet = displaySetService.getDisplaySetByUID(displaySetInstanceUID);
-      const seriesInstanceUid = displaySet.SeriesInstanceUID;
-
+      const displaySetInstanceUIDs = viewports.get(activeViewportId).displaySetInstanceUIDs;
+      // Make sure selected viewport has images
+      let studyInstanceUid;
+      let seriesInstanceUid;
+      if (displaySetInstanceUIDs.length > 0) {
+        const displaySet = displaySetService.getDisplaySetByUID(displaySetInstanceUIDs[0]);
+        studyInstanceUid = displaySet.StudyInstanceUID;
+        seriesInstanceUid = displaySet.SeriesInstanceUID;
+      } else {
+        return;
+      }
       const dicomWebClient = getDicomWebClientFromContext(context, servers);
       //const { viewport } = _getActiveViewportsEnabledElement();
 
@@ -43,13 +50,13 @@ function commandsModule(context, servers, servicesManager, extensionManager) {
       // const activeViewportSpecificData =
       //   viewportSpecificData[activeViewportIndex];
       //const activeViewportSpecificData = viewports.get(activeViewportId);
-      const studyInstanceUID = studies[0];
+
 
       const WrappedDownloadModal = () => {
         return (
           <DownloadModal
             dicomWebClient={dicomWebClient}
-            studyInstanceUID={studyInstanceUID}
+            studyInstanceUID={studyInstanceUid}
             seriesInstanceUID={seriesInstanceUid}
             onClose={UIModalService.hide}
           />
