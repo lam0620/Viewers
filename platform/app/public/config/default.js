@@ -64,9 +64,6 @@ window.config = {
         //wadoUriRoot: 'http://192.168.0.6:8082/dicomweb/VHC/wado',
         //qidoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
         // wadoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
-        wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
-        qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
-        wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
 
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
