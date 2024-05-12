@@ -1,6 +1,24 @@
 window.config = {
   routerBasename: '/',
-  // whiteLabeling: {},
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/my_logo.svg',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
   extensions: [],
   modes: [],
   customizationService: {},
@@ -39,13 +57,17 @@ window.config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        //wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        //qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        //wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        wadoUriRoot: 'http://192.168.0.6:8082/dicomweb/VHC/wado',
-        qidoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
-        wadoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
-        	        
+        // wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+
+        //wadoUriRoot: 'http://192.168.0.6:8082/dicomweb/VHC/wado',
+        //qidoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
+        // wadoRoot: 'http://192.168.0.6:8082/dicomweb/VHC/rs',
+        wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
+        qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',

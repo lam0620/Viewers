@@ -173,6 +173,9 @@ import iconSettings from './../../assets/icons/icon-settings.svg';
 import iconToolbarBack from './../../assets/icons/icon-toolbar-back.svg';
 import iconMultiplePatients from './../../assets/icons/icon-multiple-patients.svg';
 
+/** Add new */
+import iconDownload from './../../assets/icons/icon-download.svg';
+
 /** Volume Rendering */
 import CTAAA from './../../assets/icons/CT-AAA.png';
 import CTAAA2 from './../../assets/icons/CT-AAA2.png';
@@ -391,6 +394,10 @@ const ICONS = {
   'icon-settings': iconSettings,
   'icon-toolbar-back': iconToolbarBack,
   'icon-multiple-patients': iconMultiplePatients,
+
+  /** Add new */
+  'icon-download': iconDownload,
+
   /** Volume Rendering */
   'CT-AAA': CTAAA,
   'CT-AAA2': CTAAA2,

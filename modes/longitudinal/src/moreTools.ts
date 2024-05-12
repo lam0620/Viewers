@@ -159,6 +159,13 @@ const moreTools = [
           commands: 'openDICOMTagViewer',
         }),
         createButton({
+          id: 'Download',
+          icon: 'icon-download',
+          label: 'Download Study',
+          tooltip: 'Download Study',
+          commands: 'downloadAndZipStudyOnActiveViewport',
+        }),
+        createButton({
           id: 'AdvancedMagnify',
           icon: 'icon-tool-loupe',
           label: 'Magnify Probe',
