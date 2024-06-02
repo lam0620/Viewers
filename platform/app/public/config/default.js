@@ -2,7 +2,25 @@
 
 const config = {
   routerBasename: '/',
-  // whiteLabeling: {},
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/my_logo.svg',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
   extensions: [],
   modes: [],
   customizationService: {},
@@ -15,6 +33,8 @@ const config = {
   showLoadingIndicator: true,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  showPatientInfo: 'visible',
+  investigationalUseDialog: 'never',
   maxNumRequests: {
     interaction: 100,
     thumbnail: 75,
