@@ -173,6 +173,7 @@ import { ReactComponent as iconToolRotate } from './../../assets/icons/tool-3d-r
 import { ReactComponent as tab4D } from './../../assets/icons/tab-4d.svg';
 import { ReactComponent as investigationalUse } from './../../assets/icons/illustration-investigational-use.svg';
 import { ReactComponent as actionNewDialog } from './../../assets/icons/action-new-dialog.svg';
+import { ReactComponent as iconDownload } from './../../assets/icons/icon-download.svg';
 
 import CTAAA from './../../assets/icons/CT-AAA.png';
 import CTAAA2 from './../../assets/icons/CT-AAA2.png';
@@ -414,6 +415,8 @@ const ICONS = {
 
   /** New investigational use */
   'illustration-investigational-use': investigationalUse,
+
+  'icon-download': iconDownload,
 };
 
 function addIcon(iconName, iconSVG) {
