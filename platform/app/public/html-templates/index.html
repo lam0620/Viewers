@@ -102,6 +102,34 @@
   <div id="react-portal"></div>
   <div id="root">
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // const today = new Date();
+      // const year = today.getFullYear();
+      // const month = String(today.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+      // const day = String(today.getDate()).padStart(2, '0');
+
+      //const formattedDate = `${year}${month}${day}`;
+      //const formattedDate = (new Date()).toISOString().slice(0, 10).replace(/-/g, "");
+      // Fix timezone
+      const formattedDate = (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000))
+        .toISOString().slice(0, 10).replace(/-/g, "");
+      // Get current URL
+      const currentUrl = new URL(window.location.href);
+      const urlParams = new URLSearchParams(currentUrl.search);
+
+      // If no params
+      if (urlParams.toString() == '') {
+        // Add param: startDate. xxxx/?startDate=YYYYMMDD
+        urlParams.set('startDate', formattedDate);
+        currentUrl.search = urlParams.toString();
+
+        // Redirec to new url with param
+        window.location.href = currentUrl.toString();
+      }
+    });
+  </script>
 </body>
 
 </html>
