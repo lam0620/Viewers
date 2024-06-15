@@ -431,6 +431,33 @@ function WorkList({
                 )
               );
             })}
+
+            {/* Start -- Open external Weasis app */}
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'launch-arrow'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                //const hostname = window.location.origin;
+                const hostname = "https://cdha.viethealthcareclinic.com";
+                const url = `$dicom:rs --url="${hostname}/dicomweb/VHC/rs" --request="studyUID=${studyInstanceUid}"`;
+                const newUrl = "weasis://" + encodeURIComponent(url);
+                console.info(`Open external app with StudyID=${studyInstanceUid}`);
+                //alert(window.location.origin);
+                window.open(newUrl, '_blank');
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {'External Viewer'}
+            </Button>
+            {/* End -- Open external Weasis app */}
+
           </div>
         </StudyListExpandedRow>
       ),
