@@ -23,7 +23,66 @@ const config = {
   },
   extensions: [],
   modes: [],
-  customizationService: {},
+  customizationService: {
+    cornerstoneOverlayTopLeft: {
+      id: 'cornerstoneOverlayTopLeft',
+      customizationType: 'ohif.cornerstoneOverlay',
+      items: [
+        {
+          id: 'Stage',
+          customizationType: 'ohif.overlayItem',
+          title: 'Stage Name',
+          condition: ({ instance }) => instance && instance.StageName,
+          contentF: ({ instance }) => instance.StageName,
+        },
+        {
+          id: 'View',
+          customizationType: 'ohif.overlayItem',
+          title: 'View Name',
+          condition: ({ instance }) => instance && instance.ViewName,
+          contentF: ({ instance }) => instance.ViewName,
+        },
+        {
+          id: 'Timer',
+          customizationType: 'ohif.overlayItem',
+          title: 'Timer Name',
+          label: 'timer =',
+          condition: ({ instance }) => instance && instance.EventElapsedTimes,
+          contentF: ({ instance, formatters: { formatDuration } }) =>
+            formatDuration(instance.EventElapsedTimes),
+        },
+      ],
+    },
+    cornerstoneOverlayTopRight: {
+      id: 'cornerstoneOverlayTopRight',
+      customizationType: 'ohif.cornerstoneOverlay',
+      items: [
+        /** {
+        id: 'InstanceNumber',
+        customizationType: 'ohif.overlayItem',
+        title: 'Instance Number',
+        condition: ({ instance }) => instance && instance.InstanceNumber,
+        contentF: ({ instance }) => instance.InstanceNumber,
+        },
+        */
+        {
+          id: 'AcquisitionTime',
+          customizationType: 'ohif.overlayItem',
+          title: 'Acquisition Time',
+          condition: ({ instance }) => instance && instance.AcquisitionTime,
+          contentF: ({ instance, formatters: { formatTime } }) =>
+            formatTime(instance.AcquisitionTime),
+        },
+        {
+          id: 'HR',
+          customizationType: 'ohif.overlayItem',
+          title: 'Heart Rate',
+          condition: ({ instance }) => instance && instance.HeartRate,
+          contentF: ({ instance }) => instance.HeartRate + ' bpm',
+        },
+      ],
+    },
+  },
   showStudyList: true,
   // some windows systems have issues with more than 3 web workers
   maxNumberOfWebWorkers: 3,
@@ -34,7 +93,9 @@ const config = {
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
   showPatientInfo: 'visible',
-  investigationalUseDialog: 'never',
+  investigationalUseDialog: {
+    option: 'never',
+  },
   maxNumRequests: {
     interaction: 100,
     thumbnail: 75,
@@ -61,9 +122,17 @@ const config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoUriRoot: 'http://192.168.201.15:8082/dicomweb/VHC/wado',
+        // qidoRoot: 'http://192.168.201.15:8082/dicomweb/VHC/rs',
+        // wadoRoot: 'http://192.168.201.15:8082/dicomweb/VHC/rs',
+
+        wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
+        qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
