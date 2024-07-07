@@ -16,6 +16,11 @@ const StudyListFilter = ({
   numOfStudies,
   onUploadClick,
   getDataSourceConfigurationComponent,
+  // Add by Lam
+  getToday,
+  getYesterday,
+  get7Days
+  // End
 }) => {
   const { t } = useTranslation('StudyList');
   const { sortBy, sortDirection } = filterValues;
@@ -35,12 +40,12 @@ const StudyListFilter = ({
           <div className="container relative mx-auto flex flex-col pt-5">
             <div className="mb-5 flex flex-row justify-between">
               <div className="flex min-w-[1px] shrink flex-row items-center gap-6">
-                <Typography
+                {/* <Typography
                   variant="h6"
                   className="text-white"
                 >
                   {t('StudyList')}
-                </Typography>
+                </Typography> */}
                 {getDataSourceConfigurationComponent && getDataSourceConfigurationComponent()}
                 {onUploadClick && (
                   <div
@@ -52,9 +57,59 @@ const StudyListFilter = ({
                   </div>
                 )}
               </div>
+              {/* Add Today, Yesterday, 7 days*/}
+              <div className="flex min-w-[1px] shrink flex-row items-center">
+                <LegacyButton
+                  rounded="full"
+                  variant="outlined"
+                  color="primaryActive"
+                  border="primaryActive"
+                  className="mx-1"
+                  // startIcon={<Icon name="cancel" />}
+                  onClick={getToday}
+                >
+                  {t('Today')}
+                </LegacyButton>
+                <LegacyButton
+                  rounded="full"
+                  variant="outlined"
+                  color="primaryActive"
+                  border="primaryActive"
+                  className="mx-1"
+                  // startIcon={<Icon name="cancel" />}
+                  onClick={getYesterday}
+                >
+                  {t('Yesterday')}
+                </LegacyButton>
+                <LegacyButton
+                  rounded="full"
+                  variant="outlined"
+                  color="primaryActive"
+                  border="primaryActive"
+                  className="mx-1"
+                  // startIcon={<Icon name="cancel" />}
+                  onClick={get7Days}
+                >
+                  {t('7 days')}
+                </LegacyButton>
+                <LegacyButton
+                  rounded="full"
+                  variant="outlined"
+                  color="primaryActive"
+                  border="primaryActive"
+                  className="mx-1"
+                  // startIcon={<Icon name="cancel" />}
+                  onClick={clearFilters}
+                >
+                  {t('All')}
+                </LegacyButton>
+                {/* End Add Today, Yesterday, 7 days*/}
+
+              </div>
               <div className="flex h-[34px] flex-row items-center">
                 {/* TODO revisit the completely rounded style of button used for clearing the study list filter - for now use LegacyButton*/}
-                {isFiltering && (
+
+                {/* {isFiltering && (
                   <LegacyButton
                     rounded="full"
                     variant="outlined"
@@ -66,19 +121,18 @@ const StudyListFilter = ({
                   >
                     {t('ClearFilters')}
                   </LegacyButton>
-                )}
-                <Typography
+                )} */}
+                {/* <Typography
                   variant="h6"
                   className="text-primary-light"
                 >
                   {`${t('Number of studies')}: `}
-                </Typography>
+                </Typography> */}
                 <Typography
-                  variant="h6"
                   className="mr-2"
                   data-cy={'num-studies'}
                 >
-                  {numOfStudies > 100 ? '>100' : numOfStudies}
+                  {numOfStudies > 100 ? '>100' : numOfStudies} {t('studies')}
                 </Typography>
               </div>
             </div>
@@ -136,6 +190,9 @@ StudyListFilter.propTypes = {
   isFiltering: PropTypes.bool.isRequired,
   onUploadClick: PropTypes.func,
   getDataSourceConfigurationComponent: PropTypes.func,
+  getToday: PropTypes.func.isRequired,
+  getYesterday: PropTypes.func.isRequired,
+  get7Days: PropTypes.func.isRequired,
 };
 
 export default StudyListFilter;

@@ -443,8 +443,7 @@ function WorkList({
                 />
               } // launch-arrow | launch-info
               onClick={() => {
-                //const hostname = window.location.origin;
-                const hostname = "https://cdha.viethealthcareclinic.com";
+                const hostname = window.location.origin;
                 const url = `$dicom:rs --url="${hostname}/dicomweb/VHC/rs" --request="studyUID=${studyInstanceUid}"`;
                 const newUrl = "weasis://" + encodeURIComponent(url);
                 console.info(`Open external app with StudyID=${studyInstanceUid}`);
@@ -454,8 +453,30 @@ function WorkList({
               dataCY={`${studyInstanceUid}`}
               className={'text-[13px]'}
             >
-              {'External Viewer'}
+              {t('External Viewer')}
             </Button>
+            {/*
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'launch-arrow'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                const hostname = window.location.origin;
+                const url = `${hostname}/report?StudyInstanceUIDs=${studyInstanceUid}`;
+                console.info(`Open a report=${studyInstanceUid}`);
+                //alert(window.location.origin);
+                window.open(url, '_blank');
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('Report')}
+            </Button> */}
             {/* End -- Open external Weasis app */}
 
           </div>
@@ -573,6 +594,9 @@ function WorkList({
           getDataSourceConfigurationComponent={
             dataSourceConfigurationComponent ? () => dataSourceConfigurationComponent() : undefined
           }
+          getToday={() => setFilterValues(today)}
+          getYesterday={() => setFilterValues(yesterday)}
+          get7Days={() => setFilterValues(sevenDay)}
         />
         {hasStudies ? (
           <div className="flex grow flex-col">
@@ -621,6 +645,57 @@ const defaultFilterValues = {
   studyDate: {
     startDate: null,
     endDate: null,
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const today = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const yesterday = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+    endDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const sevenDay = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(7, 'day').format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
   },
   description: '',
   modalities: [],
