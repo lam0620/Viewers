@@ -16,6 +16,12 @@ window.config = {
   experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  studyPrefetcher: {
+    enabled: true,
+    displaySetsCount: 2,
+    maxNumPrefetchRequests: 10,
+    order: 'closest',
+  },
   maxNumRequests: {
     interaction: 100,
     thumbnail: 75,
