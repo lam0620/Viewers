@@ -344,30 +344,30 @@ function WorkList({
           seriesTableDataSource={
             seriesInStudiesMap.has(studyInstanceUid)
               ? seriesInStudiesMap.get(studyInstanceUid).map(s => {
-                  return {
-                    description: s.description || '(empty)',
-                    seriesNumber: s.seriesNumber ?? '',
-                    modality: s.modality || '',
-                    instances: s.numSeriesInstances || '',
-                  };
-                })
+                return {
+                  description: s.description || '(empty)',
+                  seriesNumber: s.seriesNumber ?? '',
+                  modality: s.modality || '',
+                  instances: s.numSeriesInstances || '',
+                };
+              })
               : []
           }
         >
           <div className="flex flex-row gap-2">
             {(appConfig.groupEnabledModesFirst
               ? appConfig.loadedModes.sort((a, b) => {
-                  const isValidA = a.isValidMode({
-                    modalities: modalities.replaceAll('/', '\\'),
-                    study,
-                  }).valid;
-                  const isValidB = b.isValidMode({
-                    modalities: modalities.replaceAll('/', '\\'),
-                    study,
-                  }).valid;
+                const isValidA = a.isValidMode({
+                  modalities: modalities.replaceAll('/', '\\'),
+                  study,
+                }).valid;
+                const isValidB = b.isValidMode({
+                  modalities: modalities.replaceAll('/', '\\'),
+                  study,
+                }).valid;
 
-                  return isValidB - isValidA;
-                })
+                return isValidB - isValidA;
+              })
               : appConfig.loadedModes
             ).map((mode, i) => {
               const modalitiesToCheck = modalities.replaceAll('/', '\\');
@@ -392,9 +392,8 @@ function WorkList({
                   <Link
                     className={isValidMode ? '' : 'cursor-not-allowed'}
                     key={i}
-                    to={`${dataPath ? '../../' : ''}${mode.routeName}${
-                      dataPath || ''
-                    }?${query.toString()}`}
+                    to={`${dataPath ? '../../' : ''}${mode.routeName}${dataPath || ''
+                      }?${query.toString()}`}
                     onClick={event => {
                       // In case any event bubbles up for an invalid mode, prevent the navigation.
                       // For example, the event bubbles up when the icon embedded in the disabled button is clicked.
@@ -402,7 +401,7 @@ function WorkList({
                         event.preventDefault();
                       }
                     }}
-                    // to={`${mode.routeName}/dicomweb?StudyInstanceUIDs=${studyInstanceUid}`}
+                  // to={`${mode.routeName}/dicomweb?StudyInstanceUIDs=${studyInstanceUid}`}
                   >
                     {/* TODO revisit the completely rounded style of buttons used for launching a mode from the worklist later - for now use LegacyButton*/}
                     <Button
@@ -422,7 +421,7 @@ function WorkList({
                           name={isValidMode ? 'launch-arrow' : 'launch-info'}
                         />
                       } // launch-arrow | launch-info
-                      onClick={() => {}}
+                      onClick={() => { }}
                       dataCY={`mode-${mode.routeName}-${studyInstanceUid}`}
                       className={isValidMode ? 'text-[13px]' : 'bg-[#222d44] text-[13px]'}
                     >
@@ -432,6 +431,91 @@ function WorkList({
                 )
               );
             })}
+
+            {/* Start -- Download */}
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'icon-download'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                // Download
+                //const hostname = 'http://192.168.201.54:8080';
+                //const baseUrl = `${hostname}/dcm4chee-arc/aets/DCM4CHEE/rs`;
+                const hostname = window.location.origin;
+                const baseUrl = `${hostname}/dicomweb/VHC/rs`;
+
+                const url = `${baseUrl}/studies/${studyInstanceUid}?accept=application/zip;transfer-syntax=*`;
+                //window.open(url, '_blank');
+                // create <a> element dynamically
+                let fileLink = document.createElement('a');
+                fileLink.href = url;
+
+                // suggest a name for the downloaded file
+                fileLink.download = `${studyInstanceUid}`;
+                console.info(`Download... ${studyInstanceUid}`);
+                // simulate click
+                document.body.appendChild(fileLink);
+                fileLink.click();
+                document.body.removeChild(fileLink);
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('Download')}
+            </Button>
+
+            {/* Start -- Open external Weasis app */}
+            {/* <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'launch-arrow'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                const hostname = window.location.origin;
+                const url = `$dicom:rs --url="${hostname}/dicomweb/VHC/rs" --request="studyUID=${studyInstanceUid}"`;
+                const newUrl = "weasis://" + encodeURIComponent(url);
+                console.info(`Open external app with StudyID=${studyInstanceUid}`);
+                //alert(window.location.origin);
+                window.open(newUrl, '_blank');
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('External Viewer')}
+            </Button> */}
+            {/*
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'launch-arrow'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                const hostname = window.location.origin;
+                const url = `${hostname}/report?StudyInstanceUIDs=${studyInstanceUid}`;
+                console.info(`Open a report=${studyInstanceUid}`);
+                //alert(window.location.origin);
+                window.open(url, '_blank');
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('Report')}
+            </Button> */}
+            {/* End -- Open external Weasis app */}
+
           </div>
         </StudyListExpandedRow>
       ),
@@ -501,25 +585,25 @@ function WorkList({
   const uploadProps =
     dicomUploadComponent && dataSource.getConfig()?.dicomUploadEnabled
       ? {
-          title: 'Upload files',
-          closeButton: true,
-          shouldCloseOnEsc: false,
-          shouldCloseOnOverlayClick: false,
-          content: dicomUploadComponent.bind(null, {
-            dataSource,
-            onComplete: () => {
-              hide();
-              onRefresh();
-            },
-            onStarted: () => {
-              show({
-                ...uploadProps,
-                // when upload starts, hide the default close button as closing the dialogue must be handled by the upload dialogue itself
-                closeButton: false,
-              });
-            },
-          }),
-        }
+        title: 'Upload files',
+        closeButton: true,
+        shouldCloseOnEsc: false,
+        shouldCloseOnOverlayClick: false,
+        content: dicomUploadComponent.bind(null, {
+          dataSource,
+          onComplete: () => {
+            hide();
+            onRefresh();
+          },
+          onStarted: () => {
+            show({
+              ...uploadProps,
+              // when upload starts, hide the default close button as closing the dialogue must be handled by the upload dialogue itself
+              closeButton: false,
+            });
+          },
+        }),
+      }
       : undefined;
 
   const { component: dataSourceConfigurationComponent } =
@@ -547,6 +631,10 @@ function WorkList({
           getDataSourceConfigurationComponent={
             dataSourceConfigurationComponent ? () => dataSourceConfigurationComponent() : undefined
           }
+
+          getToday={() => setFilterValues(today)}
+          getYesterday={() => setFilterValues(yesterday)}
+          get7Days={() => setFilterValues(sevenDay)}
         />
         {hasStudies ? (
           <div className="flex grow flex-col">
@@ -606,7 +694,57 @@ const defaultFilterValues = {
   datasources: '',
   configUrl: null,
 };
-
+const today = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const yesterday = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+    endDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const sevenDay = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(7, 'day').format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
 function _tryParseInt(str, defaultValue) {
   let retValue = defaultValue;
   if (str && str.length > 0) {

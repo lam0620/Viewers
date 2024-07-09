@@ -1,10 +1,23 @@
 {
-  "AccessionNumber": "Mã phiểu",
+  "AccessionNumber": "Mã phiếu",
   "Empty": "Rỗng",
   "MRN": "Mã Bệnh nhân",
   "Modality": "Thiết bị",
   "PatientName": "Tên Bệnh nhân",
   "StudyDate": "Ngày chụp",
   "Description": "Diễn giải",
-  "StudyList": "Danh sách"
+  "StudyList": "Danh sách",
+  "No studies available": "Không tìm thấy",
+  "Instances": "Số ảnh",
+  "Page": "Trang",
+  "Select...": "Chọn...",
+  "Results per page": "ca trên trang",
+  "Next": "Tiếp >",
+  "Previous": "< Trước",
+  "Series": "Tập ảnh",
+  "Today": "Hôm nay",
+  "Yesterday": "Hôm qua",
+  "7 days": "7 ngày",
+  "All": "Tất cả",
+  "studies": "ca"
 }
