@@ -43,6 +43,32 @@ function commandsModule(context, servers, servicesManager, extensionManager) {
       } else {
         return;
       }
+
+      // New download solution: down direct from dcm4chee
+      //const hostname = 'http://192.168.201.54:8080';
+      //const baseUrl = `${hostname}/dcm4chee-arc/aets/DCM4CHEE/rs`;
+      const hostname = window.location.origin;
+      const baseUrl = `${hostname}/dicomweb/VHC/rs`;
+
+      const url = `${baseUrl}/studies/${studyInstanceUid}?accept=application/zip;transfer-syntax=*`;
+      //window.open(url, '_blank');
+      // create <a> element dynamically
+      let fileLink = document.createElement('a');
+      fileLink.href = url;
+
+      // suggest a name for the downloaded file
+      fileLink.download = `${studyInstanceUid}.zip`;
+      console.info(`Download... ${studyInstanceUid}`);
+      // simulate click
+      document.body.appendChild(fileLink);
+      fileLink.click();
+      document.body.removeChild(fileLink);
+
+      // Return here, no need to do more
+      return;
+      // End new download solution
+
+      // Old download solution
       const dicomWebClient = getDicomWebClientFromContext(context, servers);
       //const { viewport } = _getActiveViewportsEnabledElement();
 

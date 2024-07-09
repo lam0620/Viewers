@@ -433,6 +433,7 @@ function WorkList({
             })}
 
             {/* Start -- Download */}
+            {/* Fix at \extensions\download\src\commandsModule.tsx too */}
             <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
@@ -456,7 +457,7 @@ function WorkList({
                 fileLink.href = url;
 
                 // suggest a name for the downloaded file
-                fileLink.download = `${studyInstanceUid}`;
+                fileLink.download = `${studyInstanceUid}.zip`;
                 console.info(`Download... ${studyInstanceUid}`);
                 // simulate click
                 document.body.appendChild(fileLink);
