@@ -432,8 +432,42 @@ function WorkList({
               );
             })}
 
-            {/* Start -- Open external Weasis app */}
+            {/* Start -- Download */}
             <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'icon-download'}
+                />
+              } // launch-arrow | launch-info
+              onClick={() => {
+                // Download
+                const hostname = 'http://192.168.201.54:8080';
+                const baseUrl = `${hostname}/dcm4chee-arc/aets/DCM4CHEE/rs`;
+                const url = `${baseUrl}/studies/${studyInstanceUid}?accept=application/zip;transfer-syntax=*`;
+                //window.open(url, '_blank');
+                // create <a> element dynamically
+                let fileLink = document.createElement('a');
+                fileLink.href = url;
+
+                // suggest a name for the downloaded file
+                fileLink.download = `${studyInstanceUid}`;
+                console.info(`Download... ${studyInstanceUid}`);
+                // simulate click
+                document.body.appendChild(fileLink);
+                fileLink.click();
+                document.body.removeChild(fileLink);
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('Download')}
+            </Button>
+
+            {/* Start -- Open external Weasis app */}
+            {/* <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -454,7 +488,7 @@ function WorkList({
               className={'text-[13px]'}
             >
               {t('External Viewer')}
-            </Button>
+            </Button> */}
             {/*
             <Button
               type={ButtonEnums.type.primary}

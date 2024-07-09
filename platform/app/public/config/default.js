@@ -122,16 +122,9 @@ const config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        // wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        // wadoUriRoot: 'http://192.168.201.15:8082/dicomweb/VHC/wado',
-        // qidoRoot: 'http://192.168.201.15:8082/dicomweb/VHC/rs',
-        // wadoRoot: 'http://192.168.201.15:8082/dicomweb/VHC/rs',
-
-        wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
-        qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
-        wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
 
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
