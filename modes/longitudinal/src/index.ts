@@ -97,14 +97,29 @@ function modeFactory({ modeConfiguration }) {
 
       toolbarService.addButtons([...toolbarButtons, ...moreTools]);
       toolbarService.createButtonSection('primary', [
-        'MeasurementTools',
         'Zoom',
         'Pan',
-        'TrackballRotate',
         'WindowLevel',
+        'StackScroll',
+        'Divider',
+
+        'Length',
+        'EllipticalROI',
+        'RectangleROI',
+        'MeasurementTools',
+        'Divider',
+
+        'Reset',
+        'invert',
+        'rotate-right',
+        'flipHorizontal',
+        'Divider',
+
+        'TrackballRotate',
         'Capture',
         'Layout',
         'Crosshairs',
+        'ReferenceLines',
         'MoreTools',
       ]);
 
