@@ -58,12 +58,11 @@
       "version": "3.0.0"
     },
     {
-      "packageName": "@ohif/extension-dicom-study-downloader",
-      "default": false,
-      "version": "1.0.0"
+      "packageName": "extension-report",
+      "version": "0.0.1"
     },
     {
-      "packageName": "extension-report",
+      "packageName": "extension-study-download",
       "version": "0.0.1"
     }
   ],

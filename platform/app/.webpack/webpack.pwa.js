@@ -79,6 +79,10 @@ module.exports = (env, argv) => {
           __dirname,
           'D:/i-stech/workspace/ris-pacs/git/Viewers_vhc/custom_addons/extentions/report/node_modules'
         ),
+        path.resolve(
+          __dirname,
+          'D:/i-stech/workspace/ris-pacs/git/Viewers_vhc/custom_addons/extentions/study-download/node_modules'
+        ),
       ],
     },
     plugins: [
