@@ -70,6 +70,15 @@ module.exports = (env, argv) => {
         // Hoisted Yarn Workspace Modules
         path.resolve(__dirname, '../../../node_modules'),
         SRC_DIR,
+
+        path.resolve(
+          __dirname,
+          'D:/i-stech/workspace/ris-pacs/git/Viewers_vhc/custom_addons/extentions/report/node_modules'
+        ),
+        path.resolve(
+          __dirname,
+          'D:/i-stech/workspace/ris-pacs/git/Viewers_vhc/custom_addons/extentions/report/node_modules'
+        ),
       ],
     },
     plugins: [

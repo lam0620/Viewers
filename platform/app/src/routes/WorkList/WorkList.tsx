@@ -392,6 +392,7 @@ function WorkList({
                   <Link
                     className={isValidMode ? '' : 'cursor-not-allowed'}
                     key={i}
+                    target={mode.displayName == 'Report' ? '_blank' : '_self'}
                     to={`${dataPath ? '../../' : ''}${mode.routeName}${dataPath || ''
                       }?${query.toString()}`}
                     onClick={event => {
@@ -493,8 +494,8 @@ function WorkList({
             >
               {t('External Viewer')}
             </Button> */}
-            {/*
-            <Button
+
+            {/* <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
