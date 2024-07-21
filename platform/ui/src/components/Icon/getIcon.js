@@ -177,6 +177,9 @@ import { ReactComponent as actionNewDialog } from './../../assets/icons/action-n
 import { ReactComponent as iconToolCobbAngle } from './../../assets/icons/tool-cobb-angle.svg';
 import { ReactComponent as iconToolWindowRegion } from './../../assets/icons/tool-window-region.svg';
 import { ReactComponent as iconDownload } from './../../assets/icons/download.svg';
+import { ReactComponent as iconApprove } from './../../assets/icons/approve.svg';
+import { ReactComponent as iconSave } from './../../assets/icons/save.svg';
+import { ReactComponent as iconReport } from './../../assets/icons/report.svg';
 
 import CTAAA from './../../assets/icons/CT-AAA.png';
 import CTAAA2 from './../../assets/icons/CT-AAA2.png';
@@ -422,6 +425,9 @@ const ICONS = {
   /** New investigational use */
   'illustration-investigational-use': investigationalUse,
   'icon-download': iconDownload,
+  'icon-approve': iconApprove,
+  'icon-save': iconSave,
+  'icon-report': iconReport,
 };
 
 function addIcon(iconName, iconSVG) {

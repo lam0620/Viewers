@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ButtonEnums, Select, Typography, SwitchButton } from '@ohif/ui';
+import { Button, ButtonEnums, Select, Typography, SwitchButton, Icon } from '@ohif/ui';
 
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {
@@ -29,20 +29,52 @@ import {
 } from 'ckeditor5';
 
 import 'ckeditor5/ckeditor5.css';
-import './ReportInputForm.css';
+import './ReportComponent.css';
 
-const ReportInputForm = ({ onClose }) => {
+import Utils from '../Utils';
+
+const ReportInputForm = ({ props }) => {
   var currentDoctor = { label: 'ar', value: 'Arabic' };
 
   const { t } = useTranslation('Report');
   const [state, setState] = useState({
-    readingDoctor: currentDoctor,
+    radiologist: currentDoctor,
+
+    workingItem: {
+      report: {
+        findings: 'aa',
+        impression: 'bb',
+        isHideOrderingDoctor: false,
+        status: 'D', // F, C
+      },
+      patient: {
+        name: 'Nguyen Van A',
+        pid: '123456789',
+        dob: '02/02/1980'
+      },
+      order: {
+        accessionNumber: '123456',
+        indication: 'Dau bung',
+        procedure: {
+          name: 'Chụp não'
+        },
+        orderingDoctor: {
+          name: 'Dr. Nguyen THi B',
+          id: ''
+        },
+      },
+
+      radiologist: {
+        name: ''
+      },
+    },
+    hideOrderingDoctorText: t('No'),
   });
 
   const editorContainerRef = useRef(null);
   const editorRef = useRef(null);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
-  const readingDoctorList = [
+  const radiologistList = [
     { value: 'ar', label: 'Arabic' },
     { value: 'am', label: 'Amharic' },
     { value: 'bg', label: 'Bulgarian Bulgarian Bulgarian Bulgarian Bulgarian Bulgarian' },
@@ -128,24 +160,155 @@ const ReportInputForm = ({ onClose }) => {
       "",
     placeholder: 'Type or paste your content here!'
   };
-  const download = (type) => {
 
+  const onRadiologistChangeHandler = value => {
+    setState(state => ({ ...state, radiologist: value }));
+  };
+
+  const onChangeHideOrderingDoctor = (value) => {
+    let workingItem = state.workingItem;
+    workingItem.report.isHideOrderingDoctor = value;
+    setState(state => ({ ...state, workingItem: workingItem }));
+
+    if (value) {
+      setState(state => ({ ...state, hideOrderingDoctorText: t('Yes') }));
+    } else {
+      setState(state => ({ ...state, hideOrderingDoctorText: t('No') }));
+    }
   }
-  const onReadingDoctorChangeHandler = value => {
-    setState(state => ({ ...state, readingDoctor: value }));
+  /**
+   * Update the current typing of finding into the state of component
+   */
+  const onChangeFindings = (event, editor) => {
+    var data = editor.getData();
+    setState(state => ({ ...state, findings: data }));
+    let workingItem = state.workingItem;
+    workingItem.report.findings = data;
+    setState(state => ({ ...state, workingItem: workingItem }));
+
+    alert(state.workingItem.report.findings);
+  };
+
+  /**
+   * Update the current typing of impression into the state of component
+   */
+  const onChangeImpression = (event, editor) => {
+    var data = editor.getData();
+    setState(state => ({ ...state, findings: data }));
+    let workingItem = state.workingItem;
+    workingItem.report.impression = data;
+    setState(state => ({ ...state, workingItem: workingItem }));
+  };
+  const onApprove = (event) => {
+    // Validate first, if error, set error to state and show
+    let errors = validate();
+
+    // If no error (error = empty)
+    if (Utils.isObjectEmpty(errors)) {
+      // Do Approve
+    }
+    alert(state.workingItem.report.findings);
+    // Generate a HL7 msg
+  };
+  const onSave = (event) => {
+    // Validate first, if error, set error to state and show
+    let errors = validate();
+
+    // If no error (error = empty)
+    if (Utils.isObjectEmpty(errors)) {
+      // Do Approve
+    }
+    //alert(state.workingItem.report);
+    // Generate a HL7 msg
+  };
+  const onClose = (event) => {
+    // Close the current tab
+    window.close();
+  };
+  const validate = () => {
+    let errors = {};
+    let errorFindings = '';
+    let errorImpression = '';
+
+    let report = state.workingItem.report;
+    var findings = Utils.html2text(report.findings);
+    var impression = Utils.html2text(report.impression);
+
+    var findingLabel = t('creation.label.finding');
+    var impressionLabel = t('creation.label.impression');
+
+    // Don't check required for Findings
+    // if (len < 1) {
+    //     var requiredMsg = this.t('creation.msg.required');
+    //     error = requiredMsg.replace('{0}', findingLabel);
+    // }
+    if (!Utils.isEmpty(findings) && findings.length > 1024) {
+      var maxLengthMsg = t('creation.msg.maxLength');
+      maxLengthMsg = maxLengthMsg.replace('{0}', findingLabel);
+      errorFindings = maxLengthMsg.replace('{1}', 1024);
+    }
+
+    // Check impression
+    if (Utils.isEmpty(impression) || impression.length < 1) {
+      var requiredMsg = t('creation.msg.required');
+      errorImpression = requiredMsg.replace('{0}', impressionLabel);
+    } else if (impression.length > 1024) {
+      var maxLengthMsg = t('creation.msg.maxLength');
+      var maxLengthMsg = maxLengthMsg.replace('{0}', impressionLabel);
+      errorImpression = maxLengthMsg.replace('{1}', 1024);
+    }
+
+    return errors;
   };
 
   return (
     <>
       <div className='bg-secondary-dark z-20 border-black px-1 relative'>
         <div className='relative h-[48px] items-center'>
-          <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform'>
-            <button onClick={() => download('study')} className="box-content inline-flex flex-row items-center justify-center gap-[5px] justify center px-[10px] outline-none rounded leading-[1.2] font-sans text-center whitespace-nowrap font-semibold bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-50 active:bg-customblue-20 h-[32px] text-[14px] min-w-[32px]" data-cy="undefined-btn">
-              {t('Approve')}</button>
-            <button onClick={() => download('series')} className="box-content inline-flex flex-row items-center justify-center gap-[5px] justify center px-[10px] outline-none rounded leading-[1.2] font-sans text-center whitespace-nowrap font-semibold bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-80 active:bg-customblue-40 h-[32px] text-[14px] min-w-[32px] ml-2" data-cy="undefined-btn">
-              {t('Save')}</button>
-            <button onClick={() => download('series')} className="box-content inline-flex flex-row items-center justify-center gap-[5px] justify center px-[10px] outline-none rounded leading-[1.2] font-sans text-center whitespace-nowrap font-semibold bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-80 active:bg-customblue-40 h-[32px] text-[14px] min-w-[32px] ml-2" data-cy="undefined-btn">
-              {t('Close')}</button>
+          <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform flex gap-2'>
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'icon-approve'}
+                />
+              }
+              onClick={onApprove}
+              className={'text-[13px]'}
+            >
+              {t('Approve')}
+            </Button>
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'icon-save'}
+                />
+              }
+              onClick={onSave}
+              className={'text-[13px]'}
+            >
+              {t('Save')}
+            </Button>
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <Icon
+                  className="!h-[20px] !w-[20px] text-black"
+                  name={'icon-close'}
+                />
+              }
+              onClick={onClose}
+              className={'text-[13px]'}
+            >
+              {t('Close')}
+            </Button>
+
 
           </div>
 
@@ -166,7 +329,7 @@ const ReportInputForm = ({ onClose }) => {
           }}
         >
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Patient Info')}</div>
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Patient Information')}</div>
 
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
@@ -184,7 +347,23 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          Nguyen Van A
+                          {state.workingItem.patient.name}
+                        </Typography>
+                      </div>
+                    </div>
+                    <div className="mb-2 flex flex-row justify-between">
+                      <div className="flex flex-col items-center">
+                        <Typography
+                          variant="subtitle"
+                          className='font-semibold text-primary-light w-full pr-6 text-right'>
+                          {t('PID')}
+                        </Typography>
+                      </div>
+                      <div className="flex flex-col">
+                        <Typography
+                          variant="subtitle"
+                          className='text-primary-light pr-6 pl-0 text-left'>
+                          {state.workingItem.patient.pid}
                         </Typography>
                       </div>
                     </div>
@@ -200,7 +379,7 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          02/02/1988
+                          {state.workingItem.patient.dob}
                         </Typography>
                       </div>
                     </div>
@@ -212,7 +391,7 @@ const ReportInputForm = ({ onClose }) => {
 
           </div>
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Order Info')}</div>
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Order Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -229,7 +408,7 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          123456789
+                          {state.workingItem.order.accessionNumber}
                         </Typography>
                       </div>
                     </div>
@@ -238,14 +417,14 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='font-semibold text-primary-light w-full pr-6 text-right'>
-                          {t('Ordering physcian')}
+                          {t('Procedure')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          Nguyen Van B
+                          {state.workingItem.order.procedure.name}
                         </Typography>
                       </div>
                     </div>
@@ -261,7 +440,24 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          Đau bụng
+                          {state.workingItem.order.indication}
+                        </Typography>
+                      </div>
+                    </div>
+
+                    <div className="mb-2 flex flex-row justify-between">
+                      <div className="flex flex-col items-center">
+                        <Typography
+                          variant="subtitle"
+                          className='font-semibold text-primary-light w-full pr-6 text-right'>
+                          {t('Ordering Physician')}
+                        </Typography>
+                      </div>
+                      <div className="flex flex-col">
+                        <Typography
+                          variant="subtitle"
+                          className='text-primary-light pr-6 pl-0 text-left'>
+                          {state.workingItem.order.orderingDoctor.name}
                         </Typography>
                       </div>
                     </div>
@@ -272,7 +468,7 @@ const ReportInputForm = ({ onClose }) => {
             </div>
           </div>
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Report Info')}</div>
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Report Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -282,15 +478,15 @@ const ReportInputForm = ({ onClose }) => {
                         <Typography
                           variant="subtitle"
                           className='font-semibold text-primary-light w-full pr-6 text-right'>
-                          {t('Reading Doctor')}
+                          {t('Radiologist')}
                         </Typography>
                       </div>
                       <div className="w-72 flex flex-col">
                         <Select
                           isClearable={false}
-                          onChange={onReadingDoctorChangeHandler}
-                          options={readingDoctorList}
-                          value={state.readingDoctor}
+                          onChange={onRadiologistChangeHandler}
+                          options={radiologistList}
+                          value={state.radiologist}
                         />
                       </div>
                     </div>
@@ -302,23 +498,37 @@ const ReportInputForm = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Right panel */}
+        {/* Right panel - Findigs/Impression*/}
         <div className="main-container flex h-full flex-1 flex-col">
           <div className="w-1/2 text-white mt-2 mb-2 flex">
-            <SwitchButton className='text-white' label="Hide Ordering physcian in report" />
-            <div className='p-2 w-1/4'>No</div>
+            <SwitchButton className='text-white'
+              label={t('Hide Ordering Physician in report')}
+              onChange={onChangeHideOrderingDoctor} />
+            <div className='p-2 w-1/4'>{state.hideOrderingDoctorText}</div>
           </div>
           <div className="w-full text-white text-[14px]">{t('Findings')}</div>
           <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
             <div className="editor-container__editor">
-              <div ref={editorRef}>{isLayoutReady && <CKEditor editor={ClassicEditor} config={editorConfig} />}</div>
+              <div ref={editorRef}>{isLayoutReady &&
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={editorConfig}
+                  data={state.workingItem.report.findings}
+                  onChange={onChangeFindings}
+                />}</div>
             </div>
           </div>
 
           <div className="w-full text-white text-[14px] mt-2">{t('Impression')}</div>
           <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
             <div className="editor-container__editor">
-              <div ref={editorRef}>{isLayoutReady && <CKEditor editor={ClassicEditor} config={editorConfig} />}</div>
+              <div ref={editorRef}>{isLayoutReady &&
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={editorConfig}
+                  data={state.workingItem.report.impression}
+                  onChange={onChangeImpression}
+                />}</div>
             </div>
           </div>
         </div>
@@ -328,9 +538,7 @@ const ReportInputForm = ({ onClose }) => {
 };
 
 ReportInputForm.propTypes = {
-  dicomWebClient: PropTypes.object.isRequired,
-  StudyInstanceUID: PropTypes.string.isRequired,
-  onClose: PropTypes.func.isRequired,
+
 };
 
 export default ReportInputForm;

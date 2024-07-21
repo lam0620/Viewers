@@ -1,4 +1,4 @@
-import ReportInputForm from './components/ReportInputForm';
+import ReportComponent from './components/ReportComponent';
 
 /*
 - Define layout for the viewer in mode configuration.
@@ -14,7 +14,7 @@ export default function () {
     {
       name: 'reportLayout',
       id: 'reportLayout',
-      component: ReportInputForm,
+      component: ReportComponent,
     },
   ];
 }

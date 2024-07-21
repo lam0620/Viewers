@@ -4,6 +4,7 @@ import Common from './Common.json';
 import Header from './Header.json';
 import StudyList from './StudyList.json';
 import UserPreferencesModal from './UserPreferencesModal.json';
+import Report from './Report.json';
 
 export default {
   vi: {
@@ -13,5 +14,6 @@ export default {
     Header,
     StudyList,
     UserPreferencesModal,
+    Report,
   },
 };

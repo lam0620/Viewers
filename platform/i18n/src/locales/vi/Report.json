@@ -1,0 +1,20 @@
+{
+  "Patient Information": "Thông tin bệnh nhân",
+  "Order Information": "Thông tin chỉ định",
+  "Report Information": "Thông tin kết quả",
+  "Patient Name": "Tên bệnh nhân",
+  "PatientName": "Tên Bệnh nhân",
+  "PID": "Mã bệnh nhân",
+  "DOB": "Ngày sinh",
+  "ACN": "Mã phiếu",
+  "Ordering Physician": "Bs chỉ định",
+  "Indication": "Triệu chứng",
+  "Procedure": "Dịch vụ",
+  "Radiologist": "Bs chẩn đoán",
+  "Hide Ordering Physician in report": "Ẩn bác sĩ chỉ định trên mẫu trả kết quả",
+  "Findings": "Mô tả",
+  "Impression": "Kết luận",
+  "Yes": "Có",
+  "No": "Không",
+  "creation.msg.required": "{0} là bắt buộc"
+}
