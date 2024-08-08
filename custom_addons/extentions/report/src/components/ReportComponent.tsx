@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
-
+import ReactToPrint from 'react-to-print';
 import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import { Button, ButtonEnums, Select, Typography, SwitchButton, Icon } from '@ohif/ui';
-
+import './ReportComponent.css';
+import { Button, ButtonEnums, Select, Typography, Icon } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
+import PdfComponent from './PdfComponent';
 import {
   ClassicEditor,
   AccessibilityHelp,
@@ -30,90 +30,21 @@ import {
 
 import 'ckeditor5/ckeditor5.css';
 import './ReportComponent.css';
+import axios from 'axios';
+import Utils from '../utils';
+import Constants from '../constants'
 
-import Utils from '../Utils';
-
-const ReportInputForm = ({ props }) => {
-  var currentDoctor = { label: 'ar', value: 'Arabic' };
-
+const ReportComponent = ({ props }) => {
   const { t } = useTranslation('Report');
-  const [state, setState] = useState({
-    radiologist: currentDoctor,
-
-    workingItem: {
-      report: {
-        findings: 'aa',
-        impression: 'bb',
-        isHideOrderingDoctor: false,
-        status: 'D', // F, C
-      },
-      patient: {
-        name: 'Nguyen Van A',
-        pid: '123456789',
-        dob: '02/02/1980'
-      },
-      order: {
-        accessionNumber: '123456',
-        indication: 'Dau bung',
-        procedure: {
-          name: 'Chụp não'
-        },
-        orderingDoctor: {
-          name: 'Dr. Nguyen THi B',
-          id: ''
-        },
-      },
-
-      radiologist: {
-        name: ''
-      },
-    },
-    hideOrderingDoctorText: t('No'),
-  });
-
+  // Create Document Component
   const editorContainerRef = useRef(null);
   const editorRef = useRef(null);
   const [isLayoutReady, setIsLayoutReady] = useState(false);
-  const radiologistList = [
-    { value: 'ar', label: 'Arabic' },
-    { value: 'am', label: 'Amharic' },
-    { value: 'bg', label: 'Bulgarian Bulgarian Bulgarian Bulgarian Bulgarian Bulgarian' },
-    { value: 'bn', label: 'Bengali' }
-  ];
-
-  useEffect(() => {
-    setIsLayoutReady(true);
-
-    return () => setIsLayoutReady(false);
-  }, []);
-
   const editorConfig = {
     toolbar: {
       items: [
-        'undo',
-        'redo',
-        '|',
-        'selectAll',
-        '|',
-        'heading',
-        '|',
-        'fontSize',
-        'fontFamily',
-        'fontColor',
-        'fontBackgroundColor',
-        '|',
-        'bold',
-        'italic',
-        'underline',
-        '|',
-        'specialCharacters',
-        '|',
-        'alignment',
-        '|',
-        'indent',
-        'outdent',
-        '|',
-        'accessibilityHelp'
+        'undo', 'redo', '|', 'selectAll', '|', 'heading', '|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|', 'bold', 'italic', 'underline', '|',
+        'specialCharacters', '|', 'alignment', '|', 'indent', 'outdent', '|', 'accessibilityHelp'
       ],
       shouldNotGroupWhenFull: false
     },
@@ -160,45 +91,6 @@ const ReportInputForm = ({ props }) => {
       "",
     placeholder: 'Type or paste your content here!'
   };
-
-  const onRadiologistChangeHandler = value => {
-    setState(state => ({ ...state, radiologist: value }));
-  };
-
-  const onChangeHideOrderingDoctor = (value) => {
-    let workingItem = state.workingItem;
-    workingItem.report.isHideOrderingDoctor = value;
-    setState(state => ({ ...state, workingItem: workingItem }));
-
-    if (value) {
-      setState(state => ({ ...state, hideOrderingDoctorText: t('Yes') }));
-    } else {
-      setState(state => ({ ...state, hideOrderingDoctorText: t('No') }));
-    }
-  }
-  /**
-   * Update the current typing of finding into the state of component
-   */
-  const onChangeFindings = (event, editor) => {
-    var data = editor.getData();
-    setState(state => ({ ...state, findings: data }));
-    let workingItem = state.workingItem;
-    workingItem.report.findings = data;
-    setState(state => ({ ...state, workingItem: workingItem }));
-
-    alert(state.workingItem.report.findings);
-  };
-
-  /**
-   * Update the current typing of impression into the state of component
-   */
-  const onChangeImpression = (event, editor) => {
-    var data = editor.getData();
-    setState(state => ({ ...state, findings: data }));
-    let workingItem = state.workingItem;
-    workingItem.report.impression = data;
-    setState(state => ({ ...state, workingItem: workingItem }));
-  };
   const onApprove = (event) => {
     // Validate first, if error, set error to state and show
     let errors = validate();
@@ -207,8 +99,6 @@ const ReportInputForm = ({ props }) => {
     if (Utils.isObjectEmpty(errors)) {
       // Do Approve
     }
-    alert(state.workingItem.report.findings);
-    // Generate a HL7 msg
   };
   const onSave = (event) => {
     // Validate first, if error, set error to state and show
@@ -225,15 +115,12 @@ const ReportInputForm = ({ props }) => {
     // Close the current tab
     window.close();
   };
+
+
   const validate = () => {
     let errors = {};
     let errorFindings = '';
     let errorImpression = '';
-
-    let report = state.workingItem.report;
-    var findings = Utils.html2text(report.findings);
-    var impression = Utils.html2text(report.impression);
-
     var findingLabel = t('creation.label.finding');
     var impressionLabel = t('creation.label.impression');
 
@@ -260,12 +147,121 @@ const ReportInputForm = ({ props }) => {
 
     return errors;
   };
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  const [pid, setPid] = useState('');
+  const [fullname, setFullname] = useState('');
+  const [dob, setDOB] = useState('');
+  const [ASSN, setASSN] = useState('');
+  const [service, setService] = useState('');
+  const [symptom, setSymptom] = useState('');
+  const [doctor, setDoctor] = useState('');
+  const [radiologist, setRadiologist] = useState('');
+  const [radiologistList, setRadiologistList] = useState('');
+  const [sex, setSex] = useState('');
+  const [address, setAddress] = useState('');
+  const [finding, setFinding] = useState('');
+  const [conclusion, setConclusion] = useState('');
+  const [finding1, setFinding1] = useState('');
+  const [conclusion1, setConclusion1] = useState('');
+
+  const [state, setState] = useState({
+    workingItem: null,
+  });
+
+  useEffect(() => {
+    // 578358 (not report yet), 530546 (has report)
+    axios.get(Constants.INTEG_API_ENDPOINT + '/orders/acn/578358')
+      .then(response => {
+        const data = response.data.data;
+
+        var workingItem = state.workingItem;
+
+        setPid(data.patient.pid);
+        setFullname(data.patient.fullname);
+        setDOB(data.patient.dob);
+        setASSN(data.accession_no);
+        setSex(data.patient.gender)
+        setAddress(data.patient.address);
+        //Cause procedures is a array so get the first element
+        const procedure = data.procedures[0];
+        setService(procedure.name);
+        setSymptom(data.clinical_diagnosis);
+        setDoctor(data.req_phys_name); //bs chi dinh
+        // Has report
+        if (!Utils.isObjectEmpty(procedure.report)) {
+          setFinding(procedure.report.findings);
+          setConclusion(procedure.report.conclusion);
+          //create finding1, conclusion1 to compare with null. Beacause if use finding,conclusion , onchange function run.
+          setFinding1(procedure.report.findings);
+          setConclusion1(procedure.report.conclusion);
+          setRadiologist(procedure.report.radiologist.fullname);
+        }
+      })
+
+    axios.get(Constants.INTEG_API_ENDPOINT + '/doctors/R')
+      .then(response => {
+        const data = response.data.data;
+        setRadiologistList(data)
+      })
+    // fetch(Constants.INTEG_API_ENDPOINT + '/doctors/R')
+    //   .then(response => response.json())
+    //   .then(data => setRadiologist(data.data))
+    //   .catch(error => console.error('Error fetching data:', error));
+
+    setIsLayoutReady(true);
+    return () => setIsLayoutReady(false);
+  }, []);
+  const onChangeFindings1 = (event, editor) => {//Update data when input finding
+    const data = editor.getData();
+    setFinding(data);
+  };
+  const onChangeImpression1 = (event, editor) => {
+    const data = editor.getData();
+    setConclusion(data);
+  };
+
+  const [selectedDoctor, setSelectedDoctor] = useState('');
+
+  const handleSelectChange = (event) => {//Update radiologist in PDF
+    setSelectedDoctor(event.target.value);
+  };
+
+  const formatDOB = (dob) => {//format DD/MM/YYYY
+    if (dob.length === 8) {
+      const year = dob.substring(0, 4);
+      const month = dob.substring(4, 6);
+      const day = dob.substring(6, 8);
+      return `${day}/${month}/${year}`;
+    } else if (dob.length === 6) {
+      const year = dob.substring(0, 4);
+      const month = dob.substring(4, 6);
+      return `${month}/${year}`;
+    } else if (dob.length === 4) {
+      const year = dob.substring(0, 4);
+      return `${year}`;
+    } else {
+      return '';
+    }
+  };
+  const formattedDOB = formatDOB(dob);
 
   return (
     <>
       <div className='bg-secondary-dark z-20 border-black px-1 relative'>
         <div className='relative h-[48px] items-center'>
+
           <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform flex gap-2'>
+            <ReactToPrint
+              trigger={() => (
+                <Button
+                  type={ButtonEnums.type.primary}
+                  size={ButtonEnums.size.medium}>
+                  {t('Print')}
+                </Button>
+              )}
+              content={() => componentRef.current}
+            />
             <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
@@ -308,13 +304,10 @@ const ReportInputForm = ({ props }) => {
             >
               {t('Close')}
             </Button>
-
-
           </div>
-
         </div>
       </div>
-      <div className='relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-hidden bg-black'
+      <div className='relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto bg-black'
         style={{ height: 'calc(100vh - 52px' }}
       >
         {/* Left panel */}
@@ -329,8 +322,7 @@ const ReportInputForm = ({ props }) => {
           }}
         >
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Patient Information')}</div>
-
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -347,7 +339,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.patient.name}
+                          {fullname}
                         </Typography>
                       </div>
                     </div>
@@ -363,7 +355,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.patient.pid}
+                          {pid}
                         </Typography>
                       </div>
                     </div>
@@ -379,19 +371,17 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.patient.dob}
+                          {formattedDOB}
                         </Typography>
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Order Information')}</div>
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300' style={{ fontSize: '17px' }}>{t('Order Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -408,7 +398,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.order.accessionNumber}
+                          {ASSN}
                         </Typography>
                       </div>
                     </div>
@@ -424,7 +414,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.order.procedure.name}
+                          {service}
                         </Typography>
                       </div>
                     </div>
@@ -440,7 +430,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.order.indication}
+                          {symptom}
                         </Typography>
                       </div>
                     </div>
@@ -457,7 +447,7 @@ const ReportInputForm = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pr-6 pl-0 text-left'>
-                          {state.workingItem.order.orderingDoctor.name}
+                          {doctor}
                         </Typography>
                       </div>
                     </div>
@@ -468,7 +458,7 @@ const ReportInputForm = ({ props }) => {
             </div>
           </div>
           <div className="w-full text-white mb-2">
-            <div className='p-2 mb-2 border-b-2 border-black text-blue-300'>{t('Report Information')}</div>
+            <div className='p-2 mb-2 border-b-2 border-black text-blue-300' style={{ fontSize: '17px' }}>{t('Report Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -481,13 +471,29 @@ const ReportInputForm = ({ props }) => {
                           {t('Radiologist')}
                         </Typography>
                       </div>
-                      <div className="w-72 flex flex-col">
-                        <Select
-                          isClearable={false}
-                          onChange={onRadiologistChangeHandler}
-                          options={radiologistList}
-                          value={state.radiologist}
-                        />
+                      <div className="flex flex-col">
+                        {radiologist && (<Typography
+                          variant="subtitle"
+                          className='text-primary-light pr-6 pl-0 text-left'>
+                          {radiologist}
+                        </Typography>
+                        )}
+                        {!finding && (<Typography>
+                          <select
+                            style={{
+                              backgroundColor: '#000', color: 'rgb(90, 204, 230)', fontSize: '15px', padding: '10px', borderRadius: '5px', border: '2px solid rgb(90, 204, 230)'
+                            }}
+                            value={selectedDoctor}
+                            onChange={handleSelectChange}
+                          >
+                            {Array.isArray(radiologistList) && radiologistList.map(doctor => (
+                              <option key={doctor.doctor_no} value={doctor.id}>
+                                {doctor.fullname}
+                              </option>
+                            ))}
+                          </select>
+                        </Typography>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -500,45 +506,93 @@ const ReportInputForm = ({ props }) => {
 
         {/* Right panel - Findigs/Impression*/}
         <div className="main-container flex h-full flex-1 flex-col">
-          <div className="w-1/2 text-white mt-2 mb-2 flex">
-            <SwitchButton className='text-white'
-              label={t('Hide Ordering Physician in report')}
-              onChange={onChangeHideOrderingDoctor} />
-            <div className='p-2 w-1/4'>{state.hideOrderingDoctorText}</div>
-          </div>
-          <div className="w-full text-white text-[14px]">{t('Findings')}</div>
-          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
-            <div className="editor-container__editor">
-              <div ref={editorRef}>{isLayoutReady &&
-                <CKEditor
-                  editor={ClassicEditor}
-                  config={editorConfig}
-                  data={state.workingItem.report.findings}
-                  onChange={onChangeFindings}
-                />}</div>
-            </div>
-          </div>
+          <div className="flex flex-row w-full">
+            <div className="flex flex-col text-left w-full">
 
-          <div className="w-full text-white text-[14px] mt-2">{t('Impression')}</div>
+              {/* Show report text in label */}
+              {finding1 && (
+                <div className="mb-2 flex flex-col">
+                  <div className="flex flex-row justify-between">
+                    <div className='w-full p-2 mb-2 border-b-2 border-black text-blue-300' style={{ fontSize: '17px' }}>
+                      {t('Findings')}
+                    </div>
+
+                  </div>
+                  <div className="flex flex-col mt-2">
+                    <Typography
+                      variant="subtitle"
+                      className='text-primary-light pr-6 pl-0 text-left'>
+                      <div className="findings" dangerouslySetInnerHTML={{ __html: finding }} />
+                    </Typography>
+                  </div>
+                </div>
+              )}
+              {conclusion1 && (
+                <div className="mb-2 flex flex-col">
+                  <div className="flex flex-row justify-between">
+                    <div className='w-full p-2 mb-2 border-b-2 border-black text-blue-300' style={{ fontSize: '17px' }}>
+                      {t('Impression')}
+                    </div>
+                  </div>
+                  <div className="flex flex-col mt-2">
+                    <Typography
+                      variant="subtitle"
+                      className='text-primary-light pr-6 pl-0 text-left'>
+                      <div className="findings" dangerouslySetInnerHTML={{ __html: conclusion }} />
+                    </Typography>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="w-full text-white text-[14px]" style={{ fontSize: '17px' }}>{finding1 === '' && t('Findings')}</div>
           <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
             <div className="editor-container__editor">
-              <div ref={editorRef}>{isLayoutReady &&
+
+              {/* Show report input form */}
+              <div ref={editorRef}>{isLayoutReady && finding1 === '' &&
                 <CKEditor
                   editor={ClassicEditor}
                   config={editorConfig}
-                  data={state.workingItem.report.impression}
-                  onChange={onChangeImpression}
+                  data={finding}
+                  onChange={onChangeFindings1}
+                />}
+              </div>
+            </div>
+          </div>
+          <div className="w-full text-white text-[14px] mt-2" style={{ fontSize: '17px' }}>{conclusion1 === '' && t('Impression')}</div>
+          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+            <div className="editor-container__editor">
+              <div ref={editorRef}>{isLayoutReady && conclusion1 === '' &&
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={editorConfig}
+                  data={conclusion}
+                  onChange={onChangeImpression1}
                 />}</div>
             </div>
+          </div>
+          <div style={{ display: 'none' }}>
+            <PdfComponent
+              ref={componentRef}
+              statePID={53247234}
+              stateName={fullname}
+              stateDOB={formattedDOB}
+              stateSex={sex}
+              stateIndication={symptom}
+              stateDoctorName={doctor}
+              findings={finding}
+              impression={conclusion}
+              service={service}
+              address={address}
+              radiologist={selectedDoctor}
+            />
           </div>
         </div>
       </div >
     </>
   );
 };
-
-ReportInputForm.propTypes = {
-
+ReportComponent.propTypes = {
 };
-
-export default ReportInputForm;
+export default ReportComponent;
