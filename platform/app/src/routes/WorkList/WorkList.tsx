@@ -386,13 +386,19 @@ function WorkList({
               if (filterValues.configUrl) {
                 query.append('configUrl', filterValues.configUrl);
               }
+
+              // Add accession number to url for reporting
+              if (mode.routeName == 'report') {
+                query.append('acn', accession);
+              }
+
               query.append('StudyInstanceUIDs', studyInstanceUid);
               return (
                 mode.displayName && (
                   <Link
                     className={isValidMode ? '' : 'cursor-not-allowed'}
                     key={i}
-                    target={mode.displayName == 'Report' ? '_blank' : '_self'}
+                    target={mode.routeName == 'report' ? '_blank' : '_self'}
                     to={`${dataPath ? '../../' : ''}${mode.routeName}${dataPath || ''
                       }?${query.toString()}`}
                     onClick={event => {
@@ -417,10 +423,12 @@ function WorkList({
                         ) : null
                       }
                       startIcon={
-                        <Icon
-                          className="!h-[20px] !w-[20px] text-black"
-                          name={isValidMode ? 'launch-arrow' : 'launch-info'}
-                        />
+                        mode.routeName == 'report' ?
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style={{ fill: 'none' }} className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
+                          : <Icon
+                            className="!h-[20px] !w-[20px] text-black"
+                            name={isValidMode ? 'launch-arrow' : 'launch-info'}
+                          />
                       } // launch-arrow | launch-info
                       onClick={() => { }}
                       dataCY={`mode-${mode.routeName}-${studyInstanceUid}`}
@@ -439,10 +447,7 @@ function WorkList({
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <Icon
-                  className="!h-[20px] !w-[20px] text-black"
-                  name={'icon-download'}
-                />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style={{ fill: 'none' }} className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
               } // launch-arrow | launch-info
               onClick={() => {
                 // Download
@@ -470,53 +475,6 @@ function WorkList({
             >
               {t('Download')}
             </Button>
-
-            {/* Start -- Open external Weasis app */}
-            {/* <Button
-              type={ButtonEnums.type.primary}
-              size={ButtonEnums.size.medium}
-              startIcon={
-                <Icon
-                  className="!h-[20px] !w-[20px] text-black"
-                  name={'launch-arrow'}
-                />
-              } // launch-arrow | launch-info
-              onClick={() => {
-                const hostname = window.location.origin;
-                const url = `$dicom:rs --url="${hostname}/dicomweb/VHC/rs" --request="studyUID=${studyInstanceUid}"`;
-                const newUrl = "weasis://" + encodeURIComponent(url);
-                console.info(`Open external app with StudyID=${studyInstanceUid}`);
-                //alert(window.location.origin);
-                window.open(newUrl, '_blank');
-              }}
-              dataCY={`${studyInstanceUid}`}
-              className={'text-[13px]'}
-            >
-              {t('External Viewer')}
-            </Button> */}
-
-            {/* <Button
-              type={ButtonEnums.type.primary}
-              size={ButtonEnums.size.medium}
-              startIcon={
-                <Icon
-                  className="!h-[20px] !w-[20px] text-black"
-                  name={'launch-arrow'}
-                />
-              } // launch-arrow | launch-info
-              onClick={() => {
-                const hostname = window.location.origin;
-                const url = `${hostname}/report?StudyInstanceUIDs=${studyInstanceUid}`;
-                console.info(`Open a report=${studyInstanceUid}`);
-                //alert(window.location.origin);
-                window.open(url, '_blank');
-              }}
-              dataCY={`${studyInstanceUid}`}
-              className={'text-[13px]'}
-            >
-              {t('Report')}
-            </Button> */}
-            {/* End -- Open external Weasis app */}
 
           </div>
         </StudyListExpandedRow>

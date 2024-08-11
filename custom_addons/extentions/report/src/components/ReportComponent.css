@@ -241,3 +241,19 @@ body {
   margin-bottom: 10px;
   /* Khoảng cách giữa các dòng khi sử dụng thẻ <br/> */
 }
+
+.bg-red-500 {
+  background-color: #fe615a;
+}
+
+.border-red-400 {
+  border-color: rgb(248 113 113)
+}
+
+.bg-blue-500 {
+  background-color: rgb(59 130 246)
+}
+
+.border-blue-500 {
+  border-color: rgb(59 130 246)
+}
