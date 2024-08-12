@@ -10,14 +10,25 @@ export const isFinalReport = (status) => {
 export const isReportErrorEmpty = (obj) => {
   console.log(obj)
   let isCorrect = (Object.keys(obj).length === 0 && obj.constructor === Object) ||
-    (obj.system === "" && obj.findings === "" && obj.conclusion === "" && obj.radiologist === "");
+    (obj.fatal === "" && obj.system === "" && obj.findings === "" && obj.conclusion === "" && obj.radiologist === "");
 
   console.log(isCorrect)
   return isCorrect;
 }
 
-export const isSaveEnabled = (status) => {
-  if (["F", "C"].includes(status)) {
+export const initEmptyReportError = () => {
+  let error = {};
+  error.conclusion = "";
+  error.findings = "";
+  error.radiologist = "";
+  error.fatal = "";
+  error.system = "";
+
+  return error;
+}
+
+export const isSaveEnabled = (status, fatalErr) => {
+  if (!Utils.isEmpty(fatalErr) || ["F", "C"].includes(status)) {
     return false;
   }
   return true;
@@ -30,8 +41,8 @@ export const isPrintEnabled = (status) => {
   return false;
 }
 
-export const isApproveEnabled = (status, error) => {
-  if (Utils.isEmpty(error) && ["", "D"].includes(status)) {
+export const isApproveEnabled = (status, fatalErr) => {
+  if (Utils.isEmpty(fatalErr) && ["", "D"].includes(status)) {
     return true;
   }
   return false;
@@ -39,6 +50,13 @@ export const isApproveEnabled = (status, error) => {
 
 export const isEditEnabled = (status) => {
   if (["F", "C"].includes(status)) {
+    return true;
+  }
+  return false;
+}
+
+export const isEditorDisabled = (fatalErr) => {
+  if (!Utils.isEmpty(fatalErr)) {
     return true;
   }
   return false;

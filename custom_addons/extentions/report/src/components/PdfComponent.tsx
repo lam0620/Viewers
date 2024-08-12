@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode.react';
 import logo from '../../assets/images/logo.png';
@@ -34,20 +34,26 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
   const { orderData, reportData } = props;
   const { t } = useTranslation('Report');
 
+  const [sign, setSign] = useState('');
+  import(`../../assets/signs/` + reportData.radiologist.sign).then((image) =>
+    setSign(image.default)
+  );
+
   return (
     <>
       <div className="container" id="pdf-report" ref={ref}>
+        {/* Header */}
         <div className="header">
           <img src={logo} alt="Logo" />
           <div className="clinic-info">
-            <h2>PHÒNG KHÁM ĐA KHOA QUỐC TẾ VIỆT HEALTHCARE</h2>
+            <h3 style={{ color: 'red', fontWeight: 'bold' }}>PHÒNG KHÁM ĐA KHOA QUỐC TẾ VIỆT HEALTHCARE</h3>
             <h4>16 - 18 Lý Thường Kiệt, Phường 7, Quận 10, Tp. Hồ Chí Minh</h4>
             <h4>Hotline: 09 0133 0133 - 028 9999 2899</h4>
           </div>
         </div>
         <div className="title-barcode">
           <h1 className="title">PHIẾU KẾT QUẢ {Utils.getFullModalityType(orderData.modality_type)}</h1>
-          <div className="text-center">
+          <div className="text-center mr-2">
             <div className="barcode">
               <Barcode value={orderData.patient.pid} />
               {/* <Barcode value='1234' /> */}
@@ -56,6 +62,8 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
             <div>{orderData.patient.pid}</div>
           </div>
         </div>
+
+        {/* Body */}
         <div className="patient-info">
           <div>
             <p>Họ tên: <span className="bold">{orderData.patient.fullname}</span></p>
@@ -74,24 +82,27 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
           <p className="red underline">Kết luận:</p>
           <div className="conclusion" dangerouslySetInnerHTML={{ __html: reportData.conclusion }}></div>
         </div>
-        <div style={{ position: 'absolute', bottom: '65px', right: '60px', display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
-          <p>Ngày {day} tháng {month} năm {year}</p>
-          <p style={{ fontWeight: 'bold', marginBottom: '140px' }}>Bác sĩ</p>
-          <img src={reportData.radiologist.sign} alt='Sign' />
-          <p>{reportData.radiologist.fullname}</p>
+        {/* Footer */}
+        <div className='footer'>
+          <div style={{ position: 'absolute', bottom: '65px', right: '60px', display: 'flex', flexDirection: 'column', textAlign: 'center' }}>
+            <p>Ngày {day} tháng {month} năm {year}</p>
+            <p style={{ fontWeight: 'bold', marginBottom: '140px' }}>Bác sĩ</p>
+            <img src={sign} alt='Sign' />
+            <p>{reportData.radiologist.fullname}</p>
+          </div>
+          <div className="qrcode">
+            <QRCode
+              value={imageUrl}
+              imageSettings={{
+                src: logo,
+                excavate: true,
+                height: 25,
+                width: 25
+              }}
+            />
+          </div>
         </div>
-        <div className="qrcode">
-          <QRCode
-            value={imageUrl}
-            imageSettings={{
-              src: logo,
-              excavate: true,
-              height: 25,
-              width: 25
-            }}
-          />
-        </div>
-      </div>
+      </div >
     </>
   );
 });

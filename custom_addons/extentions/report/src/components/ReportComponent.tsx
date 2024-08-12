@@ -123,7 +123,7 @@ const ReportComponent = ({ props }) => {
 
   // Get query params
   const searchParams = useSearchParams();
-  const accession_no = searchParams.get("acn")
+  const accession_no = searchParams.get("acn") ? searchParams.get("acn") : "<None>"
   const study_iuid = searchParams.get("StudyInstanceUIDs")
 
   const componentRef = useRef<HTMLDivElement>(null);
@@ -174,11 +174,13 @@ const ReportComponent = ({ props }) => {
     }
   }
   const emptyError = {
-    fatal: "",
-    system: "", // disabled all
-    findings: "",
-    conclusion: "",
-    radiologist: ""
+    error: {
+      fatal: "",
+      system: "", // disabled all
+      findings: "",
+      conclusion: "",
+      radiologist: ""
+    }
   }
   const [orderData, setOrderData] = useState(emptyOrderData)
   const [reportData, setReportData] = useState(emptyReportData)
@@ -188,9 +190,11 @@ const ReportComponent = ({ props }) => {
   const [selectedRadiologist, setSelectedRadiologist] = useState({ value: "", label: t('-------- Select --------') });
 
   const [info, setInfo] = useState('');
-  const [errors, setErrors] = useState(emptyError);
+  const [state, setState] = useState(emptyError);
+
 
   const [showElement, setShowElement] = useState(true)
+
 
   // function _getQueryFilterValues(params) {
   //   const newParams = new URLSearchParams();
@@ -212,9 +216,10 @@ const ReportComponent = ({ props }) => {
   }, []);
 
   const getOrder = async (accession) => {
-
+    let error = state.error;
     if (Utils.isEmpty(accession)) {
-      setErrors({ ...errors, fatal: t('Incorrect data! Please close and open the report again') });
+      error.fatal = t('Incorrect data! Please close and open the report again');
+      setState({ ...state, error: error });
     }
     try {
       const response = await fetchOrder(accession);
@@ -222,13 +227,15 @@ const ReportComponent = ({ props }) => {
 
       if (response_data.result.status == 'NG') {
         // let errors = {''};
-        setErrors({ ...errors, fatal: response_data.result.msg });
+        error.fatal = response_data.result.msg
+        setState({ ...state, error: error });
       } else if (Utils.isObjectEmpty(response_data.data)) {
         // TODO Get data from image and set to
 
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
-        setErrors({ ...errors, fatal: t('No applicable order found') });
+        error.fatal = t('No applicable order found');
+        setState({ ...state, error: error });
 
       } else {
         response_data.data.procedures.map((procedure, index) => {
@@ -252,31 +259,36 @@ const ReportComponent = ({ props }) => {
         setOrderData(response_data.data);
       }
 
-    } catch (error: any) {
-      console.log(error);
-      setErrors({ ...errors, fatal: error });
+    } catch (err: any) {
+      console.log(err);
+      error.fatal = err;
+      setState({ ...state, error: error });
     }
   }
   const getRadiologists = async () => {
+    let error = state.error;
     try {
       const response = await fetchRadiologists();
       const response_data = response?.data;
 
       if (response_data.result.status == 'NG') {
-        setErrors({ ...errors, fatal: response_data.result.msg });
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
       } else if (Utils.isObjectEmpty(response_data.data)) {
         // Get data from image and set to
         //setRadiologistList(response_data.data);
-        setErrors({ ...errors, fatal: t('There is no any radiologist. Please contact your administrator.') });
+        error.fatal = t('There is no any radiologist. Please contact your administrator.');
+        setState({ ...state, error: error });
       } else {
         let newList = [];
 
         response_data.data.map(item => (newList.push({ value: item.id, label: item.fullname })));
         setRadiologistList(newList);
       }
-    } catch (error: any) {
-      console.log(error);
-      setErrors({ ...errors, fatal: error });
+    } catch (err: any) {
+      console.log(err);
+      error.fatal = err;
+      setState({ ...state, error: error });
     }
   }
   // const clearState = () => {
@@ -288,10 +300,15 @@ const ReportComponent = ({ props }) => {
     window.close();
   };
 
+  const onClearError = (event) => {
+    // Clear error
+    let error = ReportUtils.initEmptyReportError();
+    setState({ ...state, error: error });
+  }
+
   const onEditReport = (event) => {
-    reportData.status = Constants.DRAFT
-    // Update status
-    setReportData(reportData);
+    // Update status and the sreen auto reload
+    setReportData(reportData => ({ ...reportData, status: Constants.DRAFT }));
   }
   const onApprove = (event) => {
     // Final status
@@ -308,6 +325,9 @@ const ReportComponent = ({ props }) => {
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
     let isError = validate();
+
+    setInfo('');
+    setShowElement(true);
 
     // If no error (error = empty)
     if (!isError) {
@@ -341,7 +361,7 @@ const ReportComponent = ({ props }) => {
     // Set number of time showing information message, 3s
     setTimeout(function () {
       setShowElement(false)
-    }, 5000);
+    }, 3000);
   }
 
   // const isDisabled = () => {
@@ -352,16 +372,12 @@ const ReportComponent = ({ props }) => {
   //   return true;
   // }
 
-  // const setEmptyError = () => {
-  //   setErrors({ ...errors, system: "" });
-  //   setErrors({ ...errors, findings: "" });
-  //   setErrors({ ...errors, conclusion: "" });
-  //   setErrors({ ...errors, radiologist: "" });
-  // }
+
   const onCreateReport = async (event, data) => {
+    let error = state.error;
     event.preventDefault();
 
-    setInfo('')
+
     console.log(data);
 
     try {
@@ -371,8 +387,8 @@ const ReportComponent = ({ props }) => {
       const response_data = response.data;
 
       if (response_data.result.status == 'NG') {
-        setErrors({ ...errors, system: response_data.result.msg });
-
+        error.system = response_data.result.msg;
+        setState({ ...state, error: error });
       } else {
         let info_msg = 'The report is saved as draft'
         if (data.status === Constants.FINAL)
@@ -382,14 +398,16 @@ const ReportComponent = ({ props }) => {
         // Set latest report
         setReportData(response_data.data);
       }
-    } catch (error) {
+    } catch (err) {
       // handle error
-      console.log(error);
-      setErrors({ ...errors, system: error });
+      console.log(err);
+      error.system = err;
+      setState({ ...state, error: error });
     }
   }
 
   const onUpdateReport = async (event, id, data) => {
+    let error = state.error;
     event.preventDefault();
 
     setInfo('')
@@ -401,7 +419,8 @@ const ReportComponent = ({ props }) => {
       const response_data = response.data;
 
       if (response_data.result.status == 'NG') {
-        setErrors({ ...errors, system: response_data.result.msg });
+        error.system = response_data.result.msg;
+        setState({ ...state, error: error });
 
       } else {
         let info_msg = 'The report is updated as draft'
@@ -412,15 +431,20 @@ const ReportComponent = ({ props }) => {
         // Set latest report
         setReportData(response_data.data);
       }
-    } catch (error) {
+    } catch (err) {
       // handle error
-      console.log(error);
-      setErrors({ ...errors, system: error });
+      console.log(err);
+      error.system = err;
+      setState({ ...state, error: error });
     }
   }
 
+
   const validate = () => {
-    setErrors(emptyError);
+    // Reset error to empty
+    let error = ReportUtils.initEmptyReportError();
+    setState({ ...state, error: error });
+
     let isError = false;
 
     const findings = reportData.findings;
@@ -430,18 +454,23 @@ const ReportComponent = ({ props }) => {
 
     // Check conclusion
     if (Utils.isEmpty(findings)) {
-      setErrors({ ...errors, findings: t('{0} is required').replace('{0}', item) });
+      error.findings = t('{0} is required').replace('{0}', item);
+      setState({ ...state, error: error });
+
       isError = true;
     }
     if (Utils.isEmpty(conclusion)) {
       item = t('Conclusion');
-      setErrors({ ...errors, conclusion: t('{0} is required').replace('{0}', item) });
+      error.conclusion = t('{0} is required').replace('{0}', item);
+      setState({ ...state, error: error });
+
       isError = true;
     }
 
-    if (Utils.isEmpty(selectedRadiologist)) {
+    if (Utils.isEmpty(selectedRadiologist.value)) {
       item = t('Radiologist');
-      setErrors({ ...errors, radiologist: t('{0} is required').replace('{0}', item) });
+      error.radiologist = t('{0} is required').replace('{0}', item);
+      setState({ ...state, error: error });
       isError = true;
     }
 
@@ -476,7 +505,7 @@ const ReportComponent = ({ props }) => {
                   size={ButtonEnums.size.medium}
                   disabled={!ReportUtils.isPrintEnabled(reportData.status)}
                   startIcon={
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg>
                   }
                 >
                   {t('Print Preview')}
@@ -489,36 +518,36 @@ const ReportComponent = ({ props }) => {
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style={{ fill: 'none' }} className="lucide lucide-square-check-big"><path d="m9 11 3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-square-check-big"><path d="m9 11 3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
               }
               onClick={onApprove}
               className={'text-[13px]'}
               style={{ fill: 'none' }}
-              disabled={!ReportUtils.isApproveEnabled(reportData.status, errors.fatal)}
+              disabled={!ReportUtils.isApproveEnabled(reportData.status, state.error.fatal)}
             >
               {t('Approve')}
             </Button>
-            <Button
+            {/* <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
               }
               onClick={onEditReport}
               className={'text-[13px]'}
               disabled={!ReportUtils.isEditEnabled(reportData.status)}
             >
               {t('Edit')}
-            </Button>
+            </Button> */}
             <Button
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
               }
               onClick={onSave}
               className={'text-[13px]'}
-              disabled={!ReportUtils.isSaveEnabled(reportData.status)}
+              disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
             >
               {t('Save as Draft')}
             </Button>
@@ -526,7 +555,7 @@ const ReportComponent = ({ props }) => {
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
               }
               onClick={onClose}
               className={'text-[13px]'}
@@ -552,6 +581,7 @@ const ReportComponent = ({ props }) => {
           }}
         >
           <div className="w-full text-white p-2 mt-2">
+
             <div className='text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
@@ -732,21 +762,22 @@ const ReportComponent = ({ props }) => {
         <div className="mr-2 main-container flex h-full flex-1 flex-col">
           <div className="flex flex-row w-full">
             <div className="flex flex-col text-left w-full">
-              {!ReportUtils.isReportErrorEmpty(errors) && (<div role="alert">
-                <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2">
-                  {t('Error')}
+              {!ReportUtils.isReportErrorEmpty(state.error) && (<div role="alert" className="ml-2 mr-2">
+                <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2 flex justify-between">
+                  <div>{t('Error')}</div>
+                  {/* <div onClick={onClearError} style={{ cursor: 'pointer' }}><svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg></div> */}
                 </div>
                 <div className="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
                   <ul className="list-disc">
-                    {!Utils.isEmpty(errors.fatal) && (<li>{errors.fatal}</li>)}
-                    {!Utils.isEmpty(errors.system) && (<li>{errors.system}</li>)}
-                    {!Utils.isEmpty(errors.radiologist) && (<li>{errors.radiologist}</li>)}
-                    {!Utils.isEmpty(errors.findings) && (<li>{errors.findings}</li>)}
-                    {!Utils.isEmpty(errors.conclusion) && (<li>{errors.conclusion}</li>)}
+                    {!Utils.isEmpty(state.error.fatal) && (<li>{state.error.fatal}</li>)}
+                    {!Utils.isEmpty(state.error.system) && (<li>{state.error.system}</li>)}
+                    {!Utils.isEmpty(state.error.radiologist) && (<li>{state.error.radiologist}</li>)}
+                    {!Utils.isEmpty(state.error.findings) && (<li>{state.error.findings}</li>)}
+                    {!Utils.isEmpty(state.error.conclusion) && (<li>{state.error.conclusion}</li>)}
                   </ul>
                 </div>
               </div>)}
-              {!Utils.isEmpty(info) && showElement && (<div className="flex items-center border border-t-0 border-blue-500 rounded bg-blue-500 px-4 py-3 text-white" role="alert">
+              {(!Utils.isEmpty(info) && showElement) && (<div className="ml-2 mr-2 flex items-center border border-t-0 border-blue-500 rounded bg-blue-500 px-4 py-3 text-white" role="alert">
                 <svg className="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.432 0c1.34 0 2.01.912 2.01 1.957 0 1.305-1.164 2.512-2.679 2.512-1.269 0-2.009-.75-1.974-1.99C9.789 1.436 10.67 0 12.432 0zM8.309 20c-1.058 0-1.833-.652-1.093-3.524l1.214-5.092c.211-.814.246-1.141 0-1.141-.317 0-1.689.562-2.502 1.117l-.528-.88c2.572-2.186 5.531-3.467 6.801-3.467 1.057 0 1.233 1.273.705 3.23l-1.391 5.352c-.246.945-.141 1.271.106 1.271.317 0 1.357-.392 2.379-1.207l.6.814C12.098 19.02 9.365 20 8.309 20z" /></svg>
                 <p>{info}</p>
               </div>
@@ -779,6 +810,7 @@ const ReportComponent = ({ props }) => {
                           config={editorConfig}
                           data={reportData.findings}
                           onChange={onChangeFindings}
+                          disabled={ReportUtils.isEditorDisabled(state.error.fatal)}
                         />}
                       </div>
                     </div>
@@ -811,6 +843,7 @@ const ReportComponent = ({ props }) => {
                           config={editorConfig}
                           data={reportData.conclusion}
                           onChange={onChangeConclusion}
+                          disabled={ReportUtils.isEditorDisabled(state.error.fatal)}
                         />}</div>
                     </div>
                   </div>

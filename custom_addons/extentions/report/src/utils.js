@@ -83,6 +83,11 @@ const formatDate = (dob) => {
     return dob;
   }
 };
+const getImageUrl = (name) => {
+  //return new URL(`../assets/signs/$name`, import.meta.url).href;
+  return new URL(name, import.meta.url).href;
+};
+
 export default {
   html2text: html2text,
   fetchData: fetchData,
@@ -92,4 +97,5 @@ export default {
   getFullGender_vn: getFullGender_vn,
   getFullModalityType: getFullModalityType,
   formatDate: formatDate,
+  getImageUrl: getImageUrl,
 }
