@@ -66,11 +66,24 @@
   /* Khoảng cách bên phải */
 }
 
+.footerPDF {
+  position: absolute;
+  bottom: 0;
+  width: 110%;
+  margin-right: 10px;
+  transform: translateX(-20px);
+}
+
 .container {
   width: 1200px;
-  /* Điều chỉnh độ rộng theo ý muốn */
   margin: 0 auto;
   font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.page-break {
+  page-break-before: always;
+  /* Ngắt trang trước khi phần tử này xuất hiện */
 }
 
 h1 {
@@ -143,8 +156,8 @@ h1 {
   position: absolute;
   display: flex;
   align-items: center;
-  left: 65px;
-  bottom: 100px;
+  left: 30px;
+  bottom: 30px;
 }
 
 body {
@@ -152,27 +165,29 @@ body {
 }
 
 .container {
-  width: 98%;
-  margin: 0 auto;
+  width: auto;
 }
 
 .header {
   display: flex;
   align-items: center;
+  /* justify-content: space-between; */
   margin-top: 25px;
+  /* transform: translateX(-40px); */
 }
 
 .header img {
   width: 100px;
-  /* height: 50px; */
-  margin-left: 10px;
+  /* height: 25%; */
 }
 
 .clinic-info {
   display: flex;
   flex-direction: column;
   text-align: center;
+  flex-grow: 1;
   margin-left: 50px;
+  /* transform: translateX(105px); */
 }
 
 .clinic-info h2 {
@@ -180,18 +195,28 @@ body {
   font-weight: bold;
 }
 
+.clinic-info h4 {
+  width: 100%;
+}
+
+.clinic-info h5 {
+  width: 100%;
+}
+
 .title-barcode {
+  margin-top: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .title {
+
   position: relative;
   font-weight: bold;
   font-size: 23px;
-  margin-right: 30px;
-  margin-left: 30px;
+  margin-right: 35px;
+  margin-left: 80px;
 }
 
 .barcode {
@@ -201,17 +226,39 @@ body {
 }
 
 .patient-info {
-  margin-left: 20px;
+  transform: translateX(-40px);
 }
 
 .patient-info div {
   display: flex;
   align-items: baseline;
-  margin-bottom: 7px;
+  justify-content: space-between;
+}
+
+.tranformX {
+  transform: translateX(50px);
+}
+
+.tranformSDT {
+  transform: translateX(50px);
+  white-space: nowrap;
 }
 
 .bold {
   font-weight: bold;
+}
+
+.sign {
+  position: absolute;
+  bottom: 10px;
+  right: 50px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.sign img {
+  margin-top: 0px;
 }
 
 .red {
@@ -234,13 +281,16 @@ body {
 
 .findings {
   line-height: 1.5;
-  /* Tăng khoảng cách giữa các dòng */
+  width: calc(100% + 80px);
+  margin-bottom: 20px;
+  text-align: justify;
 }
 
 .findings br {
   margin-bottom: 10px;
   /* Khoảng cách giữa các dòng khi sử dụng thẻ <br/> */
 }
+
 
 .bg-red-500 {
   background-color: #fe615a;

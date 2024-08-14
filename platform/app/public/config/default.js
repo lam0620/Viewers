@@ -74,9 +74,12 @@ window.config = {
         // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
         // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
 
-        wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
-        qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
-        wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        // wadoUriRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/wado',
+        // qidoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        // wadoRoot: 'https://cdha.viethealthcareclinic.com/dicomweb/VHC/rs',
+        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
+        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
 
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',

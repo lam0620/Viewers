@@ -186,8 +186,10 @@ const ReportComponent = ({ props }) => {
   const [reportData, setReportData] = useState(emptyReportData)
 
   const [radiologistList, setRadiologistList] = useState({});
-
   const [selectedRadiologist, setSelectedRadiologist] = useState({ value: "", label: t('-------- Select --------') });
+
+  const [procedureList, setProcedureList] = useState({})
+  const [selectedProcedure, setSelectedProcedure] = useState({ value: "", label: "" });
 
   const [info, setInfo] = useState('');
   const [state, setState] = useState(emptyError);
@@ -220,6 +222,8 @@ const ReportComponent = ({ props }) => {
     if (Utils.isEmpty(accession)) {
       error.fatal = t('Incorrect data! Please close and open the report again');
       setState({ ...state, error: error });
+
+      return;
     }
     try {
       const response = await fetchOrder(accession);
@@ -238,12 +242,13 @@ const ReportComponent = ({ props }) => {
         setState({ ...state, error: error });
 
       } else {
+        let proceList = [];
         response_data.data.procedures.map((procedure, index) => {
           // Get report of current studyInstanceUid
-          if (procedure.study_iuid === study_iuid) {
+          if (!Utils.isObjectEmpty(procedure.report) && procedure.study_iuid === study_iuid) {
             let report = procedure.report;
             report.procedure = {
-              "id": procedure.proc_id, // procedure
+              "proc_id": procedure.proc_id, // procedure
               "code": procedure.code, // procedure_type
               "name": procedure.name// procedure_type
             }
@@ -253,9 +258,20 @@ const ReportComponent = ({ props }) => {
             if (report.id) {
               // Add current value to selectedRadiologist
               setSelectedRadiologist({ value: report.radiologist.id, label: report.radiologist.fullname });
+              setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
             }
           }
+          // No report yet
+          proceList.push({ value: procedure.proc_id, label: procedure.name })
+
         });
+
+        // Set to procedure list
+        setProcedureList(proceList);
+        // If no select procedure yet, Set selected item = first item
+        if (Utils.isEmpty(selectedProcedure.value) && proceList.length > 0) {
+          setSelectedProcedure(proceList[0]);
+        }
         setOrderData(response_data.data);
       }
 
@@ -340,8 +356,8 @@ const ReportComponent = ({ props }) => {
           "findings": reportData.findings,
           "conclusion": reportData.conclusion,
           "status": status,
-          "radiologist_id": reportData.radiologist.id,
-          "procedure_id": reportData.procedure.id
+          "radiologist_id": selectedRadiologist.value,
+          "procedure_id": selectedProcedure.value
         }
 
         // Create
@@ -364,21 +380,13 @@ const ReportComponent = ({ props }) => {
     }, 3000);
   }
 
-  // const isDisabled = () => {
-  //   // If no system error
-  //   if (Utils.isEmpty(errors.system)) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
 
   const onCreateReport = async (event, data) => {
+    console.log(data);
+
     let error = state.error;
     event.preventDefault();
 
-
-    console.log(data);
 
     try {
       // Call Rest API
@@ -400,18 +408,21 @@ const ReportComponent = ({ props }) => {
       }
     } catch (err) {
       // handle error
-      console.log(err);
-      error.system = err;
+      console.log(err.response.data.result);
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      error.system = msg;
       setState({ ...state, error: error });
     }
   }
 
   const onUpdateReport = async (event, id, data) => {
+    console.log(data);
+
     let error = state.error;
     event.preventDefault();
 
-    setInfo('')
-    console.log(data);
+    //setInfo('')
+
 
     try {
       const response = await updateReport(id, data);
@@ -433,8 +444,9 @@ const ReportComponent = ({ props }) => {
       }
     } catch (err) {
       // handle error
-      console.log(err);
-      error.system = err;
+      console.log(err.response.data.result);
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      error.system = msg;
       setState({ ...state, error: error });
     }
   }
@@ -467,6 +479,7 @@ const ReportComponent = ({ props }) => {
       isError = true;
     }
 
+    // Check selected radiologist
     if (Utils.isEmpty(selectedRadiologist.value)) {
       item = t('Radiologist');
       error.radiologist = t('{0} is required').replace('{0}', item);
@@ -474,6 +487,13 @@ const ReportComponent = ({ props }) => {
       isError = true;
     }
 
+    // Check selected procedure
+    if (Utils.isEmpty(selectedProcedure.value)) {
+      item = t('Procedure');
+      error.radiologist = t('{0} is required').replace('{0}', item);
+      setState({ ...state, error: error });
+      isError = true;
+    }
     return isError;
   };
 
@@ -489,6 +509,10 @@ const ReportComponent = ({ props }) => {
 
   const onChangeRadiologistHandler = (value) => {
     setSelectedRadiologist(value);
+  };
+
+  const onChangeProcedureHandler = (value) => {
+    setSelectedProcedure(value);
   };
 
 
@@ -588,10 +612,10 @@ const ReportComponent = ({ props }) => {
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col p-2 text-right w-full">
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('Patient Name')}
                         </Typography>
 
@@ -599,39 +623,39 @@ const ReportComponent = ({ props }) => {
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {orderData.patient.fullname}
                         </Typography>
                       </div>
                     </div>
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('PID')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {orderData.patient.pid}
                         </Typography>
                       </div>
                     </div>
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('DOB')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {Utils.formatDate(orderData.patient.dob)}
                         </Typography>
                       </div>
@@ -648,66 +672,80 @@ const ReportComponent = ({ props }) => {
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col p-2 text-right w-full">
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('ACN')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {orderData.accession_no}
                         </Typography>
                       </div>
                     </div>
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('Procedure')}
                         </Typography>
                       </div>
-                      <div className="flex flex-col">
+                      {ReportUtils.isFinalReport(reportData.status) && (<div className=" flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
-                          {orderData.procedures[0].name}
+                          className='text-primary-light pl-0 text-right'>
+                          {reportData.procedure.name}
                         </Typography>
                       </div>
+                      )}
+
+                      {!ReportUtils.isFinalReport(reportData.status) && (<div className="flex flex-col">
+                        <div className="flex flex-col w-56">
+                          <Select
+                            isClearable={false}
+                            onChange={onChangeProcedureHandler}
+                            options={procedureList}
+                            value={selectedProcedure}
+                            isDisabled={Utils.isObjectEmpty(procedureList)}
+                          />
+                        </div>
+                      </div>
+                      )}
                     </div>
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('Indication')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {orderData.clinical_diagnosis}
                         </Typography>
                       </div>
                     </div>
 
                     <div className="mb-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
+                          className='font-semibold text-primary-light w-full text-left'>
                           {t('Ordering Physician')}
                         </Typography>
                       </div>
                       <div className="flex flex-col">
                         <Typography
                           variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
+                          className='text-primary-light pl-0 text-right'>
                           {orderData.req_phys_name}
                         </Typography>
                       </div>
@@ -725,7 +763,7 @@ const ReportComponent = ({ props }) => {
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col text-right w-full">
                     <div className="p-2 flex flex-row justify-between">
-                      <div className="flex flex-col items-center">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
                           className='font-semibold text-primary-light w-full text-right'>
@@ -746,6 +784,7 @@ const ReportComponent = ({ props }) => {
                           onChange={onChangeRadiologistHandler}
                           options={radiologistList}
                           value={selectedRadiologist}
+                          isDisabled={Utils.isObjectEmpty(radiologistList)}
                         />
 
                       </div>)}
@@ -756,10 +795,10 @@ const ReportComponent = ({ props }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div >
 
         {/* Right panel - Findigs/Conclusion*/}
-        <div className="mr-2 main-container flex h-full flex-1 flex-col">
+        < div className="mr-2 main-container flex h-full flex-1 flex-col" >
           <div className="flex flex-row w-full">
             <div className="flex flex-col text-left w-full">
               {!ReportUtils.isReportErrorEmpty(state.error) && (<div role="alert" className="ml-2 mr-2">
@@ -853,15 +892,17 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
 
-          {ReportUtils.isFinalReport(reportData.status) && (<div style={{ display: 'none' }}>
-            <PdfComponent
-              ref={componentRef}
-              orderData={orderData}
-              reportData={reportData}
-            />
-          </div>
-          )}
-        </div>
+          {
+            ReportUtils.isFinalReport(reportData.status) && (<div style={{ display: 'none' }}>
+              <PdfComponent
+                ref={componentRef}
+                orderData={orderData}
+                reportData={reportData}
+              />
+            </div>
+            )
+          }
+        </div >
       </div >
     </>
   );
