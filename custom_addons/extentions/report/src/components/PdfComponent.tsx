@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode.react';
 import logo from '../../assets/images/logo.png';
-
+import './PdfComponent.css';
 import Utils from '../utils';
 
 interface PDFReportComponentProps {
@@ -39,16 +39,26 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
     setSign(image.default)
   );
 
+  const margin = "40px";
+  const marginTop = "20px"
+  const marginBottom = "30px"
+  const getPageMargins = () => {
+    return `@page { margin: ${marginTop} ${margin} ${marginBottom} ${margin} !important; }`;
+    //return `@page {size: A4}`;
+  };
+
   return (
     <>
-      <div className="container" id="pdf-report" ref={ref} style={{ fontSize: 'calc(100%-2px)' }}>
+      <div className="print-section border" id="pdf-report" ref={ref}>
+        <style>{getPageMargins()}</style>
+
         {/* Header */}
         <div className="header">
           <img src={logo} alt="Logo" />
-          <div className="clinic-info">
-            <h3 style={{ color: 'red', fontWeight: 'bold' }}>PHÒNG KHÁM ĐA KHOA QUỐC TẾ VIỆT HEALTHCARE</h3>
-            <p style={{ fontSize: '12px' }}>16 - 18 Lý Thường Kiệt, Phường 7, Quận 10, Tp. Hồ Chí Minh</p>
-            <p style={{ fontSize: '13px' }}>Hotline: 09 0133 0133 - 028 9999 2899</p>
+          <div className="clinic-info mt-0">
+            <h3 className="text-red-500 font-bold">PHÒNG KHÁM ĐA KHOA VIỆT GIA</h3>
+            <p style={{ fontSize: '12px' }}>166 Nguyễn Văn Thủ, ĐaKao, Quận 1, Tp.Hồ Chí Minh</p>
+            <p style={{ fontSize: '13px' }}>Hotline: 028 39 115 115 - 028 39 115 116</p>
           </div>
         </div>
         <div className="title-barcode">
@@ -63,49 +73,52 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
           </div>
         </div>
 
+
         {/* Body */}
         <div className="patient-info">
           <div>
-            <p>Họ tên: <span className="bold">{orderData.patient.fullname}</span></p>
-            <p style={{ marginLeft: '80px' }}>Năm sinh: <span className="bold">{Utils.formatDate(orderData.patient.dob)}</span></p>
-            <p style={{ marginLeft: '80px' }}>Giới tính: <span className="bold">{Utils.getFullGender_vn(orderData.patient.gender)}</span></p>
+            <p>Họ tên: <span className="font-semibold">{orderData.patient.fullname}</span></p>
+            <p>Năm sinh: <span className="font-semibold">{Utils.formatDate(orderData.patient.dob)}</span></p>
+            <p>Giới tính: <span className="font-semibold">{Utils.getFullGender_vn(orderData.patient.gender)}</span></p>
           </div>
           <div>
-            <p style={{ marginRight: '20px' }}>Địa chỉ: {orderData.patient.address}</p>
-            <p className='tranformSDT'>Điện thoại: {orderData.patient.tel}</p>
+            <p>Địa chỉ: {orderData.patient.address}</p>
+            <p>Điện thoại: {orderData.patient.tel}</p>
           </div>
           <p>Chẩn đoán: {orderData.clinical_diagnosis}</p>
           <p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>
-          <p className="red">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
-          <p className="red mt-4">MÔ TẢ HÌNH ẢNH:</p>
-          <p className="findings" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>
-          <p className="red mt-4">Kết luận:</p>
-          <p className="findings" dangerouslySetInnerHTML={{ __html: reportData.conclusion }}></p>
+          <p className="text-red-600">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
+          <p className="text-red-600 mt-4">MÔ TẢ HÌNH ẢNH:</p>
+          <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>
+          <p className="text-red-600 mt-4">Kết luận:</p>
+          <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.conclusion }}></p>
         </div>
+
         {/* Footer */}
         <div className='page-break'></div>
-        <div className='footerPDF'>
-          <div className='flex justify-between'>
-            <div className="qrcode">
-              <QRCode
-                value={imageUrl}
-                imageSettings={{
-                  src: logo,
-                  excavate: true,
-                  height: 25,
-                  width: 25
-                }}
-              />
-            </div>
-            <div>
-              <div className='sign'>
-                <p>Ngày {day} tháng {month} năm {year}</p>
-                <p style={{ fontWeight: 'bold' }}>Bác sĩ</p>
+        <div className='footer flex justify-between'>
+          <div className="qrcode">
+            <QRCode
+              value={imageUrl}
+              imageSettings={{
+                src: logo,
+                excavate: true,
+                height: 25,
+                width: 25
+              }}
+            />
+          </div>
+          <div>
+            <div className='sign text-center mr-4 border'>
+              <p>Ngày {day} tháng {month} năm {year}</p>
+              <p className='font-semibold'>Bác sĩ</p>
+              <div className="flex justify-center">
                 <img src={sign} alt='Sign' />
-                <p className="bold">{reportData.radiologist.title}. {reportData.radiologist.fullname}</p>
               </div>
+              <p className='font-semibold'>{reportData.radiologist.title}. {reportData.radiologist.fullname}</p>
             </div>
           </div>
+
         </div>
       </div >
     </>
