@@ -845,7 +845,7 @@ const ReportComponent = ({ props }) => {
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="flex flex-col p-2">
+                  <div className="flex flex-col mt-2">
                     <Typography
                       variant="subtitle"
                       className='text-primary-light pl-0 text-left'>
@@ -880,7 +880,7 @@ const ReportComponent = ({ props }) => {
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="flex flex-col p-2">
+                  <div className="flex flex-col mt-2">
                     <Typography
                       variant="subtitle"
                       className='text-primary-light pl-0 text-left'>

@@ -394,11 +394,13 @@ function WorkList({
 
               query.append('StudyInstanceUIDs', studyInstanceUid);
               return (
-                mode.displayName && (
+                // Hide buttons: "Total Metabolic Tumor Volume", "Microscopy", "4D PT/CT"
+                // mode.displayName && (
+                !["tmtv", "microscopy", "dynamic-volume", "report"].includes(mode.routeName) && (
                   <Link
                     className={isValidMode ? '' : 'cursor-not-allowed'}
                     key={i}
-                    target={mode.routeName == 'report' ? '_blank' : '_self'}
+                    target={'_self'}
                     to={`${dataPath ? '../../' : ''}${mode.routeName}${dataPath || ''
                       }?${query.toString()}`}
                     onClick={event => {
@@ -423,12 +425,10 @@ function WorkList({
                         ) : null
                       }
                       startIcon={
-                        mode.routeName == 'report' ?
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
-                          : <Icon
-                            className="!h-[20px] !w-[20px] text-black"
-                            name={isValidMode ? 'launch-arrow' : 'launch-info'}
-                          />
+                        <Icon
+                          className="!h-[20px] !w-[20px] text-black"
+                          name={isValidMode ? 'launch-arrow' : 'launch-info'}
+                        />
                       } // launch-arrow | launch-info
                       onClick={() => { }}
                       dataCY={`mode-${mode.routeName}-${studyInstanceUid}`}
@@ -440,6 +440,29 @@ function WorkList({
                 )
               );
             })}
+
+            {/* Start -- Report */}
+            <Link
+              className={'ml-6'}
+              target={'_blank'}
+              to={`${dataPath ? '../../' : ''}report${dataPath || ''
+                }?StudyInstanceUIDs=${studyInstanceUid}&acn=${accession}`}
+              onClick={event => {
+              }}
+            >
+              <Button
+                type={ButtonEnums.type.primary}
+                size={ButtonEnums.size.medium}
+                startIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
+                }
+                onClick={() => { }}
+                dataCY={`mode-report-${studyInstanceUid}`}
+                className={'text-[13px]'}
+              >
+                {t('Report')}
+              </Button>
+            </Link>
 
             {/* Start -- Download */}
             {/* Fix at \extensions\download\src\commandsModule.tsx too */}
