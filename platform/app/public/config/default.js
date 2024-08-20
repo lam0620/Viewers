@@ -75,7 +75,6 @@ window.config = {
         // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
 
 
-
         wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
         qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
         wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',

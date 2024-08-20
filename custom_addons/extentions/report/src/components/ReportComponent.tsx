@@ -524,7 +524,7 @@ const ReportComponent = ({ props }) => {
           <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform flex gap-2'>
             <ReactToPrint
               trigger={() => (
-                <Button
+                <Button className={'button-class'}
                   type={ButtonEnums.type.primary}
                   size={ButtonEnums.size.medium}
                   disabled={!ReportUtils.isPrintEnabled(reportData.status)}
@@ -538,7 +538,7 @@ const ReportComponent = ({ props }) => {
               content={() => componentRef.current}
             />
             {/* Icons: https://lucide.dev/icons */}
-            <Button
+            <Button className={'button-class'}
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -551,7 +551,7 @@ const ReportComponent = ({ props }) => {
             >
               {t('Approve')}
             </Button>
-            {/* <Button
+            {/* <Button className={'button-class'}
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -563,7 +563,7 @@ const ReportComponent = ({ props }) => {
             >
               {t('Edit')}
             </Button> */}
-            <Button
+            <Button className={'button-class'}
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -575,7 +575,7 @@ const ReportComponent = ({ props }) => {
             >
               {t('Save as Draft')}
             </Button>
-            <Button
+            <Button className={'button-class'}
               type={ButtonEnums.type.primary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -590,27 +590,25 @@ const ReportComponent = ({ props }) => {
           </div>
         </div>
       </div>
-      <div className='relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto bg-black'
+      <div className='body relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto bg-black'
         style={{ height: 'calc(100vh - 52px' }}
       >
         {/* Left panel */}
-        <div className='transition-all duration-300 ease-in-out bg-black border-r border-black justify-start box-content flex flex-col mr-1'
+        <div className='body-left transition-all duration-300 ease-in-out bg-black border-r border-black justify-start box-content flex flex-col mr-1'
           style={{
-            marginLeft: '0px',
-            maxWidth: '448px',
-            width: '448px',
-            position: 'relative',
-            // top: '0.2%',
-            // height: '99.8%'
+            // marginLeft: '0px',
+            // maxWidth: '448px',
+            // width: '448px',
+            // position: 'relative',
           }}
         >
           <div className="w-full text-white p-2 mt-2">
 
-            <div className='text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
+            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
-                  <div className="flex flex-col p-2 text-right w-full">
+                  <div className="flex flex-col mt-2 text-right w-full">
                     <div className="mb-2 flex flex-row justify-between">
                       <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
@@ -666,11 +664,11 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
           <div className="w-full text-white p-2">
-            <div className='text-blue-300' style={{ fontSize: '17px' }}>{t('Order Information')}</div>
+            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Order Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
-                  <div className="flex flex-col p-2 text-right w-full">
+                  <div className="flex flex-col mt-2 text-right w-full">
                     <div className="mb-2 flex flex-row justify-between">
                       <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
@@ -757,12 +755,29 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
           <div className="w-full text-white p-2">
-            <div className='text-blue-300' style={{ fontSize: '17px' }}>{t('Report Information')}</div>
+            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Report Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col text-right w-full">
-                    <div className="p-2 flex flex-row justify-between">
+                    <div className="mt-2 flex flex-row justify-between">
+                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
+                        <Typography
+                          variant="subtitle"
+                          className='font-semibold text-primary-light w-full text-left'>
+                          {t('Status')}
+                        </Typography>
+                      </div>
+                      <div className="flex flex-col">
+                        <Typography
+                          variant="subtitle"
+                          className={`pl-0 text-right ${ReportUtils.getStatusStyle(reportData.status)}`}>
+                          {t(ReportUtils.getStatusFull(reportData.status))}
+                        </Typography>
+                      </div>
+                    </div>
+
+                    <div className="mt-2 flex flex-row justify-between">
                       <div className=" flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
@@ -798,7 +813,7 @@ const ReportComponent = ({ props }) => {
         </div >
 
         {/* Right panel - Findigs/Conclusion*/}
-        < div className="mr-2 main-container flex h-full flex-1 flex-col" >
+        < div className="body-right mr-2 main-container flex h-full flex-1 flex-col" >
           <div className="flex flex-row w-full">
             <div className="flex flex-col text-left w-full">
               {!ReportUtils.isReportErrorEmpty(state.error) && (<div role="alert" className="ml-2 mr-2">
@@ -817,7 +832,7 @@ const ReportComponent = ({ props }) => {
                 </div>
               </div>)}
               {(!Utils.isEmpty(info) && showElement) && (<div className="ml-2 mr-2 flex items-center border border-t-0 border-blue-500 rounded bg-blue-500 px-4 py-3 text-white" role="alert">
-                <svg className="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.432 0c1.34 0 2.01.912 2.01 1.957 0 1.305-1.164 2.512-2.679 2.512-1.269 0-2.009-.75-1.974-1.99C9.789 1.436 10.67 0 12.432 0zM8.309 20c-1.058 0-1.833-.652-1.093-3.524l1.214-5.092c.211-.814.246-1.141 0-1.141-.317 0-1.689.562-2.502 1.117l-.528-.88c2.572-2.186 5.531-3.467 6.801-3.467 1.057 0 1.233 1.273.705 3.23l-1.391 5.352c-.246.945-.141 1.271.106 1.271.317 0 1.357-.392 2.379-1.207l.6.814C12.098 19.02 9.365 20 8.309 20z" /></svg>
+                <svg className="fill-current w-4 h-3 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.432 0c1.34 0 2.01.912 2.01 1.957 0 1.305-1.164 2.512-2.679 2.512-1.269 0-2.009-.75-1.974-1.99C9.789 1.436 10.67 0 12.432 0zM8.309 20c-1.058 0-1.833-.652-1.093-3.524l1.214-5.092c.211-.814.246-1.141 0-1.141-.317 0-1.689.562-2.502 1.117l-.528-.88c2.572-2.186 5.531-3.467 6.801-3.467 1.057 0 1.233 1.273.705 3.23l-1.391 5.352c-.246.945-.141 1.271.106 1.271.317 0 1.357-.392 2.379-1.207l.6.814C12.098 19.02 9.365 20 8.309 20z" /></svg>
                 <p>{info}</p>
               </div>
               )}

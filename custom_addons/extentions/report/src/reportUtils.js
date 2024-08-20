@@ -61,3 +61,27 @@ export const isEditorDisabled = (fatalErr) => {
   }
   return false;
 }
+
+export const getStatusFull = (status) => {
+  let statusText = "Not yet";
+  if (status === 'D') {
+    statusText = 'Draft';
+  } else if (status === 'F') {
+    statusText = 'Final';
+  } else if (status === 'C') {
+    statusText = 'Final';
+  }
+  return statusText;
+}
+
+export const getStatusStyle = (status) => {
+  let statusText = "text-gray-500";
+  if (status === 'D') {
+    statusText = 'text-blue-400';
+  } else if (status === 'F') {
+    statusText = 'text-green-500';
+  } else if (status === 'C') {
+    statusText = 'text-green-500';
+  }
+  return statusText;
+}

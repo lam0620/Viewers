@@ -41,7 +41,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
 
   const margin = "40px";
   const marginTop = "20px"
-  const marginBottom = "30px"
+  const marginBottom = "10px"
   const getPageMargins = () => {
     return `@page { margin: ${marginTop} ${margin} ${marginBottom} ${margin} !important; }`;
     //return `@page {size: A4}`;
@@ -56,20 +56,20 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
         <div className="header">
           <img src={logo} alt="Logo" />
           <div className="clinic-info mt-0">
-            <h3 className="text-red-500 font-bold">PHÒNG KHÁM ĐA KHOA VIỆT GIA</h3>
-            <p style={{ fontSize: '12px' }}>166 Nguyễn Văn Thủ, ĐaKao, Quận 1, Tp.Hồ Chí Minh</p>
-            <p style={{ fontSize: '13px' }}>Hotline: 028 39 115 115 - 028 39 115 116</p>
+            <h3 className="text-red-500 font-bold">{process.env.ORG_NAME}</h3>
+            <p style={{ fontSize: '12px' }}>{process.env.ORG_ADDR}</p>
+            <p style={{ fontSize: '12px' }}>Hotline: {process.env.ORG_TEL}</p>
           </div>
         </div>
-        <div className="title-barcode">
+        <div className="title-barcode border">
           <h1 className="title">PHIẾU KẾT QUẢ {Utils.getFullModalityType(orderData.modality_type)}</h1>
-          <div className="text-center mr-2">
+          <div className="text-center mr-2 border">
             <div className="barcode">
               <Barcode value={orderData.patient.pid} />
               {/* <Barcode value='1234' /> */}
 
             </div>
-            <div>{orderData.patient.pid}</div>
+            <div className='translateX'>{orderData.patient.pid}</div>
           </div>
         </div>
 
@@ -83,7 +83,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
           </div>
           <div>
             <p>Địa chỉ: {orderData.patient.address}</p>
-            <p>Điện thoại: {orderData.patient.tel}</p>
+            <p className='whitespace-nowrap'>Điện thoại: {orderData.patient.tel}</p>
           </div>
           <p>Chẩn đoán: {orderData.clinical_diagnosis}</p>
           <p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>
@@ -95,11 +95,11 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
         </div>
 
         {/* Footer */}
-        <div className='page-break'></div>
-        <div className='footer flex justify-between'>
-          <div className="qrcode">
+        <div className='footer flex justify-between items-end'>
+          <div className='mb-0 border'>
             <QRCode
               value={imageUrl}
+              className='mb-0'
               imageSettings={{
                 src: logo,
                 excavate: true,
@@ -109,11 +109,11 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
             />
           </div>
           <div>
-            <div className='sign text-center mr-4 border'>
+            <div className='text-center mr-4 mb-0 border'>
               <p>Ngày {day} tháng {month} năm {year}</p>
               <p className='font-semibold'>Bác sĩ</p>
               <div className="flex justify-center">
-                <img src={sign} alt='Sign' />
+                <img src={sign} alt='Sign' width='150' />
               </div>
               <p className='font-semibold'>{reportData.radiologist.title}. {reportData.radiologist.fullname}</p>
             </div>

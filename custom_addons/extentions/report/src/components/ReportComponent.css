@@ -2,276 +2,6 @@
   min-height: 200px;
 }
 
-/*
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.footer-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  position: relative;
-  bottom: 0;
-  left: 0;
-}
-
-.footer-left {
-  flex: 1;
-  text-align: left;
-  padding-left: 60px;
-}
-
-.footer-right {
-  flex: 1;
-  text-align: right;
-  padding-right: 60px;
-}
-
-.footerPDF {
-  position: absolute;
-  bottom: 0;
-  width: 110%;
-  margin-right: 10px;
-  transform: translateX(-20px);
-}
-
-.container {
-  width: 1200px;
-  margin: 0 auto;
-  font-family: Arial, sans-serif;
-  position: relative;
-}
-
-.page-break {
-  page-break-before: always;
-}
-
-h1 {
-  text-align: center;
-  font-size: 24px;
-}
-
-.patient-info {
-  margin-top: 20px;
-}
-
-.signature {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  text-align: center;
-}
-
-.a4-container {
-  width: 21cm;
-  height: 70cm;
-  background-color: white;
-  margin: 0 auto;
-  border: 1px solid black;
-  box-sizing: border-box;
-}
-
-.scrollable-container {
-  width: 100%;
-  height: 200px;
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 5px;
-}
-
-.scrollable-content {
-  height: 500px;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer p {
-  margin: 0;
-}
-
-.qrcode {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  left: 30px;
-  bottom: 30px;
-}
-
-body {
-  font-family: Arial, sans-serif;
-}
-
-.container {
-  width: auto;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  margin-top: 25px;
-}
-
-.header img {
-  width: 100px;
-}
-
-.clinic-info {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  flex-grow: 1;
-  margin-left: 50px;
-}
-
-.clinic-info h2 {
-  color: red;
-  font-weight: bold;
-}
-
-.clinic-info h4 {
-  width: 100%;
-}
-
-.clinic-info h5 {
-  width: 100%;
-}
-
-.title-barcode {
-  margin-top: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.title {
-
-  position: relative;
-  font-weight: bold;
-  font-size: 23px;
-  margin-right: 35px;
-  margin-left: 80px;
-}
-
-.barcode {
-  width: 160px;
-  height: 30px;
-  overflow: hidden;
-}
-
-.patient-info {
-  transform: translateX(-40px);
-}
-
-.patient-info div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.tranformX {
-  transform: translateX(50px);
-}
-
-.tranformSDT {
-  transform: translateX(50px);
-  white-space: nowrap;
-}
-
-.bold {
-  font-weight: bold;
-}
-
-.sign {
-  position: absolute;
-  bottom: 10px;
-  right: 50px;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.sign img {
-  margin-top: 0px;
-}
-
-.red {
-  color: red;
-  font-weight: bold;
-}
-
-.underline {
-  text-decoration: underline;
-}
-
-.footer {
-  position: absolute;
-  bottom: 160px;
-  right: 60px;
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-}
-
-.findings {
-  line-height: 1.5;
-  width: calc(100% + 80px);
-  margin-bottom: 20px;
-  text-align: justify;
-}
-
-.findings br {
-  margin-bottom: 10px;
-} */
-
 
 .bg-red-500 {
   background-color: #fe615a;
@@ -287,4 +17,71 @@ body {
 
 .border-blue-500 {
   border-color: rgb(59 130 246)
+}
+
+@media(min-width:1425px) {
+  .body {
+    display: flex;
+  }
+
+  .body-left {
+    height: auto;
+    width: 25%;
+  }
+
+  .body-right {
+    margin-left: 15px;
+    width: 70%;
+    height: auto;
+  }
+}
+
+@media(min-width:940px) {
+  .body {
+    display: flex;
+  }
+
+  .body-left {
+    height: auto;
+    margin-left: 0px;
+    max-width: auto;
+    width: 1000px;
+  }
+
+  .body-right {
+    width: auto;
+    height: auto;
+  }
+}
+
+@media(max-width:470px) {
+  .body {
+    display: block;
+  }
+
+  .body-left {
+    width: 100%;
+    height: auto;
+    margin-left: 0px;
+    max-width: auto;
+    width: auto;
+  }
+
+  .body-right {
+    width: 100%;
+    height: auto;
+  }
+}
+
+
+@media (min-width: 300px) and (max-width: 490px) {
+  .button-class {
+    padding: 2px;
+    font-size: 12px;
+  }
+
+  .button-class svg {
+    width: 20px;
+    height: 20px;
+  }
 }
