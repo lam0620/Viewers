@@ -36,7 +36,7 @@ import './ReportComponent.css';
 import Utils from '../utils';
 import * as ReportUtils from '../reportUtils';
 import Constants from '../constants'
-import { fetchOrder, fetchRadiologists, createReport, updateReport } from '../services'
+import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchDicomMetadata } from '../services'
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -235,6 +235,40 @@ const ReportComponent = ({ props }) => {
         setState({ ...state, error: error });
       } else if (Utils.isObjectEmpty(response_data.data)) {
         // TODO Get data from image and set to
+        // try {
+        //   const response = await fetchDicomMetadata(study_iuid);
+        //   const dicomData = response?.data[0];
+        //   setOrderData({
+        //     "accession_no": dicomData["00080050"]?.Value?.[0] || "",
+        //     "req_phys_code": "",
+        //     "req_phys_name": dicomData["00080090"]?.Value?.[0] || "",
+        //     "clinical_diagnosis": dicomData["00102000"]?.Value?.[0] || "",
+        //     "order_time": "",
+        //     "modality_type": dicomData["00080060"]?.Value?.[0] || "",
+        //     "is_insurance_applied": false,
+        //     "patient": {
+        //       "pid": dicomData["00100020"]?.Value?.[0] || "",
+        //       "fullname": dicomData["00100010"]?.Value?.[0].Alphabetic || "",
+        //       "gender": dicomData["00100040"]?.Value?.[0] || "",
+        //       "dob": dicomData["00100030"]?.Value?.[0] || "",
+        //       "tel": dicomData["00102154"]?.Value?.[0] || "",
+        //       "address": dicomData["00101040"]?.Value?.[0] || "",
+        //       "insurance_no": ""
+        //     },
+        //     "procedures": [{
+        //       "proc_id": "",
+        //       "study_iuid": dicomData["0020000D"]?.Value?.[0] || "",
+        //       "code": "",
+        //       "name": "",
+        //     }]
+        //   });
+
+        // } catch (err: any) {
+        //   setOrderData(emptyOrderData);
+        //   setReportData(emptyReportData);
+        //   error.fatal = t('No applicable order found') + '. ' + err;
+        //   setState({ ...state, error: error });
+        // }
 
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
