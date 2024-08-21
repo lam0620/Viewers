@@ -31,11 +31,15 @@
   "Save as Draft": "Lưu tạm",
   "Print Preview": "Xem bản in",
   "Close": "Đóng",
+  "Agree": "Đồng ý",
+  "Cancel": "Huỷ",
+  "Confirm": "Xác nhận",
   "The report is saved as draft": "Bản tạm kết quả đã được lưu",
   "The report is updated as draft": "Bản tạm kết quả đã được cập nhật",
   "The report is approved": "Kết quả đã được duyệt",
   "The report is re-approved": "Kết quả đã được duyệt lại",
   "Incorrect data! Please close and open the report again": "Thao tác sai! Vui lòng đóng và mở lại",
   "There is no any radiologist. Please contact your administrator.": "Không tồn tại bác sĩ đọc ảnh. Vui lòng liên hệ với người quản trị",
-  "No applicable order found": "Không tìm thấy chỉ định tương ứng"
+  "No applicable order found": "Không tìm thấy chỉ định tương ứng",
+  "Diagnostic report will be approved by [{0}]. Are you sure to approve?": "Duyệt kết quả bỡi [{0}]. Bạn có đồng ý duyệt không?"
 }

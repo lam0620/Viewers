@@ -2,7 +2,7 @@ import { useSearchParams } from "@hooks";
 import { useTranslation } from 'react-i18next';
 import ReactToPrint from 'react-to-print';
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, ButtonEnums, Select, Typography, Icon } from '@ohif/ui';
+import { Button, ButtonEnums, Select, Typography, Dialog } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
 
@@ -196,7 +196,7 @@ const ReportComponent = ({ props }) => {
 
 
   const [showElement, setShowElement] = useState(true)
-
+  const [isConfirmShow, setIsConfirmShow] = useState(false);
 
   // function _getQueryFilterValues(params) {
   //   const newParams = new URLSearchParams();
@@ -257,7 +257,7 @@ const ReportComponent = ({ props }) => {
             // Check report exist
             if (report.id) {
               // Add current value to selectedRadiologist
-              setSelectedRadiologist({ value: report.radiologist.id, label: report.radiologist.fullname });
+              setSelectedRadiologist({ value: report.radiologist.id, label: report.radiologist.title + '. ' + report.radiologist.fullname });
               setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
             }
           }
@@ -298,7 +298,7 @@ const ReportComponent = ({ props }) => {
       } else {
         let newList = [];
 
-        response_data.data.map(item => (newList.push({ value: item.id, label: item.fullname })));
+        response_data.data.map(item => (newList.push({ value: item.id, label: item.title + '. ' + item.fullname })));
         setRadiologistList(newList);
       }
     } catch (err: any) {
@@ -311,11 +311,6 @@ const ReportComponent = ({ props }) => {
   //   setErrors({ ...emptyError });
   // };
 
-  const onClose = (event) => {
-    // Close the current tab
-    window.close();
-  };
-
   const onClearError = (event) => {
     // Clear error
     let error = ReportUtils.initEmptyReportError();
@@ -326,9 +321,34 @@ const ReportComponent = ({ props }) => {
     // Update status and the sreen auto reload
     setReportData(reportData => ({ ...reportData, status: Constants.DRAFT }));
   }
+  const onClose = (event) => {
+    // Close the current tab
+    window.close();
+  };
+  const onCloseConfirm = (event) => {
+    setIsConfirmShow(false);
+  };
+  const onApproveConfirm = (event) => {
+    switch (event.action.id) {
+      case 'yes':
+        setIsConfirmShow(false);
+        doReport(event, Constants.FINAL);
+        break;
+      case 'cancel':
+        setIsConfirmShow(false);
+        break;
+    }
+  };
+
   const onApprove = (event) => {
-    // Final status
-    doReport(event, Constants.FINAL);
+    let isError = validate();
+
+    // No error
+    if (!isError) {
+      setIsConfirmShow(true);
+    }
+    // Final status => call at onConfirmSubmit
+    //doReport(event, Constants.FINAL);
   };
   const onSave = (event) => {
     // Draft status
@@ -340,40 +360,40 @@ const ReportComponent = ({ props }) => {
 
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
-    let isError = validate();
+    // let isError = validate();
 
-    setInfo('');
+    // setInfo('');
     setShowElement(true);
 
     // If no error (error = empty)
-    if (!isError) {
-      if (Utils.isEmpty(reportData.id)) {
-        // Create a new report
-        let data =
-        {
-          "accession_no": accession_no,
-          "study_iuid": study_iuid,
-          "findings": reportData.findings,
-          "conclusion": reportData.conclusion,
-          "status": status,
-          "radiologist_id": selectedRadiologist.value,
-          "procedure_id": selectedProcedure.value
-        }
-
-        // Create
-        await onCreateReport(event, data);
-      } else {
-        // Update the report
-        let data =
-        {
-          "findings": reportData.findings,
-          "conclusion": reportData.conclusion,
-          "status": status,
-        }
-        // Update
-        await onUpdateReport(event, reportData.id, data);
+    // if (!isError) {
+    if (Utils.isEmpty(reportData.id)) {
+      // Create a new report
+      let data =
+      {
+        "accession_no": accession_no,
+        "study_iuid": study_iuid,
+        "findings": reportData.findings,
+        "conclusion": reportData.conclusion,
+        "status": status,
+        "radiologist_id": selectedRadiologist.value,
+        "procedure_id": selectedProcedure.value
       }
+
+      // Create
+      await onCreateReport(event, data);
+    } else {
+      // Update the report
+      let data =
+      {
+        "findings": reportData.findings,
+        "conclusion": reportData.conclusion,
+        "status": status,
+      }
+      // Update
+      await onUpdateReport(event, reportData.id, data);
     }
+    // }
     // Set number of time showing information message, 3s
     setTimeout(function () {
       setShowElement(false)
@@ -385,7 +405,7 @@ const ReportComponent = ({ props }) => {
     console.log(data);
 
     let error = state.error;
-    event.preventDefault();
+    // event.preventDefault();
 
 
     try {
@@ -419,7 +439,7 @@ const ReportComponent = ({ props }) => {
     console.log(data);
 
     let error = state.error;
-    event.preventDefault();
+    // event.preventDefault();
 
     //setInfo('')
 
@@ -919,6 +939,30 @@ const ReportComponent = ({ props }) => {
           }
         </div >
       </div >
+
+      {/* Approve Confirm dialog */}
+      {isConfirmShow && (<div className="w-1/2 absolute flex justify-center right-2" style={{ top: '100px', right: '100px' }}>
+        <Dialog
+          title={t('Confirm')}
+          text={t('Diagnostic report will be approved by [{0}]. Are you sure to approve?').replace('{0}', selectedRadiologist.label)}
+          onClose={onCloseConfirm}
+          noCloseButton={false}
+          onShow={() => { }}
+          onSubmit={onApproveConfirm}
+          actions={[
+            {
+              id: 'cancel',
+              text: t('Cancel'),
+              type: ButtonEnums.type.secondary,
+            },
+            {
+              id: 'yes',
+              text: t('Agree'),
+              type: ButtonEnums.type.primary,
+              classes: ['reject-yes-button'],
+            },
+          ]}
+        /></div>)}
     </>
   );
 };

@@ -8,11 +8,11 @@ export const isFinalReport = (status) => {
 }
 
 export const isReportErrorEmpty = (obj) => {
-  console.log(obj)
+  // console.log(obj)
   let isCorrect = (Object.keys(obj).length === 0 && obj.constructor === Object) ||
     (obj.fatal === "" && obj.system === "" && obj.findings === "" && obj.conclusion === "" && obj.radiologist === "");
 
-  console.log(isCorrect)
+  // console.log(isCorrect)
   return isCorrect;
 }
 
