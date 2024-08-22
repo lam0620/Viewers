@@ -2,7 +2,6 @@
 
 window.config = {
   routerBasename: '/',
-  // whiteLabeling: {},
   extensions: [],
   modes: [],
   customizationService: {},
@@ -16,6 +15,10 @@ window.config = {
   experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  showPatientInfo: 'visible',
+  investigationalUseDialog: {
+    option: 'never',
+  },
   studyPrefetcher: {
     enabled: true,
     displaySetsCount: 2,
@@ -48,9 +51,15 @@ window.config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+
+
+        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
+        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
@@ -184,25 +193,25 @@ window.config = {
     // Could use services manager here to bring up a dialog/modal if needed.
     console.warn('test, navigate to https://ohif.org/');
   },
-  // whiteLabeling: {
-  //   /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
-  //   createLogoComponentFn: function (React) {
-  //     return React.createElement(
-  //       'a',
-  //       {
-  //         target: '_self',
-  //         rel: 'noopener noreferrer',
-  //         className: 'text-purple-600 line-through',
-  //         href: '/',
-  //       },
-  //       React.createElement('img',
-  //         {
-  //           src: './assets/customLogo.svg',
-  //           className: 'w-8 h-8',
-  //         }
-  //       ))
-  //   },
-  // },
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/my_logo.svg',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
   hotkeys: [
     {
       commandName: 'incrementActiveViewport',
