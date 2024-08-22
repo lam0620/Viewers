@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode.react';
-import logo from '../../assets/images/logo.png';
+import logo from '../../assets/images/org_logo.png';
 import './PdfComponent.css';
 import Utils from '../utils';
 
