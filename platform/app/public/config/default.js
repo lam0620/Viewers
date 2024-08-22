@@ -4,7 +4,53 @@ window.config = {
   routerBasename: '/',
   extensions: [],
   modes: [],
-  customizationService: {},
+  customizationService: {
+    cornerstoneOverlayTopRight: {
+      id: 'cornerstoneOverlayTopRight',
+      items: [
+        {
+          id: 'PatientNameOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientName',
+          // label: 'Name:',
+          title: 'Patient Name',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientName &&
+            instance.PatientName.Alphabetic,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientName.Alphabetic),
+        },
+        {
+          id: 'PatientAgeOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientAge',
+          // label: 'Age:',
+          title: 'Patient Age',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientAge,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientAge),
+        },
+        {
+          id: 'PatientSexOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientSex',
+          // label: 'Gender:',
+          title: 'PatientSex',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientSex,
+          contentF: ({ instance }) =>
+            instance.PatientSex === 'F' ? 'Female' : instance.PatientSex === 'M' ? 'Male' : instance.PatientSex,
+        }
+      ],
+    },
+  },
   showStudyList: true,
   // some windows systems have issues with more than 3 web workers
   maxNumberOfWebWorkers: 3,
