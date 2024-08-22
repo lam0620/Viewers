@@ -344,30 +344,30 @@ function WorkList({
           seriesTableDataSource={
             seriesInStudiesMap.has(studyInstanceUid)
               ? seriesInStudiesMap.get(studyInstanceUid).map(s => {
-                  return {
-                    description: s.description || '(empty)',
-                    seriesNumber: s.seriesNumber ?? '',
-                    modality: s.modality || '',
-                    instances: s.numSeriesInstances || '',
-                  };
-                })
+                return {
+                  description: s.description || '(empty)',
+                  seriesNumber: s.seriesNumber ?? '',
+                  modality: s.modality || '',
+                  instances: s.numSeriesInstances || '',
+                };
+              })
               : []
           }
         >
           <div className="flex flex-row gap-2">
             {(appConfig.groupEnabledModesFirst
               ? appConfig.loadedModes.sort((a, b) => {
-                  const isValidA = a.isValidMode({
-                    modalities: modalities.replaceAll('/', '\\'),
-                    study,
-                  }).valid;
-                  const isValidB = b.isValidMode({
-                    modalities: modalities.replaceAll('/', '\\'),
-                    study,
-                  }).valid;
+                const isValidA = a.isValidMode({
+                  modalities: modalities.replaceAll('/', '\\'),
+                  study,
+                }).valid;
+                const isValidB = b.isValidMode({
+                  modalities: modalities.replaceAll('/', '\\'),
+                  study,
+                }).valid;
 
-                  return isValidB - isValidA;
-                })
+                return isValidB - isValidA;
+              })
               : appConfig.loadedModes
             ).map((mode, i) => {
               const modalitiesToCheck = modalities.replaceAll('/', '\\');
@@ -386,15 +386,23 @@ function WorkList({
               if (filterValues.configUrl) {
                 query.append('configUrl', filterValues.configUrl);
               }
+
+              // Add accession number to url for reporting
+              if (mode.routeName == 'report') {
+                query.append('acn', accession);
+              }
+
               query.append('StudyInstanceUIDs', studyInstanceUid);
               return (
-                mode.displayName && (
+                // Hide buttons: "Total Metabolic Tumor Volume", "Microscopy", "4D PT/CT"
+                // mode.displayName && (
+                !["tmtv", "microscopy", "dynamic-volume", "report"].includes(mode.routeName) && (
                   <Link
                     className={isValidMode ? '' : 'cursor-not-allowed'}
                     key={i}
-                    to={`${dataPath ? '../../' : ''}${mode.routeName}${
-                      dataPath || ''
-                    }?${query.toString()}`}
+                    target={'_self'}
+                    to={`${dataPath ? '../../' : ''}${mode.routeName}${dataPath || ''
+                      }?${query.toString()}`}
                     onClick={event => {
                       // In case any event bubbles up for an invalid mode, prevent the navigation.
                       // For example, the event bubbles up when the icon embedded in the disabled button is clicked.
@@ -402,7 +410,7 @@ function WorkList({
                         event.preventDefault();
                       }
                     }}
-                    // to={`${mode.routeName}/dicomweb?StudyInstanceUIDs=${studyInstanceUid}`}
+                  // to={`${mode.routeName}/dicomweb?StudyInstanceUIDs=${studyInstanceUid}`}
                   >
                     {/* TODO revisit the completely rounded style of buttons used for launching a mode from the worklist later - for now use LegacyButton*/}
                     <Button
@@ -422,7 +430,7 @@ function WorkList({
                           name={isValidMode ? 'launch-arrow' : 'launch-info'}
                         />
                       } // launch-arrow | launch-info
-                      onClick={() => {}}
+                      onClick={() => { }}
                       dataCY={`mode-${mode.routeName}-${studyInstanceUid}`}
                       className={isValidMode ? 'text-[13px]' : 'bg-[#222d44] text-[13px]'}
                     >
@@ -432,6 +440,65 @@ function WorkList({
                 )
               );
             })}
+
+            {/* Start -- Report */}
+            <Link
+              className={'ml-6'}
+              target={'_blank'}
+              to={`${dataPath ? '../../' : ''}report${dataPath || ''
+                }?StudyInstanceUIDs=${studyInstanceUid}&acn=${accession}`}
+              onClick={event => {
+              }}
+            >
+              <Button
+                type={ButtonEnums.type.primary}
+                size={ButtonEnums.size.medium}
+                startIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
+                }
+                onClick={() => { }}
+                dataCY={`mode-report-${studyInstanceUid}`}
+                className={'text-[13px]'}
+              >
+                {t('Report')}
+              </Button>
+            </Link>
+
+            {/* Start -- Download */}
+            {/* Fix at \extensions\download\src\commandsModule.tsx too */}
+            <Button
+              type={ButtonEnums.type.primary}
+              size={ButtonEnums.size.medium}
+              startIcon={
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
+              } // launch-arrow | launch-info
+              onClick={() => {
+                // Download
+                //const hostname = 'http://192.168.201.54:8080';
+                //const baseUrl = `${hostname}/dcm4chee-arc/aets/DCM4CHEE/rs`;
+                const hostname = window.location.origin;
+                const baseUrl = `${hostname}/dicomweb/VHC/rs`;
+
+                const url = `${baseUrl}/studies/${studyInstanceUid}?accept=application/zip;transfer-syntax=*`;
+                //window.open(url, '_blank');
+                // create <a> element dynamically
+                let fileLink = document.createElement('a');
+                fileLink.href = url;
+
+                // suggest a name for the downloaded file
+                fileLink.download = `${studyInstanceUid}.zip`;
+                console.info(`Download... ${studyInstanceUid}`);
+                // simulate click
+                document.body.appendChild(fileLink);
+                fileLink.click();
+                document.body.removeChild(fileLink);
+              }}
+              dataCY={`${studyInstanceUid}`}
+              className={'text-[13px]'}
+            >
+              {t('Download')}
+            </Button>
+
           </div>
         </StudyListExpandedRow>
       ),
@@ -501,25 +568,25 @@ function WorkList({
   const uploadProps =
     dicomUploadComponent && dataSource.getConfig()?.dicomUploadEnabled
       ? {
-          title: 'Upload files',
-          closeButton: true,
-          shouldCloseOnEsc: false,
-          shouldCloseOnOverlayClick: false,
-          content: dicomUploadComponent.bind(null, {
-            dataSource,
-            onComplete: () => {
-              hide();
-              onRefresh();
-            },
-            onStarted: () => {
-              show({
-                ...uploadProps,
-                // when upload starts, hide the default close button as closing the dialogue must be handled by the upload dialogue itself
-                closeButton: false,
-              });
-            },
-          }),
-        }
+        title: 'Upload files',
+        closeButton: true,
+        shouldCloseOnEsc: false,
+        shouldCloseOnOverlayClick: false,
+        content: dicomUploadComponent.bind(null, {
+          dataSource,
+          onComplete: () => {
+            hide();
+            onRefresh();
+          },
+          onStarted: () => {
+            show({
+              ...uploadProps,
+              // when upload starts, hide the default close button as closing the dialogue must be handled by the upload dialogue itself
+              closeButton: false,
+            });
+          },
+        }),
+      }
       : undefined;
 
   const { component: dataSourceConfigurationComponent } =
@@ -547,6 +614,10 @@ function WorkList({
           getDataSourceConfigurationComponent={
             dataSourceConfigurationComponent ? () => dataSourceConfigurationComponent() : undefined
           }
+
+          getToday={() => setFilterValues(today)}
+          getYesterday={() => setFilterValues(yesterday)}
+          get7Days={() => setFilterValues(sevenDay)}
         />
         {hasStudies ? (
           <div className="flex grow flex-col">
@@ -606,7 +677,57 @@ const defaultFilterValues = {
   datasources: '',
   configUrl: null,
 };
-
+const today = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const yesterday = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+    endDate: moment().subtract(1, 'day').format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
+const sevenDay = {
+  patientName: '',
+  mrn: '',
+  studyDate: {
+    startDate: moment().subtract(7, 'day').format('YYYYMMDD'),
+    endDate: moment().format('YYYYMMDD'),
+  },
+  description: '',
+  modalities: [],
+  accession: '',
+  sortBy: '',
+  sortDirection: 'none',
+  pageNumber: 1,
+  resultsPerPage: 25,
+  datasources: '',
+  configUrl: null,
+};
 function _tryParseInt(str, defaultValue) {
   let retValue = defaultValue;
   if (str && str.length > 0) {

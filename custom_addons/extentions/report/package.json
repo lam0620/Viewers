@@ -1,0 +1,46 @@
+{
+  "name": "extension-report",
+  "version": "0.0.1",
+  "description": "Diagnostic report extention",
+  "author": "",
+  "license": "MIT",
+  "main": "dist/umd/report/index.umd.js",
+  "files": [
+    "dist/**",
+    "public/**",
+    "README.md"
+  ],
+  "repository": "OHIF/Viewers",
+  "keywords": [
+    "ohif-extension"
+  ],
+  "module": "src/index.tsx",
+  "engines": {
+    "node": ">=14",
+    "npm": ">=6",
+    "yarn": ">=1.18.0"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development webpack --config .webpack/webpack.dev.js --watch --output-pathinfo",
+    "dev:my-extension": "yarn run dev",
+    "build": "cross-env NODE_ENV=production webpack --config .webpack/webpack.prod.js",
+    "build:package": "yarn run build",
+    "start": "yarn run dev"
+  },
+  "peerDependencies": {
+    "@ohif/core": "^3.9.0-beta.59",
+    "@ohif/ui": "3.9.0-beta.59"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.20.13",
+    "jsbarcode": "^3.11.6",
+    "qrcode.react": "^3.1.0",
+    "react-to-print": "^2.15.1",
+    "axios": "^1.7.3"
+  },
+  "devDependencies": {
+    "@babel/core": "7.24.7",
+    "@ckeditor/ckeditor5-react": "8.0.0",
+    "ckeditor5": "42.0.1"
+  }
+}
