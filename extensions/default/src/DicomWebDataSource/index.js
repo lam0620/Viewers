@@ -422,6 +422,57 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
           return naturalized;
         }
 
+        Object.keys(naturalized).forEach(key => {
+          const value = naturalized[key];
+
+          // The value.Value will be set with the bulkdata read value
+          // in which case it isn't necessary to re-read this.
+          if (value && value.BulkDataURI && !value.Value) {
+            // handle the scenarios where bulkDataURI is relative path
+            fixBulkDataURI(value, naturalized, dicomWebConfig);
+            // Provide a method to fetch bulkdata
+            value.retrieveBulkData = (options = {}) => {
+
+              const { mediaType } = options;
+              const useOptions = {
+                // The bulkdata fetches work with either multipart or
+                // singlepart, so set multipart to false to let the server
+                // decide which type to respond with.
+                multipart: false,
+                BulkDataURI: value.BulkDataURI,
+                // The study instance UID is required if the bulkdata uri
+                // is relative - that isn't disallowed by DICOMweb, but
+                // isn't well specified in the standard, but is needed in
+                // any implementation that stores static copies of the metadata
+                StudyInstanceUID: naturalized.StudyInstanceUID,
+                mediaTypes: mediaType
+                  ? [{ mediaType }, { mediaType: 'application/octet-stream' }]
+                  : undefined,
+                ...options,
+              };
+              return qidoDicomWebClient.retrieveBulkData(useOptions).then(val => {
+                // There are DICOM PDF cases where the first ArrayBuffer in the array is
+                // the bulk data and DICOM video cases where the second ArrayBuffer is
+                // the bulk data. Here we play it safe and do a find.
+                const ret =
+                  (val instanceof Array && val.find(arrayBuffer => arrayBuffer?.byteLength)) ||
+                  undefined;
+                value.Value = ret;
+                return ret;
+              });
+            };
+          }
+        });
+        return naturalized;
+      };
+      const addRetrieveBulkData_bk = instance => {
+        const naturalized = naturalizeDataset(instance);
+
+        // if we know the server doesn't use bulkDataURI, then don't
+        if (!dicomWebConfig.bulkDataURI?.enabled) {
+          return naturalized;
+        }
+
         return addRetrieveBulkDataNaturalized(naturalized);
       };
 
