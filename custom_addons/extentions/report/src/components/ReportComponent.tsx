@@ -36,7 +36,7 @@ import './ReportComponent.css';
 import Utils from '../utils';
 import * as ReportUtils from '../reportUtils';
 import Constants from '../constants'
-import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchDicomMetadata } from '../services'
+import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchReportTemplates, fetchDicomMetadata } from '../services'
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -162,6 +162,7 @@ const ReportComponent = ({ props }) => {
     "findings": "",
     "conclusion": "",
     "status": "",
+    "created_time":"",
     "radiologist": {
       "doctor_no": "",
       "fullname": "",
@@ -191,6 +192,13 @@ const ReportComponent = ({ props }) => {
   const [procedureList, setProcedureList] = useState({})
   const [selectedProcedure, setSelectedProcedure] = useState({ value: "", label: "" });
 
+  // List orginal objects
+  const [reportTemplateOriginList, setReportTemplateOriginList] = useState({});
+  // List id:label
+  const [reportTemplateList, setReportTemplateList] = useState({});
+  const [selectedReportTemplate, setSelectedReportTemplate] = useState({ value: "", label: t('-------- Select --------') });
+
+
   const [info, setInfo] = useState('');
   const [state, setState] = useState(emptyError);
 
@@ -216,6 +224,15 @@ const ReportComponent = ({ props }) => {
     setIsLayoutReady(true);
     return () => setIsLayoutReady(false);
   }, []);
+
+
+  useEffect(() => {
+    // Get report template
+    if (orderData.modality_type) {
+      getReportTemplates(orderData.modality_type);
+    }
+
+  }, [orderData.modality_type]);
 
   const getOrder = async (accession) => {
     let error = state.error;
@@ -341,6 +358,41 @@ const ReportComponent = ({ props }) => {
       setState({ ...state, error: error });
     }
   }
+  const getReportTemplates = async (modality) => {
+    let error = state.error;
+    try {
+      const response = await fetchReportTemplates(modality);
+      const response_data = response?.data;
+
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else if (Utils.isObjectEmpty(response_data.data)) {
+        // Get data from image and set to
+        //setRadiologistList(response_data.data);
+        error.fatal = t('There is no any radiologist. Please contact your administrator.');
+        setState({ ...state, error: error });
+      } else {
+        let newList = [];
+        let originalList = [];
+
+        //response_data.data.map(item => (newList.push({ value: item.id, label: item.name })));
+        response_data.data.map(item => (
+          newList.push({ value: item.id, label: item.name }),
+          originalList[item.id] = {"findings":item.findings, "conclusion":item.conclusion}
+
+        ));
+        setReportTemplateList(newList);
+
+        // Set to orginal list of get data when select
+        setReportTemplateOriginList(originalList);
+      }
+    } catch (err: any) {
+      console.log(err);
+      error.fatal = err;
+      setState({ ...state, error: error });
+    }
+  }
   // const clearState = () => {
   //   setErrors({ ...emptyError });
   // };
@@ -390,6 +442,16 @@ const ReportComponent = ({ props }) => {
 
     //alert(state.workingItem.report);
     // Generate a HL7 msg
+  };
+  const onSaveReportTemplate = (event) => {
+    let data =
+    {
+      "name":"",
+      "type": "custom",
+      "modality": orderData.modality_type,
+      "findings": reportData.findings,
+      "conclusion": reportData.conclusion,
+    };
   };
 
   const doReport = async (event, status) => {
@@ -569,6 +631,17 @@ const ReportComponent = ({ props }) => {
     setSelectedProcedure(value);
   };
 
+  const onChangeReportTemplateHandler = (value) => {
+    setSelectedReportTemplate(value);
+
+    // Fill to textbox
+    if (value.value) {
+      const findings = reportTemplateOriginList[value.value].findings;
+      const conclusion = reportTemplateOriginList[value.value].conclusion;
+      setReportData(reportData => ({ ...reportData, findings: findings }));
+      setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
+    }
+  };
 
   return (
     <>
@@ -747,16 +820,17 @@ const ReportComponent = ({ props }) => {
                           {t('Procedure')}
                         </Typography>
                       </div>
-                      {ReportUtils.isFinalReport(reportData.status) && (<div className=" flex flex-col">
+                      {/* {ReportUtils.isFinalReport(reportData.status) && ( */}
+                      <div className=" flex flex-col">
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pl-0 text-right'>
-                          {reportData.procedure.name}
+                          {reportData.procedure.name? reportData.procedure.name: selectedProcedure.label}
                         </Typography>
                       </div>
-                      )}
+                      {/* )} */}
 
-                      {!ReportUtils.isFinalReport(reportData.status) && (<div className="flex flex-col">
+                      {/* {!ReportUtils.isFinalReport(reportData.status) && (<div className="flex flex-col">
                         <div className="flex flex-col w-56">
                           <Select
                             isClearable={false}
@@ -767,9 +841,9 @@ const ReportComponent = ({ props }) => {
                           />
                         </div>
                       </div>
-                      )}
+                      )} */}
                     </div>
-                    <div className="mb-2 flex flex-row justify-between">
+                    <div className="mb-2 mt-4 flex flex-row justify-between">
                       <div className="flex flex-col items-center whitespace-nowrap mr-4">
                         <Typography
                           variant="subtitle"
@@ -826,7 +900,7 @@ const ReportComponent = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className={`pl-0 text-right ${ReportUtils.getStatusStyle(reportData.status)}`}>
-                          {t(ReportUtils.getStatusFull(reportData.status))}
+                          {t(ReportUtils.getStatusFull(reportData.status))} - {reportData.created_time}
                         </Typography>
                       </div>
                     </div>
@@ -870,6 +944,7 @@ const ReportComponent = ({ props }) => {
         < div className="body-right mr-2 main-container flex h-full flex-1 flex-col" >
           <div className="flex flex-row w-full">
             <div className="flex flex-col text-left w-full">
+
               {!ReportUtils.isReportErrorEmpty(state.error) && (<div role="alert" className="ml-2 mr-2">
                 <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2 flex justify-between">
                   <div>{t('Error')}</div>
@@ -891,8 +966,54 @@ const ReportComponent = ({ props }) => {
               </div>
               )}
 
+              {/* Procedure - Template */}
+              {!ReportUtils.isFinalReport(reportData.status) && (
+              <div className="mt-2 p-2 flex justify-between">
+                <div className="flex justify-start">
+                  <div className='text-blue-300 mr-2' style={{ fontSize: '17px' }}>
+                    {t('Procedure')}
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="w-56">
+                      <Select
+                        isClearable={false}
+                        onChange={onChangeProcedureHandler}
+                        options={procedureList}
+                        value={selectedProcedure}
+                        isDisabled={Utils.isObjectEmpty(procedureList)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <div className='text-blue-300 mr-2' style={{ fontSize: '17px' }}>
+                    {t('Report template')}
+                  </div>
+                  <div className="w-56">
+                    <Select
+                      isClearable={false}
+                      onChange={onChangeReportTemplateHandler}
+                      options={reportTemplateList}
+                      value={selectedReportTemplate}
+                      isDisabled={Utils.isObjectEmpty(reportTemplateList)}
+                    />
+                  </div>
+                  <div className="ml-1">
+                    {/* <Button className={'button-class'}
+                      type={ButtonEnums.type.primary}
+                      size={ButtonEnums.size.medium}
+                      startIcon={
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
+                      }
+                      onClick={onSaveReportTemplate}
+                      className={'text-[13px]'}
+                    ></Button> */}
+                  </div>
+                </div>
+              </div>
+              )}
               {/* Show report text in label */}
-              <div className="mt-2 p-2 flex flex-col">
+              <div className="mt-0 p-2 flex flex-col">
                 <div className="flex flex-row justify-between">
                   <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
                     {t('Findings')}

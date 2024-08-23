@@ -13,6 +13,8 @@ import PrivateRoute from './PrivateRoute';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import PreWorklist from './PreWorklist';
+
 const NotFoundServer = ({
   message = 'Unable to query for studies at this time. Check your data source configuration or network connection',
 }) => {
@@ -54,6 +56,10 @@ NotFoundStudy.propTypes = {
 
 // TODO: Include "routes" debug route if dev build
 const bakedInRoutes = [
+  {
+    path: '/preworklist',
+    children: PreWorklist,
+  },
   {
     path: '/notfoundserver',
     children: NotFoundServer,
