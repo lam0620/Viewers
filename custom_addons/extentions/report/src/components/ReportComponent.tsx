@@ -437,8 +437,11 @@ const ReportComponent = ({ props }) => {
     //doReport(event, Constants.FINAL);
   };
   const onSave = (event) => {
+    let isError = validate();
     // Draft status
-    doReport(event, Constants.DRAFT);
+    if (!isError) {
+      doReport(event, Constants.DRAFT);
+    }
 
     //alert(state.workingItem.report);
     // Generate a HL7 msg
