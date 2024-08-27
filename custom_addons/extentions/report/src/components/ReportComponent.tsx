@@ -6,8 +6,8 @@ import { Button, ButtonEnums, Select, Typography, Dialog } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
 import Modal from 'react-modal';
-
 import './ReportComponent.css';
+import {createReportTemplate} from '../services';
 import PdfComponent from './PdfComponent';
 import {
   ClassicEditor,
@@ -641,23 +641,32 @@ const ReportComponent = ({ props }) => {
   Modal.setAppElement('#root');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportName, setReportName] = useState('');
-  const SaveReportTemplate = () => {
+  const ReportTemplate = () => {
     setIsDialogOpen(!isDialogOpen);
   };
   const onSaveReportTemplate = async () => {
+    let error = state.error;
     const name = reportName;
     const data = {
-      name,
-      type: 'custom',
-      modality: orderData.modality_type,
-      findings: reportData.findings,
-      conclusion: reportData.conclusion,
+      "name":name,
+      "type": "custom",
+      "modality": orderData.modality_type,
+      "findings": reportData.findings,
+      "conclusion": reportData.conclusion,
     };
+    if (!name) {
+      window.alert('Please enter a name before saving.');
+      return;
+    }
     try {
-      await axios.post('http://192.168.201.54:8001/api/report-templates', data);
+      await createReportTemplate(data);
       window.alert('Data posted successfully!');
-    } catch (error) {
-      window.alert('Post data error:');
+    } catch (err) {
+      // handle error
+      console.log(err.response.data.result);
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      error.system = msg;
+      setState({ ...state, error: error });
     }
     setIsDialogOpen(false);
   };
@@ -1041,20 +1050,19 @@ const ReportComponent = ({ props }) => {
                             <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                           </svg>
                         }
-                        onClick={SaveReportTemplate}
+                        onClick={ReportTemplate}
                         className={'text-[13px]'}
                       ></Button>
                     </div>
                     <Modal
                       isOpen={isDialogOpen}
-                      onRequestClose={SaveReportTemplate}
-                      contentLabel="Create Report"
+                      contentLabel="Create Report Template"
                       className="modal"
                       overlayClassName="overlay"
                     >
-                      <h2>Create Report</h2>
-                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder="Enter the report name" />
-                      <button onClick={SaveReportTemplate}>Cancel</button>
+                      <h2>Create Report Template</h2>
+                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder="Enter the report template name" />
+                      <button onClick={ReportTemplate}>Cancel</button>
                       <button onClick={onSaveReportTemplate}>Save</button>
                     </Modal>
                   </div>
