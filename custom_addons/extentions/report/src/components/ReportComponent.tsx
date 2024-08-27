@@ -971,49 +971,66 @@ const ReportComponent = ({ props }) => {
 
               {/* Procedure - Template */}
               {!ReportUtils.isFinalReport(reportData.status) && (
-              <div className="mt-2 p-2 flex justify-between">
-                <div className="flex justify-start">
-                  <div className='text-blue-300 mr-2' style={{ fontSize: '17px' }}>
-                    {t('Procedure')}
+                <div className="body mt-2 flex justify-between p-2">
+                  <div className="procedure flex">
+                    <div className="mr-2 text-blue-300" style={{ fontSize: '17px' }}>
+                      {t('Procedure')}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="w-56">
+                        <Select
+                          isClearable={false}
+                          onChange={onChangeProcedureHandler}
+                          options={procedureList}
+                          value={selectedProcedure}
+                          isDisabled={Utils.isObjectEmpty(procedureList)}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="reportTemplate flex">
+                    <div className="mr-2 text-blue-300" style={{ fontSize: '17px' }}>
+                      {t('Report template')}
+                    </div>
                     <div className="w-56">
                       <Select
                         isClearable={false}
-                        onChange={onChangeProcedureHandler}
-                        options={procedureList}
-                        value={selectedProcedure}
-                        isDisabled={Utils.isObjectEmpty(procedureList)}
+                        onChange={onChangeReportTemplateHandler}
+                        options={reportTemplateList}
+                        value={selectedReportTemplate}
+                        isDisabled={Utils.isObjectEmpty(reportTemplateList)}
                       />
                     </div>
+                    {/* <div className="ml-1">
+                      <Button
+                        className={'button-class'}
+                        type={ButtonEnums.type.primary}
+                        size={ButtonEnums.size.medium}
+                        startIcon={
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ fill: 'none' }}
+                            className="lucide lucide-save"
+                          >
+                            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                            <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                          </svg>
+                        }
+                        onClick={onSaveReportTemplate}
+                        className={'text-[13px]'}
+                      ></Button>
+                    </div> */}
                   </div>
                 </div>
-                <div className="flex justify-end">
-                  <div className='text-blue-300 mr-2' style={{ fontSize: '17px' }}>
-                    {t('Report template')}
-                  </div>
-                  <div className="w-56">
-                    <Select
-                      isClearable={false}
-                      onChange={onChangeReportTemplateHandler}
-                      options={reportTemplateList}
-                      value={selectedReportTemplate}
-                      isDisabled={Utils.isObjectEmpty(reportTemplateList)}
-                    />
-                  </div>
-                  <div className="ml-1">
-                    {/* <Button className={'button-class'}
-                      type={ButtonEnums.type.primary}
-                      size={ButtonEnums.size.medium}
-                      startIcon={
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
-                      }
-                      onClick={onSaveReportTemplate}
-                      className={'text-[13px]'}
-                    ></Button> */}
-                  </div>
-                </div>
-              </div>
               )}
               {/* Show report text in label */}
               <div className="mt-0 p-2 flex flex-col">
