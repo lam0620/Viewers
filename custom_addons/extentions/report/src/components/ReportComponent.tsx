@@ -640,34 +640,38 @@ const ReportComponent = ({ props }) => {
   //Create dialog box, Use Modal lib to create a dialog box
   Modal.setAppElement('#root');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [reportName, setReportName] = useState('');
+  const [reportName, setReportName] = useState<any>("");
+
   const ReportTemplate = () => {
     setIsDialogOpen(!isDialogOpen);
   };
   const onSaveReportTemplate = async () => {
     let error = state.error;
     const name = reportName;
-    const data = {
-      "name":name,
-      "type": "custom",
-      "modality": orderData.modality_type,
-      "findings": reportData.findings,
-      "conclusion": reportData.conclusion,
-    };
-    if (!name) {
-      window.alert('Please enter a name before saving.');
-      return;
-    }
-    try {
-      await createReportTemplate(data);
-      window.alert('Data posted successfully!');
-    } catch (err) {
-      // handle error
-      console.log(err.response.data.result);
-      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
-      error.system = msg;
-      setState({ ...state, error: error });
-    }
+
+      if(name){
+        const data = {
+          "name": name,
+          "type": "custom",
+          "modality": orderData.modality_type,
+          "findings": reportData.findings,
+          "conclusion": reportData.conclusion,
+        };
+        try {
+          await createReportTemplate(data);
+          console.log("Post success")
+        } catch (err) {
+          console.log(err.response.data.result);
+          let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+          error.system = msg;
+          setState({ ...state, error: error });
+        }
+      }else{
+        let msg = "The report template name is required"
+        error.system = msg;
+        setState({ ...state, error: error });
+      }
+    //const name = reportName
     setIsDialogOpen(false);
   };
 
