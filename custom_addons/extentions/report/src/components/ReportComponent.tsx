@@ -196,7 +196,7 @@ const ReportComponent = ({ props }) => {
   const [reportTemplateOriginList, setReportTemplateOriginList] = useState({});
   // List id:label
   const [reportTemplateList, setReportTemplateList] = useState({});
-  const [selectedReportTemplate, setSelectedReportTemplate] = useState({ value: "", label: t('-------- Select --------') });
+  const [selectedReportTemplate, setSelectedReportTemplate] = useState({ value: "", label: t('----- Select template----') });
 
 
   const [info, setInfo] = useState('');

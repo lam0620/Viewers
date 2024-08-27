@@ -97,14 +97,9 @@ window.config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
-        // wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        // qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        // wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-
-
-        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
-        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
-        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
 
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
@@ -114,7 +109,7 @@ window.config = {
         supportsWildcard: true,
         staticWado: true,
         singlepart: 'bulkdata,video',
-        // whether the data source should use retrieveBulkData to grab metadata,
+        // whethr the data source should use retrieveBulkData to grab metadata,
         // and in case of relative path, what would it be relative to, options
         // are in the series level or study level (some servers like series some study)
         bulkDataURI: {
