@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, ButtonEnums, Select, Typography, Dialog } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
+import Modal from 'react-modal';
 
 import './ReportComponent.css';
 import PdfComponent from './PdfComponent';
@@ -37,6 +38,7 @@ import Utils from '../utils';
 import * as ReportUtils from '../reportUtils';
 import Constants from '../constants'
 import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchReportTemplates, fetchDicomMetadata } from '../services'
+import axios from "axios";
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -446,17 +448,6 @@ const ReportComponent = ({ props }) => {
     //alert(state.workingItem.report);
     // Generate a HL7 msg
   };
-  const onSaveReportTemplate = (event) => {
-    let data =
-    {
-      "name":"",
-      "type": "custom",
-      "modality": orderData.modality_type,
-      "findings": reportData.findings,
-      "conclusion": reportData.conclusion,
-    };
-  };
-
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
     // let isError = validate();
@@ -644,6 +635,31 @@ const ReportComponent = ({ props }) => {
       setReportData(reportData => ({ ...reportData, findings: findings }));
       setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
     }
+  };
+
+  //Create dialog box, Use Modal lib to create a dialog box
+  Modal.setAppElement('#root');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [reportName, setReportName] = useState('');
+  const SaveReportTemplate = () => {
+    setIsDialogOpen(!isDialogOpen);
+  };
+  const onSaveReportTemplate = async () => {
+    const name = reportName;
+    const data = {
+      name,
+      type: 'custom',
+      modality: orderData.modality_type,
+      findings: reportData.findings,
+      conclusion: reportData.conclusion,
+    };
+    try {
+      await axios.post('http://192.168.201.54:8001/api/report-templates', data);
+      window.alert('Data posted successfully!');
+    } catch (error) {
+      window.alert('Post data error:');
+    }
+    setIsDialogOpen(false);
   };
 
   return (
@@ -1001,7 +1017,7 @@ const ReportComponent = ({ props }) => {
                         isDisabled={Utils.isObjectEmpty(reportTemplateList)}
                       />
                     </div>
-                    {/* <div className="ml-1">
+                    <div className="ml-1">
                       <Button
                         className={'button-class'}
                         type={ButtonEnums.type.primary}
@@ -1025,10 +1041,22 @@ const ReportComponent = ({ props }) => {
                             <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                           </svg>
                         }
-                        onClick={onSaveReportTemplate}
+                        onClick={SaveReportTemplate}
                         className={'text-[13px]'}
                       ></Button>
-                    </div> */}
+                    </div>
+                    <Modal
+                      isOpen={isDialogOpen}
+                      onRequestClose={SaveReportTemplate}
+                      contentLabel="Create Report"
+                      className="modal"
+                      overlayClassName="overlay"
+                    >
+                      <h2>Create Report</h2>
+                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder="Enter the report name" />
+                      <button onClick={SaveReportTemplate}>Cancel</button>
+                      <button onClick={onSaveReportTemplate}>Save</button>
+                    </Modal>
                   </div>
                 </div>
               )}

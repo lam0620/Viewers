@@ -65,6 +65,10 @@
     {
       "packageName": "extension-report",
       "version": "0.0.1"
+    },
+    {
+      "packageName": "extension-study-download",
+      "version": "0.0.1"
     }
   ],
   "modes": [
