@@ -35,8 +35,8 @@ const PreWorklist = ({
     console.log(`key = ${accessToken}`)
     console.log(`searchParams = ${searchParams.toString()}`)
 
-    Cookies.set("access_token", accessToken, { expires: 1 });
-    Cookies.set("refresh_token", refreshToken, { expires: 7 });
+    // Cookies.set("access_token", accessToken, { expires: 1 });
+    // Cookies.set("refresh_token", refreshToken, { expires: 7 });
     // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     console.log("Cookie.at:"+Cookies.get("access_token"));
