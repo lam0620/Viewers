@@ -648,7 +648,6 @@ const ReportComponent = ({ props }) => {
   const onSaveReportTemplate = async () => {
     let error = state.error;
     const name = reportName;
-
       if(name){
         const data = {
           "name": name,
@@ -665,12 +664,12 @@ const ReportComponent = ({ props }) => {
           setState({ ...state, error: error });
         } catch (err) {
           console.log(err.response.data.result);
-          let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+          let msg = t('{0} is required').replace('{0}', err.response.data.result.item);
           error.system = msg;
           setState({ ...state, error: error });
         }
       }else{
-        let msg = "The report template name is required"
+        let msg = t('The report template name is required');
         error.system = msg;
         setState({ ...state, error: error });
       }
@@ -1066,10 +1065,10 @@ const ReportComponent = ({ props }) => {
                       className="modal"
                       overlayClassName="overlay"
                     >
-                      <h2>Create Report Template</h2>
-                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder="Enter the report template name" />
-                      <button onClick={ReportTemplate}>Cancel</button>
-                      <button onClick={onSaveReportTemplate}>Save</button>
+                      <h2>{t('Create Report Template')}</h2>
+                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder={t('Enter the report template name')} />
+                      <button onClick={ReportTemplate}>{t('Cancel')}</button>
+                      <button onClick={onSaveReportTemplate}>{t('Save')}</button>
                     </Modal>
                   </div>
                 </div>
