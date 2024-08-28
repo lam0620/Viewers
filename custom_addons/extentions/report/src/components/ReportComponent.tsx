@@ -660,6 +660,9 @@ const ReportComponent = ({ props }) => {
         try {
           await createReportTemplate(data);
           console.log("Post success")
+          let msg = '';
+          error.system = msg;
+          setState({ ...state, error: error });
         } catch (err) {
           console.log(err.response.data.result);
           let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
@@ -671,7 +674,6 @@ const ReportComponent = ({ props }) => {
         error.system = msg;
         setState({ ...state, error: error });
       }
-    //const name = reportName
     setIsDialogOpen(false);
   };
 
