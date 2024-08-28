@@ -642,19 +642,24 @@ const ReportComponent = ({ props }) => {
   Modal.setAppElement('#root');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportName, setReportName] = useState<any>("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); //set error if report template name is empty
 
-  const ReportTemplate = () => {
+  const isShowReportTemplate = () => {
     let isError = validate(false);
     if (!isError) {
-      setIsDialogOpen(!isDialogOpen);
+      setIsDialogOpen(true);
       setErrorMessage("");
       setReportName("");
     }
   };
 
+  const isCloseReportTemplate = () => {
+    setIsDialogOpen(false);
+  };
+
   const onSaveReportTemplate = async () => {
     const name = reportName;
+    let error = state.error;
     if (name) {
       const data = {
         "name": name,
@@ -664,15 +669,22 @@ const ReportComponent = ({ props }) => {
         "conclusion": reportData.conclusion,
       };
       try {
-        await createReportTemplate(data);
-        alert("Post success");
-        setIsDialogOpen(false);
-      } catch (err) {
-        console.error(err);
+        const response = await createReportTemplate(data);
+        const response_data = response?.data;
+        if (response_data.result.status == 'NG') {
+          error.fatal = response_data.result.msg;
+          setState({ ...state, error: error });
+          setIsDialogOpen(false);
+        } else{
+          getReportTemplates(orderData.modality_type);//get report template without refresh page.
+          setIsDialogOpen(false);
+        }
+      }catch (err) {
+        setState({ ...state, error: err });
       }
     } else {
-      const err = t('The report template name is required !')
-      setErrorMessage(err);
+      let item = t('The report template name');
+      setErrorMessage(t('{0} is required').replace('{0}', item));
     }
   };
 
@@ -1055,8 +1067,7 @@ const ReportComponent = ({ props }) => {
                             <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                           </svg>
                         }
-                        onClick={ReportTemplate}
-                        className={'text-[13px]'}
+                        onClick={isShowReportTemplate}
                       ></Button>
                     </div>
                     <Modal
@@ -1075,7 +1086,7 @@ const ReportComponent = ({ props }) => {
                         placeholder={errorMessage || t('Enter the report template name')}
                         className={errorMessage ? 'error' : ''}
                       />
-                      <button onClick={ReportTemplate}>{t('Cancel')}</button>
+                      <button onClick={isCloseReportTemplate}>{t('Cancel')}</button>
                       <button onClick={onSaveReportTemplate}>{t('Save')}</button>
                     </Modal>
                   </div>
