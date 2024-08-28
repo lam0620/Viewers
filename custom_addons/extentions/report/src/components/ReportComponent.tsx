@@ -562,7 +562,7 @@ const ReportComponent = ({ props }) => {
   }
 
 
-  const validate = () => {
+  const validate = (isCreateReport = true) => {
     // Reset error to empty
     let error = ReportUtils.initEmptyReportError();
     setState({ ...state, error: error });
@@ -570,42 +570,43 @@ const ReportComponent = ({ props }) => {
     let isError = false;
 
     const findings = reportData.findings;
-    const conclusion = reportData.conclusion
+    const conclusion = reportData.conclusion;
 
     let item = t('Findings');
 
-    // Check conclusion
+    // Check findings
     if (Utils.isEmpty(findings)) {
       error.findings = t('{0} is required').replace('{0}', item);
       setState({ ...state, error: error });
-
       isError = true;
     }
+
+    // Check conclusion
     if (Utils.isEmpty(conclusion)) {
       item = t('Conclusion');
       error.conclusion = t('{0} is required').replace('{0}', item);
       setState({ ...state, error: error });
-
       isError = true;
     }
-
-    // Check selected radiologist
-    if (Utils.isEmpty(selectedRadiologist.value)) {
-      item = t('Radiologist');
-      error.radiologist = t('{0} is required').replace('{0}', item);
-      setState({ ...state, error: error });
-      isError = true;
-    }
-
-    // Check selected procedure
-    if (Utils.isEmpty(selectedProcedure.value)) {
-      item = t('Procedure');
-      error.radiologist = t('{0} is required').replace('{0}', item);
-      setState({ ...state, error: error });
-      isError = true;
+    if (isCreateReport) {
+      // Check selected radiologist
+      if (Utils.isEmpty(selectedRadiologist.value)) {
+        item = t('Radiologist');
+        error.radiologist = t('{0} is required').replace('{0}', item);
+        setState({ ...state, error: error });
+        isError = true;
+      }
+      // Check selected procedure
+      if (Utils.isEmpty(selectedProcedure.value)) {
+        item = t('Procedure');
+        error.procedure = t('{0} is required').replace('{0}', item);
+        setState({ ...state, error: error });
+        isError = true;
+      }
     }
     return isError;
   };
+
 
   const onChangeFindings = (event, editor) => {//Update data when input finding
     const data = editor.getData();
@@ -641,39 +642,38 @@ const ReportComponent = ({ props }) => {
   Modal.setAppElement('#root');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [reportName, setReportName] = useState<any>("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const ReportTemplate = () => {
-    setIsDialogOpen(!isDialogOpen);
+    let isError = validate(false);
+    if (!isError) {
+      setIsDialogOpen(!isDialogOpen);
+      setErrorMessage("");
+      setReportName("");
+    }
   };
+
   const onSaveReportTemplate = async () => {
-    let error = state.error;
     const name = reportName;
-      if(name){
-        const data = {
-          "name": name,
-          "type": "custom",
-          "modality": orderData.modality_type,
-          "findings": reportData.findings,
-          "conclusion": reportData.conclusion,
-        };
-        try {
-          await createReportTemplate(data);
-          console.log("Post success")
-          let msg = '';
-          error.system = msg;
-          setState({ ...state, error: error });
-        } catch (err) {
-          console.log(err.response.data.result);
-          let msg = t('{0} is required').replace('{0}', err.response.data.result.item);
-          error.system = msg;
-          setState({ ...state, error: error });
-        }
-      }else{
-        let msg = t('The report template name is required');
-        error.system = msg;
-        setState({ ...state, error: error });
+    if (name) {
+      const data = {
+        "name": name,
+        "type": "custom",
+        "modality": orderData.modality_type,
+        "findings": reportData.findings,
+        "conclusion": reportData.conclusion,
+      };
+      try {
+        await createReportTemplate(data);
+        alert("Post success");
+        setIsDialogOpen(false);
+      } catch (err) {
+        console.error(err);
       }
-    setIsDialogOpen(false);
+    } else {
+      const err = t('The report template name is required !')
+      setErrorMessage(err);
+    }
   };
 
   return (
@@ -1066,7 +1066,15 @@ const ReportComponent = ({ props }) => {
                       overlayClassName="overlay"
                     >
                       <h2>{t('Create Report Template')}</h2>
-                      <input type="text" value={reportName} onChange={(e) => setReportName(e.target.value)} placeholder={t('Enter the report template name')} />
+                      <input
+                        type="text"
+                        value={reportName}
+                        onChange={(e) => {
+                          setReportName(e.target.value);
+                        }}
+                        placeholder={errorMessage || t('Enter the report template name')}
+                        className={errorMessage ? 'error' : ''}
+                      />
                       <button onClick={ReportTemplate}>{t('Cancel')}</button>
                       <button onClick={onSaveReportTemplate}>{t('Save')}</button>
                     </Modal>
