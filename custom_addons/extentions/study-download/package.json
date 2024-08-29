@@ -28,7 +28,7 @@
     "start": "yarn run dev"
   },
   "peerDependencies": {
-    "@ohif/core": "3.9.0-beta.59",
+    "@ohif/core": "3.9.0-beta.80",
     "dicom-parser": "^1.8.9"
   },
   "dependencies": {

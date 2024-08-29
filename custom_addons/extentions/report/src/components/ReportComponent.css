@@ -130,16 +130,13 @@
   bottom: auto;
   margin-right: -50%;
   transform: translate(-50%, -50%);
-  background: #080c29;
   padding: 20px;
   border-radius: 10px;
   outline: none;
-  color: black;
 }
 
 .modal h2 {
   font-weight: bold;
-  color: #62cddd;
   margin-bottom: 20px;
 }
 
@@ -147,7 +144,6 @@
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
-  border: 3px solid;
 }
 .modal input.error {
   border-color: red;
@@ -160,6 +156,4 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  color: white;
-  background-color: #0844b2;
 }

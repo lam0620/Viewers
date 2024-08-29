@@ -9,6 +9,7 @@ import Utils from '../utils';
 interface PDFReportComponentProps {
   orderData: any;
   reportData: any;
+  templateData: any;
 }
 function Barcode({ value, format = 'CODE128' }) {
   const barcodeRef = useRef(null);
@@ -31,7 +32,7 @@ const url = window.location.href;
 const imageUrl = url.replace('report', 'viewer');
 
 const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((props, ref) => {
-  const { orderData, reportData } = props;
+  const { orderData, reportData, templateData } = props;
   const { t } = useTranslation('Report');
 
   const [sign, setSign] = useState('');
@@ -46,6 +47,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
     return `@page { margin: ${marginTop} ${margin} ${marginBottom} ${margin} !important; }`;
     //return `@page {size: A4}`;
   };
+
 
   return (
     <>
@@ -86,7 +88,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
             <p className='whitespace-nowrap'>Điện thoại: {orderData.patient.tel}</p>
           </div>
           <p>Chẩn đoán: {orderData.clinical_diagnosis}</p>
-          <p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>
+          {templateData.value != "0" && (<p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>)}
           <p className="text-red-600">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
           <p className="text-red-600 mt-4">MÔ TẢ HÌNH ẢNH:</p>
           <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>
