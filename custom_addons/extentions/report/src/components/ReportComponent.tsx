@@ -5,8 +5,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, ButtonEnums, Select, Typography, Dialog } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
-
+import Modal from 'react-modal';
 import './ReportComponent.css';
+import {createReportTemplate} from '../services';
 import PdfComponent from './PdfComponent';
 import {
   ClassicEditor,
@@ -37,6 +38,7 @@ import Utils from '../utils';
 import * as ReportUtils from '../reportUtils';
 import Constants from '../constants'
 import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchReportTemplates, fetchDicomMetadata } from '../services'
+import axios from "axios";
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -446,17 +448,6 @@ const ReportComponent = ({ props }) => {
     //alert(state.workingItem.report);
     // Generate a HL7 msg
   };
-  const onSaveReportTemplate = (event) => {
-    let data =
-    {
-      "name":"",
-      "type": "custom",
-      "modality": orderData.modality_type,
-      "findings": reportData.findings,
-      "conclusion": reportData.conclusion,
-    };
-  };
-
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
     // let isError = validate();
@@ -571,7 +562,7 @@ const ReportComponent = ({ props }) => {
   }
 
 
-  const validate = () => {
+  const validate = (isCreateReport = true) => {
     // Reset error to empty
     let error = ReportUtils.initEmptyReportError();
     setState({ ...state, error: error });
@@ -579,42 +570,43 @@ const ReportComponent = ({ props }) => {
     let isError = false;
 
     const findings = reportData.findings;
-    const conclusion = reportData.conclusion
+    const conclusion = reportData.conclusion;
 
     let item = t('Findings');
 
-    // Check conclusion
+    // Check findings
     if (Utils.isEmpty(findings)) {
       error.findings = t('{0} is required').replace('{0}', item);
       setState({ ...state, error: error });
-
       isError = true;
     }
+
+    // Check conclusion
     if (Utils.isEmpty(conclusion)) {
       item = t('Conclusion');
       error.conclusion = t('{0} is required').replace('{0}', item);
       setState({ ...state, error: error });
-
       isError = true;
     }
-
-    // Check selected radiologist
-    if (Utils.isEmpty(selectedRadiologist.value)) {
-      item = t('Radiologist');
-      error.radiologist = t('{0} is required').replace('{0}', item);
-      setState({ ...state, error: error });
-      isError = true;
-    }
-
-    // Check selected procedure
-    if (Utils.isEmpty(selectedProcedure.value)) {
-      item = t('Procedure');
-      error.radiologist = t('{0} is required').replace('{0}', item);
-      setState({ ...state, error: error });
-      isError = true;
+    if (isCreateReport) {
+      // Check selected radiologist
+      if (Utils.isEmpty(selectedRadiologist.value)) {
+        item = t('Radiologist');
+        error.radiologist = t('{0} is required').replace('{0}', item);
+        setState({ ...state, error: error });
+        isError = true;
+      }
+      // Check selected procedure
+      if (Utils.isEmpty(selectedProcedure.value)) {
+        item = t('Procedure');
+        error.procedure = t('{0} is required').replace('{0}', item);
+        setState({ ...state, error: error });
+        isError = true;
+      }
     }
     return isError;
   };
+
 
   const onChangeFindings = (event, editor) => {//Update data when input finding
     const data = editor.getData();
@@ -643,6 +635,56 @@ const ReportComponent = ({ props }) => {
       const conclusion = reportTemplateOriginList[value.value].conclusion;
       setReportData(reportData => ({ ...reportData, findings: findings }));
       setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
+    }
+  };
+
+  //Create dialog box, Use Modal lib to create a dialog box
+  Modal.setAppElement('#root');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [reportName, setReportName] = useState<any>("");
+  const [errorMessage, setErrorMessage] = useState(""); //set error if report template name is empty
+
+  const isShowReportTemplate = () => {
+    let isError = validate(false);
+    if (!isError) {
+      setIsDialogOpen(true);
+      setErrorMessage("");
+      setReportName("");
+    }
+  };
+
+  const isCloseReportTemplate = () => {
+    setIsDialogOpen(false);
+  };
+
+  const onSaveReportTemplate = async () => {
+    const name = reportName;
+    let error = state.error;
+    if (name) {
+      const data = {
+        "name": name,
+        "type": "custom",
+        "modality": orderData.modality_type,
+        "findings": reportData.findings,
+        "conclusion": reportData.conclusion,
+      };
+      try {
+        const response = await createReportTemplate(data);
+        const response_data = response?.data;
+        if (response_data.result.status == 'NG') {
+          error.fatal = response_data.result.msg;
+          setState({ ...state, error: error });
+          setIsDialogOpen(false);
+        } else{
+          getReportTemplates(orderData.modality_type);//get report template without refresh page.
+          setIsDialogOpen(false);
+        }
+      }catch (err) {
+        setState({ ...state, error: err });
+      }
+    } else {
+      let item = t('The report template name');
+      setErrorMessage(t('{0} is required').replace('{0}', item));
     }
   };
 
@@ -1001,7 +1043,7 @@ const ReportComponent = ({ props }) => {
                         isDisabled={Utils.isObjectEmpty(reportTemplateList)}
                       />
                     </div>
-                    {/* <div className="ml-1">
+                    <div className="ml-1">
                       <Button
                         className={'button-class'}
                         type={ButtonEnums.type.primary}
@@ -1025,10 +1067,28 @@ const ReportComponent = ({ props }) => {
                             <path d="M7 3v4a1 1 0 0 0 1 1h7" />
                           </svg>
                         }
-                        onClick={onSaveReportTemplate}
-                        className={'text-[13px]'}
+                        onClick={isShowReportTemplate}
                       ></Button>
-                    </div> */}
+                    </div>
+                    <Modal
+                      isOpen={isDialogOpen}
+                      contentLabel="Create Report Template"
+                      className="modal"
+                      overlayClassName="overlay"
+                    >
+                      <h2>{t('Create Report Template')}</h2>
+                      <input
+                        type="text"
+                        value={reportName}
+                        onChange={(e) => {
+                          setReportName(e.target.value);
+                        }}
+                        placeholder={errorMessage || t('Enter the report template name')}
+                        className={errorMessage ? 'error' : ''}
+                      />
+                      <button onClick={isCloseReportTemplate}>{t('Cancel')}</button>
+                      <button onClick={onSaveReportTemplate}>{t('Save')}</button>
+                    </Modal>
                   </div>
                 </div>
               )}

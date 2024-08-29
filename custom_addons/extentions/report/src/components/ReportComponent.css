@@ -110,3 +110,56 @@
     width: 100%;
   }
 }
+
+/*css dialog box*/
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 9999;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  background: #080c29;
+  padding: 20px;
+  border-radius: 10px;
+  outline: none;
+  color: black;
+}
+
+.modal h2 {
+  font-weight: bold;
+  color: #62cddd;
+  margin-bottom: 20px;
+}
+
+.modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 3px solid;
+}
+.modal input.error {
+  border-color: red;
+}
+
+.modal button {
+  padding: 7px 14px;
+  margin-top: 15px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  background-color: #0844b2;
+}
