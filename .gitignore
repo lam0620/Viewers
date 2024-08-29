@@ -57,4 +57,8 @@ tests/playwright-report/
 /blob-report/
 /playwright/.cache/
 
+# Add more
+.env
 default.js
+org_logo.png
+org_logo.jpg
