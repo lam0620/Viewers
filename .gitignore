@@ -59,6 +59,8 @@ tests/playwright-report/
 
 # Add more
 .env
+.env.prod
+.env.dev
 default.js
 org_logo.png
 org_logo.jpg

@@ -20,7 +20,7 @@ var fetchData = (url, data, method, callback) => {
 };
 var isEmpty = (str) => {
   //if (typeof str == 'undefined' || !str || str.length === 0 || str === "" || !/[^\s]/.test(str) || /^\s*$/.test(str) || str.replace(/\s/g,"") === "") {
-  if (typeof str == 'undefined' || str === 'undefined' || !str || str == "" || str == null) {
+  if (typeof str == 'undefined' || str === 'undefined' || str === 'null' || !str || str == "" || str == null) {
     return true;
   } else {
     return false;
@@ -98,4 +98,5 @@ export default {
   getFullModalityType: getFullModalityType,
   formatDate: formatDate,
   getImageUrl: getImageUrl,
+
 }

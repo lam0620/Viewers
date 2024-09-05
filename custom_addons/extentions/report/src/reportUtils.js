@@ -1,4 +1,5 @@
 import Utils from './utils'
+import Constants from './constants'
 
 export const isFinalReport = (status) => {
   if (status == 'F' || status == 'C') {
@@ -55,8 +56,10 @@ export const isEditEnabled = (status) => {
   return false;
 }
 
-export const isEditorDisabled = (fatalErr) => {
-  if (!Utils.isEmpty(fatalErr)) {
+export const isEditorDisabled = (fatalErr, permission) => {
+  // If has error or no permission
+  if (!Utils.isEmpty(fatalErr) ||
+    (!Utils.isEmpty(permission) && !permission.includes(Constants.PERMISSION_ADD_REPORT))) {
     return true;
   }
   return false;

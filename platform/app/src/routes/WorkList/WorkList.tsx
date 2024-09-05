@@ -12,6 +12,16 @@ import { useAppConfig } from '@state';
 import { useDebounce, useSearchParams } from '@hooks';
 import { utils, hotkeys } from '@ohif/core';
 
+// Add by Lam. For login user check
+import Cookies from "js-cookie";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+// true if not define IS_AUTH
+let IS_AUTH = "true";
+try { IS_AUTH = process.env.IS_AUTH; } catch(e) {}
+//End for login user
+
 import {
   Icon,
   StudyListExpandedRow,
@@ -159,6 +169,53 @@ function WorkList({
       resultsPerPage: Number(newResultsPerPage),
     });
   };
+
+  // Add by Lam. Check login user
+  // const [user, setUser] = useState({} as any);
+  const gotoLogin = () => {
+    console.log('Worklist: Authonrization failed');
+    // Remove cookie
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    delete axios.defaults.headers.common["Authorization"];
+
+    const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
+    (window as Window).location = loginUrl;
+  }
+  const ANONYMOUS_USER = "Anonymous User";
+  const displayName = () => {
+    try {
+      // If auth
+      if (IS_AUTH === "true") {
+        const accessToken = Cookies.get("access_token");
+        if (accessToken) {
+          const decodedUser = jwtDecode(accessToken) as any;
+          return decodedUser.display_name;
+        } else {
+          gotoLogin();
+          return ANONYMOUS_USER;
+        }
+      } else {
+        return ANONYMOUS_USER;
+      }
+    } catch(e) {
+      return ANONYMOUS_USER;
+    }
+  };
+  // Process access_token
+  // useEffect(() => {
+  //   const accessToken = Cookies.get("access_token");
+  //   const refreshToken = Cookies.get("refresh_token");
+  //   console.log('Worklist.... ');
+
+  //   if (accessToken && refreshToken) {
+  //     // do nothing
+  //   } else {
+  //     gotoLogin();
+  //   }
+  // }, []);
+  // == END Check login user=========
+
 
   // Set body style
   useEffect(() => {
@@ -552,15 +609,40 @@ function WorkList({
     },
   ];
 
-  if (appConfig.oidc) {
+  // Add by Lam. Add logout for user login
+  // if (appConfig.oidc) {
+  //   menuOptions.push({
+  //     icon: 'power-off',
+  //     title: t('Header:Logout'),
+  //     onClick: () => {
+  //       navigate(`/logout?redirect_uri=${encodeURIComponent(window.location.href)}`);
+  //     },
+  //   });
+  // }
+
+  // Push to first as profile's login user name
+  // If it is auth
+  if (IS_AUTH === "true") {
+    menuOptions.unshift({
+      icon: 'profile',
+      title: t('Header:Change password'),
+      onClick: () => {window.location.href = "/profile/change-password"}
+    });
     menuOptions.push({
       icon: 'power-off',
       title: t('Header:Logout'),
       onClick: () => {
-        navigate(`/logout?redirect_uri=${encodeURIComponent(window.location.href)}`);
+        gotoLogin();
       },
     });
   }
+  // At at first
+  menuOptions.unshift({
+    icon: '',
+    title: displayName(),
+    onClick: () => {}
+  });
+   // End add logout
 
   const { customizationService } = servicesManager.services;
   const { component: dicomUploadComponent } =

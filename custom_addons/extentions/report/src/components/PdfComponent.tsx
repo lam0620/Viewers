@@ -36,9 +36,11 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
   const { t } = useTranslation('Report');
 
   const [sign, setSign] = useState('');
-  import(`../../assets/signs/` + reportData.radiologist.sign).then((image) =>
-    setSign(image.default)
-  );
+
+  // Error when select the Print template, fixed by using useEffect()
+  // import(`../../assets/signs/` + reportData.radiologist.sign).then((image) =>
+  //   setSign(image.default)
+  // );
 
   const margin = "40px";
   const marginTop = "20px"
@@ -48,6 +50,13 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
     //return `@page {size: A4}`;
   };
 
+  useEffect(() => {
+    const fetchSign = async () => {
+      const response = await import(`../../assets/signs/${reportData.radiologist.sign}`);
+      setSign(response.default);
+    };
+    fetchSign();
+  });
 
   return (
     <>
