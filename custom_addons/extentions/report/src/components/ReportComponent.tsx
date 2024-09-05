@@ -1,14 +1,13 @@
 import { useSearchParams } from "@hooks";
 import { useTranslation } from 'react-i18next';
 import ReactToPrint from 'react-to-print';
-import React, { useState, useEffect, useRef } from 'react';
-import { Button, ButtonEnums, Select, Typography, Dialog } from '@ohif/ui';
+import React, { useState, useEffect, useRef,useCallback } from 'react';
+import { Button, ButtonEnums, Select, Typography, Dialog,Dropdown,IconButton,Icon } from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
 import Modal from 'react-modal';
-import './ReportComponent.css';
-import {createReportTemplate} from '../services';
-import PdfComponent from './PdfComponent';
+
+
 import {
   ClassicEditor,
   AccessibilityHelp,
@@ -33,12 +32,21 @@ import {
 } from 'ckeditor5';
 
 import 'ckeditor5/ckeditor5.css';
-import './ReportComponent.css';
-import Utils from '../utils';
-import * as ReportUtils from '../reportUtils';
-import Constants from '../constants'
-import { fetchOrder, fetchRadiologists, createReport, updateReport, fetchReportTemplates, fetchDicomMetadata } from '../services'
+import Cookies from "js-cookie";
 import axios from "axios";
+
+import './ReportComponent.css';
+import './ReportComponent.css';
+import PdfComponent from './PdfComponent';
+import * as ReportUtils from '../reportUtils';
+import Utils from '../utils';
+import Constants from '../constants'
+import { refreshAccessToken, getUserProfile,
+  fetchOrder, fetchRadiologists, fetchDoctorByUserId,
+  createReport, updateReport, discardReport,fetchReportByStudy,
+  fetchReportTemplates, createReportTemplate,
+  fetchDicomMetadata } from '../services'
+
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -123,6 +131,9 @@ const ReportComponent = ({ props }) => {
     placeholder: 'Type or paste your content here!'
   };
 
+  let IS_AUTH = "true";
+  try { IS_AUTH = process.env.IS_AUTH; } catch(e) {}
+
   // Get query params
   const searchParams = useSearchParams();
   const accession_no = searchParams.get("acn") ? searchParams.get("acn") : "<None>"
@@ -164,6 +175,9 @@ const ReportComponent = ({ props }) => {
     "findings": "",
     "conclusion": "",
     "status": "",
+    "status_origin":"",
+    "findings_origin":"",
+    "conclusion_origin":"",
     "created_time":"",
     "radiologist": {
       "doctor_no": "",
@@ -185,6 +199,7 @@ const ReportComponent = ({ props }) => {
       radiologist: ""
     }
   }
+
   const [orderData, setOrderData] = useState(emptyOrderData)
   const [reportData, setReportData] = useState(emptyReportData)
 
@@ -203,13 +218,21 @@ const ReportComponent = ({ props }) => {
   const [printTemplateList, setPrintTemplateList] = useState({});
   const [selectedPrintTemplate, setSelectedPrintTemplate] = useState({});
 
-
   const [info, setInfo] = useState('');
   const [state, setState] = useState(emptyError);
 
 
   const [showElement, setShowElement] = useState(true)
   const [isConfirmShow, setIsConfirmShow] = useState(false);
+  const [isDeleteConfirmShow, setIsDeleteConfirmShow] = useState(false);
+
+  //Create dialog box, Use Modal lib to create a dialog box
+  Modal.setAppElement('#root');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [reportTemplateName, setReportTemplateName] = useState<any>("");
+
+  //set error if report template name is empty at dialog
+  const [errorMessage, setErrorMessage] = useState("");
 
   // function _getQueryFilterValues(params) {
   //   const newParams = new URLSearchParams();
@@ -218,6 +241,197 @@ const ReportComponent = ({ props }) => {
   //   }
   //   return newParams;
   // };
+
+  const [user, setUser] = useState<any>(undefined);
+
+  const hasAddReportPermission = user?.permissions?.includes(Constants.PERMISSION_ADD_REPORT);
+  const hasEditReportPermission = user?.permissions?.includes(Constants.PERMISSION_EDIT_REPORT);
+  const hasDeleteReportPermission = user?.permissions?.includes(Constants.PERMISSION_DELETE_REPORT);
+
+  const gotoLogin = () => {
+    console.log('Report: Authonrization failed');
+    // Remove cookie
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    delete axios.defaults.headers.common["Authorization"];
+
+    const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
+    (window as Window).location = loginUrl;
+  }
+
+  // const fetchUser = useCallback(async () => {
+  //   try {
+  //     const response = await getUserProfile();
+  //     const usr = await response?.data?.data;
+  //     // Check user exist
+  //     if (!usr) {
+  //       console.log('ReportComponent.useEffect: user not login yet, redirect to Login');
+  //       // Return login
+  //       gotoLogin();
+  //     } else {
+  //       // Get Doctor by user_id
+  //       getDoctorByUserId(usr.id);
+  //       setUser(usr);
+
+  //     }
+  //   } catch (error) {
+  //     gotoLogin();
+  //     setUser(null);
+  //   }
+  // }, []);
+
+  /**
+   * Get doctor by userId
+   * A doctor has a login user account(user_id)
+   * @param userId
+   */
+  const getDoctorByUserId = async(userId) => {
+    let error = state.error;
+    try {
+      const response = await fetchDoctorByUserId(userId);
+      const response_data = response?.data;
+
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+
+      } else if (response_data.data.length == 0) {
+        error.fatal = t('Login user is not a Radiologist. Please contact your administrator.');
+        setState({ ...state, error: error });
+
+      } else {
+        let newList = [] as any;
+        const record = response_data.data[0];
+        newList.push({ value: record.id, label: (Utils.isEmpty(record.title)?"":record.title) + '. ' + record.fullname });
+        setRadiologistList(newList); // list = login doctor user
+        setSelectedRadiologist(newList[0]); // selected = login doctor user
+      }
+    } catch (err: any) {
+      const errMsg = "Get doctor by user id failed. "+err.code +": "+ err.message;
+      console.log("ERROR: ",errMsg);
+      error.fatal = errMsg;
+      setState({ ...state, error: error });
+    }
+  }
+  const getReportByStudy = async(studyUid) => {
+    let error = state.error;
+    try {
+      const response = await fetchReportByStudy(studyUid);
+      const response_data = response?.data;
+
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else {
+        setReportData(response_data);
+      }
+    } catch (err: any) {
+      const errMsg = "getReportByStudy failed. "+err.code +": "+ err.message;
+      console.log("ERROR: ",errMsg);
+    }
+  }
+  // Process access_token
+  // useEffect(() => {
+  //   const accessToken = Cookies.get("access_token");
+  //   const refreshToken = Cookies.get("refresh_token");
+
+  //   if (accessToken && refreshToken) {
+  //     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+  //     fetchUser();
+
+  //   } else if (refreshToken) {
+  //     const refreshAccessTokenAndFetchUser = async () => {
+  //       try {
+  //         const response = await refreshAccessToken({
+  //           refresh_token: refreshToken,
+  //         });
+  //         const {
+  //           access_token: newAccessToken,
+  //           refresh_token: newRefreshToken,
+  //         } = response.data?.data;
+
+  //         Cookies.set("access_token", newAccessToken, { expires: 1 });
+  //         Cookies.set("refresh_token", newRefreshToken, { expires: 7 });
+
+  //         axios.defaults.headers.common[
+  //           "Authorization"
+  //         ] = `Bearer ${newAccessToken}`;
+
+  //         fetchUser();
+  //       } catch (refreshError) {
+  //         gotoLogin();
+  //         setUser(null);
+  //       }
+  //     };
+
+  //     refreshAccessTokenAndFetchUser();
+  //   } else {
+  //     gotoLogin();
+  //     setUser(null);
+  //   }
+  // }, []);
+  const getLoginUser = async () => {
+    let usr = null as any;
+    try {
+      const response = await getUserProfile();
+      usr = await response?.data?.data;
+      // Check user exist
+      if (usr) {
+        // Get Doctor by user_id
+        getDoctorByUserId(usr.id);
+      }
+    } catch (error) {
+      console.log('Get login user failed. ', error.code + ":" +error.message);
+    }
+
+    return usr;
+  };
+
+  const checkAuth = async () => {
+    const accessToken = Cookies.get("access_token");
+    const refreshToken = Cookies.get("refresh_token");
+    let loginUser = null as any;
+
+    if (accessToken && refreshToken) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      // fetchUser();
+      loginUser = await getLoginUser();
+
+    } else if (refreshToken) {
+      const refreshAccessTokenAndFetchUser = async () => {
+        try {
+          const response = await refreshAccessToken({
+            refresh_token: refreshToken,
+          });
+          const {
+            access_token: newAccessToken,
+            refresh_token: newRefreshToken,
+          } = response.data?.data;
+
+          Cookies.set("access_token", newAccessToken, { expires: 1 });
+          Cookies.set("refresh_token", newRefreshToken, { expires: 7 });
+
+          axios.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${newAccessToken}`;
+
+          // fetchUser();
+          return await getLoginUser();
+        } catch (refreshError) {
+          // gotoLogin();
+          // setUser(null);
+          return null;
+        }
+      };
+
+      loginUser = await refreshAccessTokenAndFetchUser();
+    }
+    // Set to state
+    setUser(loginUser);
+    if (!loginUser) {
+      gotoLogin();
+    }
+  };
 
   useEffect(() => {
 
@@ -250,6 +464,11 @@ const ReportComponent = ({ props }) => {
 
 
   const getOrder = async (accession) => {
+    if (IS_AUTH === "true") {
+      // Check Auth first
+      checkAuth();
+    }
+
     let error = state.error;
     if (Utils.isEmpty(accession)) {
       error.fatal = t('Incorrect data! Please close and open the report again');
@@ -265,43 +484,8 @@ const ReportComponent = ({ props }) => {
         // let errors = {''};
         error.fatal = response_data.result.msg
         setState({ ...state, error: error });
+
       } else if (Utils.isObjectEmpty(response_data.data)) {
-        // TODO Get data from image and set to
-        // try {
-        //   const response = await fetchDicomMetadata(study_iuid);
-        //   const dicomData = response?.data[0];
-        //   setOrderData({
-        //     "accession_no": dicomData["00080050"]?.Value?.[0] || "",
-        //     "req_phys_code": "",
-        //     "req_phys_name": dicomData["00080090"]?.Value?.[0] || "",
-        //     "clinical_diagnosis": dicomData["00102000"]?.Value?.[0] || "",
-        //     "order_time": "",
-        //     "modality_type": dicomData["00080060"]?.Value?.[0] || "",
-        //     "is_insurance_applied": false,
-        //     "patient": {
-        //       "pid": dicomData["00100020"]?.Value?.[0] || "",
-        //       "fullname": dicomData["00100010"]?.Value?.[0].Alphabetic || "",
-        //       "gender": dicomData["00100040"]?.Value?.[0] || "",
-        //       "dob": dicomData["00100030"]?.Value?.[0] || "",
-        //       "tel": dicomData["00102154"]?.Value?.[0] || "",
-        //       "address": dicomData["00101040"]?.Value?.[0] || "",
-        //       "insurance_no": ""
-        //     },
-        //     "procedures": [{
-        //       "proc_id": "",
-        //       "study_iuid": dicomData["0020000D"]?.Value?.[0] || "",
-        //       "code": "",
-        //       "name": "",
-        //     }]
-        //   });
-
-        // } catch (err: any) {
-        //   setOrderData(emptyOrderData);
-        //   setReportData(emptyReportData);
-        //   error.fatal = t('No applicable order found') + '. ' + err;
-        //   setState({ ...state, error: error });
-        // }
-
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
         error.fatal = t('No applicable order found');
@@ -318,12 +502,14 @@ const ReportComponent = ({ props }) => {
               "code": procedure.code, // procedure_type
               "name": procedure.name// procedure_type
             }
+            report.status_origin = report.status;
             setReportData(report);
 
             // Check report exist
             if (report.id) {
               // Add current value to selectedRadiologist
-              setSelectedRadiologist({ value: report.radiologist.id, label: report.radiologist.title + '. ' + report.radiologist.fullname });
+              const title = Utils.isEmpty(report.radiologist.title)?"": report.radiologist.title;
+              setSelectedRadiologist({ value: report.radiologist.id, label: title + '. ' + report.radiologist.fullname });
               setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
             }
           }
@@ -342,8 +528,9 @@ const ReportComponent = ({ props }) => {
       }
 
     } catch (err: any) {
-      console.log(err);
-      error.fatal = err;
+      const errMsg = "Get Order failed. "+err.code +": "+ err.message;
+      console.log("ERROR: ",errMsg);
+      error.fatal = errMsg;
       setState({ ...state, error: error });
     }
   }
@@ -364,12 +551,13 @@ const ReportComponent = ({ props }) => {
       } else {
         let newList = [];
 
-        response_data.data.map(item => (newList.push({ value: item.id, label: item.title + '. ' + item.fullname })));
+        response_data.data.map(item => (newList.push({ value: item.id, label: Utils.isEmpty(item.title)?"":item.title + '. ' + item.fullname })));
         setRadiologistList(newList);
       }
     } catch (err: any) {
-      console.log(err);
-      error.fatal = err;
+      const errMsg = "Get Radiologist failed. "+err.code +": "+ err.message;
+      console.log("ERROR: ",errMsg);
+      error.fatal = errMsg;
       setState({ ...state, error: error });
     }
   }
@@ -403,8 +591,9 @@ const ReportComponent = ({ props }) => {
         setReportTemplateOriginList(originalList);
       }
     } catch (err: any) {
-      console.log(err);
-      error.fatal = err;
+      const errMsg = "Get Report template failed. "+err.code +": "+ err.message;
+      console.log("ERROR: ",errMsg);
+      error.fatal = errMsg;
       setState({ ...state, error: error });
     }
   }
@@ -421,7 +610,53 @@ const ReportComponent = ({ props }) => {
   const onEditReport = (event) => {
     // Update status and the sreen auto reload
     setReportData(reportData => ({ ...reportData, status: Constants.DRAFT }));
+    // Backup origin report data
+    setReportData(reportData => ({ ...reportData, findings_origin: reportData.findings }));
+    setReportData(reportData => ({ ...reportData, conclusion_origin: reportData.conclusion }));
   }
+  const onUndoEditReport = () => {
+    // Back report data to origin
+    setReportData(reportData => ({ ...reportData, status: reportData.status_origin }));
+    setReportData(reportData => ({ ...reportData, findings: reportData.findings_origin }));
+    setReportData(reportData => ({ ...reportData, conclusion: reportData.conclusion_origin }));
+  }
+
+  const onDiscardReport = (event) => {
+    setIsDeleteConfirmShow(true);
+  }
+
+  const doDiscardReport = async (reportId:any) => {
+    let error = state.error;
+    try {
+      // Call Rest API
+      const response = await discardReport(reportId);
+
+      const response_data = response.data;
+
+      if (response_data.result.status == 'NG') {
+        error.system = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else {
+        setInfo(t('The report is discarded'));
+        // Clear report data in state
+        setReportData(emptyReportData);
+        setShowElement(true)
+      }
+    } catch (err) {
+      // handle error
+      console.log(err.response.data.result);
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      error.system = msg;
+      setState({ ...state, error: error });
+    }
+    // Set number of time showing information message, 3s
+    setTimeout(function () {
+      setInfo('');
+      setShowElement(false)
+    }, 3000);
+
+  }
+
   const onClose = (event) => {
     // Close the current tab
     window.close();
@@ -429,7 +664,7 @@ const ReportComponent = ({ props }) => {
   const onCloseConfirm = (event) => {
     setIsConfirmShow(false);
   };
-  const onApproveConfirm = (event) => {
+  const onApproveOnConfirm = (event) => {
     switch (event.action.id) {
       case 'yes':
         setIsConfirmShow(false);
@@ -441,6 +676,17 @@ const ReportComponent = ({ props }) => {
     }
   };
 
+  const onDeleteOnConfirm = (event) => {
+    switch (event.action.id) {
+      case 'yes':
+        setIsDeleteConfirmShow(false);
+        doDiscardReport(reportData.id);
+        break;
+      case 'cancel':
+        setIsDeleteConfirmShow(false);
+        break;
+    }
+  };
   const onApprove = (event) => {
     let isError = validate();
 
@@ -451,7 +697,7 @@ const ReportComponent = ({ props }) => {
     // Final status => call at onConfirmSubmit
     //doReport(event, Constants.FINAL);
   };
-  const onSave = (event) => {
+  const onSaveReport = (event) => {
     let isError = validate();
     // Draft status
     if (!isError) {
@@ -461,6 +707,8 @@ const ReportComponent = ({ props }) => {
     //alert(state.workingItem.report);
     // Generate a HL7 msg
   };
+
+
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
     // let isError = validate();
@@ -499,6 +747,7 @@ const ReportComponent = ({ props }) => {
     // }
     // Set number of time showing information message, 3s
     setTimeout(function () {
+      setInfo('');
       setShowElement(false)
     }, 3000);
   }
@@ -519,7 +768,13 @@ const ReportComponent = ({ props }) => {
 
       if (response_data.result.status == 'NG') {
         error.system = response_data.result.msg;
+        if (response_data.result.msg.includes("duplicate key value")) {
+          error.system = t('The report already exists');
+        }
         setState({ ...state, error: error });
+        // Get exist report
+        //getReportByStudy(study_iuid);
+
       } else {
         let info_msg = 'The report is saved as draft'
         if (data.status === Constants.FINAL)
@@ -527,6 +782,7 @@ const ReportComponent = ({ props }) => {
 
         setInfo(t(info_msg));
         // Set latest report
+        response_data.data.status_origin = response_data.data.status;
         setReportData(response_data.data);
       }
     } catch (err) {
@@ -563,6 +819,7 @@ const ReportComponent = ({ props }) => {
 
         setInfo(t(info_msg));
         // Set latest report
+        response_data.data.status_origin = response_data.data.status;
         setReportData(response_data.data);
       }
     } catch (err) {
@@ -655,20 +912,12 @@ const ReportComponent = ({ props }) => {
     setSelectedPrintTemplate(value);
   }
 
-  //Create dialog box, Use Modal lib to create a dialog box
-  Modal.setAppElement('#root');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [reportName, setReportName] = useState<any>("");
-
-  //set error if report template name is empty at dialog
-  const [errorMessage, setErrorMessage] = useState("");
-
   const isShowReportTemplate = () => {
     let isError = validate(false);
     if (!isError) {
       setIsDialogOpen(true);
       setErrorMessage("");
-      setReportName("");
+      setReportTemplateName("");
     }
   };
 
@@ -677,7 +926,7 @@ const ReportComponent = ({ props }) => {
   };
 
   const onSaveReportTemplate = async () => {
-    const name = reportName;
+    const name = reportTemplateName;
     let error = state.error;
     if (name) {
       const data = {
@@ -707,41 +956,119 @@ const ReportComponent = ({ props }) => {
     }
   };
 
+  const menuOptions = [
+    {
+      icon: '',
+      title: user? user.last_name + " "+user.first_name:"Anonymous User",
+      onClick: () => {}
+    }
+  ];
+
+  // Push Logout if auth
+  if (IS_AUTH === "true") {
+    menuOptions.push({
+      icon: 'profile',
+      title: t('Header:Change password'),
+      onClick: () => {window.location.href = "/profile/change-password"}
+    });
+
+    menuOptions.push(
+      {
+        icon: 'power-off',
+        title: t('Header:Logout'),
+        onClick: () => {
+          gotoLogin();
+        },
+      }
+    );
+  }
+
   return (
     <>
       <div className='bg-secondary-dark z-20 border-black px-1 relative'>
         <div className='relative h-[48px] items-center'>
+          <div className="absolute right-0 top-1/2 flex -translate-y-1/2 select-none items-center">
+            <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
+            <div className="flex-shrink-0">
+              <Dropdown
+                id="options"
+                showDropdownIcon={false}
+                list={menuOptions}
+                alignment="right"
+
+              >
+                <IconButton
+                  id={'options-settings-icon'}
+                  variant="text"
+                  color="inherit"
+                  size="initial"
+                  className="text-primary-active hover:bg-primary-dark h-full w-full"
+                >
+                  <Icon name="icon-settings" />
+                </IconButton>
+              </Dropdown>
+            </div>
+          </div>
 
           <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform flex gap-2'>
             {ReportUtils.isPrintEnabled(reportData.status) && !Utils.isObjectEmpty(printTemplateList) && (
-            <>
-            <div className="text-white mt-1 whitespace-nowrap">{t('Print template')}: </div>
-            <div className="w-32">
-              <Select
-                isClearable={false}
-                onChange={onChangePrintTemplateHandler}
-                options={printTemplateList}
-                value={selectedPrintTemplate}
-              />
-            </div></>)}
+              <><div className="text-white mt-1 whitespace-nowrap">{t('Print template')}: </div>
+              <div className="w-40">
+                <Select
+                  isClearable={false}
+                  onChange={onChangePrintTemplateHandler}
+                  options={printTemplateList}
+                  value={selectedPrintTemplate}
+                />
+              </div>
 
-            <ReactToPrint
-              trigger={() => (
-                <Button className={'button-class'}
-                  type={ButtonEnums.type.primary}
-                  size={ButtonEnums.size.medium}
-                  disabled={!ReportUtils.isPrintEnabled(reportData.status)}
-                  startIcon={
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg>
-                  }
-                >
-                  {t('Print Preview')}
-                </Button>
+              <ReactToPrint
+                trigger={() => (
+                  <Button className={'button-class'}
+                    type={ButtonEnums.type.primary}
+                    size={ButtonEnums.size.medium}
+                    disabled={!ReportUtils.isPrintEnabled(reportData.status)}
+                    startIcon={
+                      <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg>
+                    }
+                  >
+                    {t('Print Preview')}
+                  </Button>
+                )}
+                content={() => componentRef.current}
+              />
+              {hasEditReportPermission && (
+              <Button className={'button-class'}
+                type={ButtonEnums.type.primary}
+                size={ButtonEnums.size.medium}
+                startIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
+                }
+                onClick={onEditReport}
+                className={'text-[13px]'}
+                disabled={!ReportUtils.isEditEnabled(reportData.status)}
+              >
+                {t('Edit')}
+              </Button>
               )}
-              content={() => componentRef.current}
-            />
+              {hasDeleteReportPermission && (
+              <Button className={'button-class'}
+                type={ButtonEnums.type.primary}
+                size={ButtonEnums.size.medium}
+                startIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                }
+                onClick={onDiscardReport}
+                className={'text-[13px]'}
+                disabled={!ReportUtils.isEditEnabled(reportData.status)}
+              >
+                {t('Discard')}
+              </Button>
+              )}
+            </>)}
+
             {/* Icons: https://lucide.dev/icons */}
-            {!ReportUtils.isPrintEnabled(reportData.status) && (<>
+            {hasAddReportPermission && !ReportUtils.isPrintEnabled(reportData.status) && (<>
               <Button className={'button-class'}
                 type={ButtonEnums.type.primary}
                 size={ButtonEnums.size.medium}
@@ -753,38 +1080,41 @@ const ReportComponent = ({ props }) => {
                 style={{ fill: 'none' }}
                 disabled={!ReportUtils.isApproveEnabled(reportData.status, state.error.fatal)}
               >
-              {t('Approve')}
-            </Button>
-
-              {/* <Button className={'button-class'}
-                type={ButtonEnums.type.primary}
-                size={ButtonEnums.size.medium}
-                startIcon={
-                  <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
-                }
-                onClick={onEditReport}
-                className={'text-[13px]'}
-                disabled={!ReportUtils.isEditEnabled(reportData.status)}
-              >
-                {t('Edit')}
-              </Button> */}
-              <Button className={'button-class'}
-                type={ButtonEnums.type.primary}
-                size={ButtonEnums.size.medium}
-                startIcon={
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
-                }
-                onClick={onSave}
-                className={'text-[13px]'}
-                disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
-              >
-                {t('Save as Draft')}
+                {t('Approve')}
               </Button>
+
+              {reportData.status_origin != 'F' && reportData.status_origin != 'C' && (
+                <Button className={'button-class'}
+                  type={ButtonEnums.type.primary}
+                  size={ButtonEnums.size.medium}
+                  startIcon={
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
+                  }
+                  onClick={onSaveReport}
+                  className={'text-[13px]'}
+                  disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
+                >
+                  {t('Save as Draft')}
+                </Button>
+              )}
+              {reportData.status_origin != reportData.status && (
+                <Button className={'button-class'}
+                  type={ButtonEnums.type.primary}
+                  size={ButtonEnums.size.medium}
+                  startIcon={
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-undo-2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                  }
+                  onClick={onUndoEditReport}
+                  className={'text-[13px]'}
+                >
+                  {t('Undo')}
+                </Button>
+              )}
             </>
             )}
 
             <Button className={'button-class'}
-              type={ButtonEnums.type.primary}
+              type={ButtonEnums.type.secondary}
               size={ButtonEnums.size.medium}
               startIcon={
                 <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
@@ -999,7 +1329,7 @@ const ReportComponent = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pl-0 text-left'>
-                          {reportData.radiologist.title}. {reportData.radiologist.fullname}
+                          {reportData.radiologist.title??""}. {reportData.radiologist.fullname}
                         </Typography>
                       </div>)}
                       {!reportData.id && (<div className="flex flex-col w-56">
@@ -1047,8 +1377,16 @@ const ReportComponent = ({ props }) => {
               </div>
               )}
 
+              {!hasAddReportPermission && !ReportUtils.isFinalReport(reportData.status) && (
+                <div className="body mt-2 flex justify-between p-2">
+                  <div className='w-full text-red-500' style={{ fontSize: '17px' }}>
+                    {t('No report yet')}
+                  </div>
+                </div>
+              )}
+
               {/* Procedure - Template */}
-              {!ReportUtils.isFinalReport(reportData.status) && (
+              {hasAddReportPermission && !ReportUtils.isFinalReport(reportData.status) && (
                 <div className="body mt-2 flex justify-between p-2">
                   <div className="procedure flex">
                     <div className="mr-2 text-blue-300" style={{ fontSize: '17px' }}>
@@ -1104,6 +1442,7 @@ const ReportComponent = ({ props }) => {
                           </svg>
                         }
                         onClick={isShowReportTemplate}
+                        disabled={!Utils.isEmpty(state.error.fatal)}
                       ></Button>
                     </div>
                     <Modal
@@ -1115,9 +1454,9 @@ const ReportComponent = ({ props }) => {
                       <h2 className="text-primary-light">{t('Create Report Template')}</h2>
                       <input
                         type="text"
-                        value={reportName}
+                        value={reportTemplateName}
                         onChange={(e) => {
-                          setReportName(e.target.value);
+                          setReportTemplateName(e.target.value);
                         }}
                         placeholder={errorMessage || t('Enter the report template name')}
                         className={errorMessage ? 'rounded error' : 'rounded'}
@@ -1156,7 +1495,7 @@ const ReportComponent = ({ props }) => {
                           config={editorConfig}
                           data={reportData.findings}
                           onChange={onChangeFindings}
-                          disabled={ReportUtils.isEditorDisabled(state.error.fatal)}
+                          disabled={ReportUtils.isEditorDisabled(state.error.fatal, user?.permissions)}
                         />}
                       </div>
                     </div>
@@ -1189,7 +1528,7 @@ const ReportComponent = ({ props }) => {
                           config={editorConfig}
                           data={reportData.conclusion}
                           onChange={onChangeConclusion}
-                          disabled={ReportUtils.isEditorDisabled(state.error.fatal)}
+                          disabled={ReportUtils.isEditorDisabled(state.error.fatal, user?.permissions)}
                         />}</div>
                     </div>
                   </div>
@@ -1221,7 +1560,31 @@ const ReportComponent = ({ props }) => {
           onClose={onCloseConfirm}
           noCloseButton={false}
           onShow={() => { }}
-          onSubmit={onApproveConfirm}
+          onSubmit={onApproveOnConfirm}
+          actions={[
+            {
+              id: 'cancel',
+              text: t('Cancel'),
+              type: ButtonEnums.type.secondary,
+            },
+            {
+              id: 'yes',
+              text: t('Agree'),
+              type: ButtonEnums.type.primary,
+              classes: ['reject-yes-button'],
+            },
+          ]}
+        /></div>)}
+
+      {/* Delete Confirm dialog */}
+      {isDeleteConfirmShow && (<div className="w-1/2 absolute flex justify-center right-2" style={{ top: '100px', right: '100px' }}>
+        <Dialog
+          title={t('Confirm')}
+          text={t('Are your sure to discard this report?')}
+          onClose={onCloseConfirm}
+          noCloseButton={false}
+          onShow={() => { }}
+          onSubmit={onDeleteOnConfirm}
           actions={[
             {
               id: 'cancel',

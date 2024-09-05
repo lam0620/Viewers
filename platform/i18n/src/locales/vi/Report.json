@@ -36,6 +36,8 @@
   "Save as Draft": "Lưu tạm",
   "Save": "Lưu",
   "Print Preview": "Xem bản in",
+  "Edit":"Chỉnh sửa",
+  "Discard":"Huỷ",
   "Close": "Đóng",
   "Agree": "Đồng ý",
   "Cancel": "Huỷ",
@@ -48,5 +50,9 @@
   "Incorrect data! Please close and open the report again": "Thao tác sai! Vui lòng đóng và mở lại",
   "There is no any radiologist. Please contact your administrator.": "Không tồn tại bác sĩ đọc ảnh. Vui lòng liên hệ với người quản trị",
   "No applicable order found": "Không tìm thấy chỉ định tương ứng",
-  "Diagnostic report will be approved by [{0}]. Are you sure to approve?": "Duyệt kết quả bỡi [{0}]. Bạn có đồng ý duyệt không?"
+  "Diagnostic report will be approved by [{0}]. Are you sure to approve?": "Duyệt kết quả bỡi [{0}]. Bạn có đồng ý duyệt không?",
+  "No report yet":"Chưa có kết quả",
+  "Undo":"Huỷ chỉnh sửa",
+  "Are your sure to discard this report?":"Bạn có chắc chắn muốn huỷ kết quả này không?",
+  "The report already exists":"Kết quả tồn tại rồi. Bạn không thể tạo mới. Vui lòng đóng và mở lại"
 }

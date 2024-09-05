@@ -40,6 +40,7 @@ const PreWorklist = ({
     // axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
     console.log("Cookie.at:"+Cookies.get("access_token"));
+    console.log("Cookie.rt:"+Cookies.get("refresh_token"));
     navigate(`/?${searchParams.toString()}`, '_self');
   }, []);
 

@@ -63,7 +63,7 @@ function modeFactory({ modeConfiguration }) {
           return {
             id: 'extension-report.layoutTemplateModule.reportLayout',
             props: {
-              component: 'ReportInputForm',
+              component: 'ReportComponent',
             },
           };
         },
