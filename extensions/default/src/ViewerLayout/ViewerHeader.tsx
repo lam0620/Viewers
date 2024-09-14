@@ -151,7 +151,7 @@ function ViewerHeader({
         Cookies.remove("refresh_token");
         delete axios.defaults.headers.common["Authorization"];
 
-        const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
+        const loginUrl = process.env.USER_MNG_URL? process.env.USER_MNG_URL + '/login':"/login";
         (window as Window).location = loginUrl;
       },
     });

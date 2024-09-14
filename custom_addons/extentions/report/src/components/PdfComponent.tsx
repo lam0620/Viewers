@@ -5,6 +5,8 @@ import QRCode from 'qrcode.react';
 import logo from '../../assets/images/org_logo.png';
 import './PdfComponent.css';
 import Utils from '../utils';
+import Constants from '../constants';
+
 
 interface PDFReportComponentProps {
   orderData: any;
@@ -51,12 +53,17 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
   };
 
   useEffect(() => {
-    const fetchSign = async () => {
-      const response = await import(`../../assets/signs/${reportData.radiologist.sign}`);
-      setSign(response.default);
-    };
-    fetchSign();
-  });
+    // const fetchSign = async () => {
+    //   const response = await import(`../../assets/signs/${reportData.radiologist.sign}`);
+    //   setSign(response.default);
+    // };
+    // fetchSign();
+
+    // signs are uploaded to /media/signs/... (define in nginx)
+    // sign = signs/xxx.yyy
+    setSign(Constants.USER_MNG_URL+ reportData.radiologist.sign);
+  }, [sign]);
+
 
   return (
     <>

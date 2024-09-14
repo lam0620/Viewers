@@ -249,13 +249,14 @@ const ReportComponent = ({ props }) => {
   const hasDeleteReportPermission = user?.permissions?.includes(Constants.PERMISSION_DELETE_REPORT);
 
   const gotoLogin = () => {
-    console.log('Report: Authonrization failed');
+    console.log('Report: Authonrization failed. Go to login');
     // Remove cookie
     Cookies.remove("access_token");
     Cookies.remove("refresh_token");
     delete axios.defaults.headers.common["Authorization"];
 
-    const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
+    //const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
+    const loginUrl = Constants.USER_MNG_URL + '/login';
     (window as Window).location = loginUrl;
   }
 
@@ -1141,6 +1142,7 @@ const ReportComponent = ({ props }) => {
           }}
         >
           <div className="w-full text-white p-2 mt-2">
+          {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
 
             <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
             <div className="flex flex-row">
