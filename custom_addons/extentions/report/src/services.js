@@ -1,10 +1,12 @@
 import axios from "axios";
 
-const INTEG_API_ENDPOINT = process.env.INTEG_API_ENDPOINT;
-const DCM_API_ENDPOINT = process.env.DCM_API_ENDPOINT;
+import Constants from './constants'
+
+const DCM_API_ENDPOINT = Constants.DCM_API_ENDPOINT;
+const INTEG_API_ENDPOINT = Constants.API_ENDPOINT;
 
 let IS_AUTH = "true";
-try { IS_AUTH = process.env.IS_AUTH; } catch(e) {}
+try { IS_AUTH = Constants.IS_AUTH; } catch(e) {}
 
 // For Dev
 if (IS_AUTH !== "true") {
