@@ -449,6 +449,7 @@ function WorkList({
               if (mode.routeName == 'report') {
                 query.append('acn', accession);
               }
+              const segmentation = t('Modes:Segmentation');
 
               query.append('StudyInstanceUIDs', studyInstanceUid);
               return (
@@ -492,7 +493,7 @@ function WorkList({
                       dataCY={`mode-${mode.routeName}-${studyInstanceUid}`}
                       className={isValidMode ? 'text-[13px]' : 'bg-[#222d44] text-[13px]'}
                     >
-                      {mode.displayName}
+                      {mode.displayName=='Segmentation'? segmentation: mode.displayName}
                     </Button>
                   </Link>
                 )
@@ -518,7 +519,7 @@ function WorkList({
                 dataCY={`mode-report-${studyInstanceUid}`}
                 className={'text-[13px]'}
               >
-                {t('Report')}
+                {t('Modes:Report')}
               </Button>
             </Link>
 
@@ -554,7 +555,7 @@ function WorkList({
               dataCY={`${studyInstanceUid}`}
               className={'text-[13px]'}
             >
-              {t('Download')}
+              {t('Modes:Download')}
             </Button>
 
           </div>
