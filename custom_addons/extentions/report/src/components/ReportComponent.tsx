@@ -1158,6 +1158,7 @@ const ReportComponent = ({ props }) => {
                 {collapsed ? '': '<<'}
               </button>
             </div>
+
             {!collapsed && (<div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
@@ -1364,6 +1365,11 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>)}
         </div >
+        {collapsed &&(<div className="w-10 ">
+          <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
+                {collapsed ? '>>': ''}
+              </button>
+        </div>)}
 
         {/* Right panel - Findigs/Conclusion*/}
         <div className="body-right flex h-full flex-1 flex-col">
@@ -1487,11 +1493,6 @@ const ReportComponent = ({ props }) => {
                 <div className="flex flex-row justify-between">
                   <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
                     {t('Findings')}
-                  </div>
-                  <div>
-                    <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
-                      {collapsed ? '>>': ''}
-                    </button>
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
