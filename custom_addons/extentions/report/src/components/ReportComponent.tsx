@@ -7,6 +7,8 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
 import Modal from 'react-modal';
 
+import { useAppConfig } from '@state';
+import classNames from 'classnames';
 
 import {
   ClassicEditor,
@@ -51,6 +53,8 @@ import { refreshAccessToken, getUserProfile,
 let nextId = 0;
 const ReportComponent = ({ props }) => {
   const { t } = useTranslation('Report');
+  const [appConfig] = useAppConfig();
+
   // Create Document Component
   const editorContainerRef = useRef(null);
   const editorRef = useRef(null);
@@ -988,6 +992,17 @@ const ReportComponent = ({ props }) => {
     <>
       <div className='bg-secondary-dark z-20 border-black px-1 relative'>
         <div className='relative h-[48px] items-center'>
+          <div className="absolute left-0 top-1/2 flex -translate-y-1/2 items-center">
+            <div
+              className={classNames(
+                'mr-3 inline-flex items-center'
+              )}
+            >
+              <div className="ml-1">
+                {appConfig.whiteLabeling?.createLogoComponentFn?.(React, props) || ""}
+              </div>
+            </div>
+          </div>
           <div className="absolute right-0 top-1/2 flex -translate-y-1/2 select-none items-center">
             <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
             <div className="flex-shrink-0">
