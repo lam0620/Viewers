@@ -1154,8 +1154,8 @@ const ReportComponent = ({ props }) => {
           <div className="w-full text-white p-2 mt-2"> {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
             <div className="flex justify-between items-center">
               {!collapsed &&(<div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>)}
-              <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
-                {collapsed ? '': '<<'}
+              <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar} title={t("Thu gọn")}>
+                {collapsed ? '': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-left-from-line"><path d="m9 6-6 6 6 6"/><path d="M3 12h14"/><path d="M21 19V5"/></svg>}
               </button>
             </div>
 
@@ -1366,9 +1366,9 @@ const ReportComponent = ({ props }) => {
           </div>)}
         </div >
         {collapsed &&(<div className="w-10 ">
-          <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
-                {collapsed ? '>>': ''}
-              </button>
+          <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar} title={t("Mở rộng")}>
+            {collapsed ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-right-from-line"><path d="M3 5v14"/><path d="M21 12H7"/><path d="m15 18 6-6-6-6"/></svg>: ''}
+          </button>
         </div>)}
 
         {/* Right panel - Findigs/Conclusion*/}
