@@ -19,11 +19,25 @@
   border-color: rgb(59 130 246)
 }
 
-@media(min-width:1425px) {
-  .body {
-    display: flex;
-  }
+/* Base styles */
+.body {
+  display: flex;
+  height: calc(100vh - 52px);
+  overflow: auto;
+}
 
+.body-left {
+  transition: all 0.3s ease-in-out;
+  background: black;
+  border-right: 1px solid black;
+  box-sizing: border-box;
+}
+
+.body-right {
+  height: auto;
+}
+
+@media (min-width: 1425px) {
   .body-left {
     height: auto;
     width: 25%;
@@ -32,25 +46,17 @@
   .body-right {
     margin-left: 15px;
     width: 70%;
-    height: auto;
   }
 }
 
-@media(min-width:940px) {
-  .body {
-    display: flex;
-  }
-
+@media (min-width: 940px) {
   .body-left {
     height: auto;
-    margin-left: 0px;
-    max-width: auto;
     width: 500px;
   }
 
   .body-right {
     width: auto;
-    height: auto;
   }
 
   .procedure {
@@ -62,7 +68,7 @@
   }
 }
 
-@media(max-width:470px) {
+@media (max-width: 470px) {
   .body {
     display: block;
   }
@@ -70,14 +76,10 @@
   .body-left {
     width: 100%;
     height: auto;
-    margin-left: 0px;
-    max-width: auto;
-    width: auto;
   }
 
   .body-right {
     width: 100%;
-    height: auto;
   }
 
   .procedure {
@@ -90,6 +92,14 @@
   }
 }
 
+.collapsed .body-left {
+  width: 0 !important;
+}
+
+.collapsed .body-right {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
 
 @media (min-width: 300px) and (max-width: 490px) {
   .button-class {

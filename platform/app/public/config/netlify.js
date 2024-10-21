@@ -2,9 +2,12 @@
 
 window.config = {
   routerBasename: '/',
+  // whiteLabeling: {},
   extensions: [],
   modes: [],
   showStudyList: true,
+  // some windows systems have issues with more than 3 web workers
+  maxNumberOfWebWorkers: 3,
   // below flag is for performance reasons, but it might not work for all servers
   showWarningMessageForCrossOrigin: true,
   showCPUFallbackMessage: true,
@@ -12,18 +15,49 @@ window.config = {
   experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  useExperimentalUI: false,
+  showPatientInfo: 'visible',
+  investigationalUseDialog: {
+    option: 'never',
+  },
+  studyPrefetcher: {
+    enabled: true,
+    displaySetsCount: 2,
+    maxNumPrefetchRequests: 10,
+    order: 'closest',
+  },
+
+  maxNumRequests: {
+    interaction: 100,
+    thumbnail: 75,
+    // Prefetch number is dependent on the http protocol. For http 2 or
+    // above, the number of requests can be go a lot higher.
+    prefetch: 25,
+  },
   // filterQueryParam: false,
-  defaultDataSourceName: 'ohif',
+  defaultDataSourceName: 'dicomweb',
+  /* Dynamic config allows user to pass "configUrl" query string this allows to load config without recompiling application. The regex will ensure valid configuration source */
+  // dangerouslyUseDynamicConfig: {
+  //   enabled: true,
+  //   // regex will ensure valid configuration source and default is /.*/ which matches any character. To use this, setup your own regex to choose a specific source of configuration only.
+  //   // Example 1, to allow numbers and letters in an absolute or sub-path only.
+  //   // regex: /(0-9A-Za-z.]+)(\/[0-9A-Za-z.]+)*/
+  //   // Example 2, to restricts to either hosptial.com or othersite.com.
+  //   // regex: /(https:\/\/hospital.com(\/[0-9A-Za-z.]+)*)|(https:\/\/othersite.com(\/[0-9A-Za-z.]+)*)/
+  //   regex: /.*/,
+  // },
   dataSources: [
     {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-      sourceName: 'ohif',
+      sourceName: 'dicomweb',
       configuration: {
-        friendlyName: 'AWS S3 Static wado server',
-        name: 'aws',
-        wadoUriRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d33do7qe4w26qo.cloudfront.net/dicomweb',
+        friendlyName: 'PACS Server',
+        name: 'pacs',
+
+        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
+        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
@@ -50,9 +84,9 @@ window.config = {
       configuration: {
         friendlyName: 'AWS S3 Static wado secondary server',
         name: 'aws',
-        wadoUriRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d28o5kq0jsoob5.cloudfront.net/dicomweb',
+        wadoUriRoot: 'https://dd14fa38qiwhyfd.cloudfront.net/dicomweb',
+        qidoRoot: 'https://dd14fa38qiwhyfd.cloudfront.net/dicomweb',
+        wadoRoot: 'https://dd14fa38qiwhyfd.cloudfront.net/dicomweb',
         qidoSupportsIncludeField: false,
         supportsReject: false,
         imageRendering: 'wadors',
@@ -72,7 +106,6 @@ window.config = {
         omitQuotationForMultipartRequest: true,
       },
     },
-
     {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
       sourceName: 'ohif3',
@@ -128,6 +161,14 @@ window.config = {
     },
 
     {
+      namespace: '@ohif/extension-default.dataSourcesModule.dicomwebproxy',
+      sourceName: 'dicomwebproxy',
+      configuration: {
+        friendlyName: 'dicomweb delegating proxy',
+        name: 'dicomwebproxy',
+      },
+    },
+    {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomjson',
       sourceName: 'dicomjson',
       configuration: {
@@ -150,6 +191,93 @@ window.config = {
     // Could use services manager here to bring up a dialog/modal if needed.
     console.warn('test, navigate to https://ohif.org/');
   },
+  // whiteLabeling: {
+  //   /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+  //   createLogoComponentFn: function (React) {
+  //     return React.createElement(
+  //       'a',
+  //       {
+  //         target: '_self',
+  //         rel: 'noopener noreferrer',
+  //         className: 'text-purple-600 line-through',
+  //         href: '/',
+  //       },
+  //       React.createElement('img',
+  //         {
+  //           src: './assets/customLogo.svg',
+  //           className: 'w-8 h-8',
+  //         }
+  //       ))
+  //   },
+  // },
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/custom_logo.png',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
+
+  customizationService: {
+    cornerstoneOverlayTopRight: {
+      id: 'cornerstoneOverlayTopRight',
+      items: [
+        {
+          id: 'PatientNameOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientName',
+          // label: 'Name:',
+          title: 'Patient Name',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientName &&
+            instance.PatientName.Alphabetic,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientName.Alphabetic),
+        },
+        {
+          id: 'PatientAgeOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientAge',
+          // label: 'Age:',
+          title: 'Patient Age',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientAge,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientAge),
+        },
+        {
+          id: 'PatientSexOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientSex',
+          // label: 'Gender:',
+          title: 'PatientSex',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientSex,
+          contentF: ({ instance }) =>
+            instance.PatientSex === 'F' ? 'Female' : instance.PatientSex === 'M' ? 'Male' : instance.PatientSex,
+        }
+      ],
+    },
+  },
+
   hotkeys: [
     {
       commandName: 'incrementActiveViewport',
@@ -190,7 +318,12 @@ window.config = {
     //   label: 'Next Series',
     //   keys: ['pageup'],
     // },
-    { commandName: 'setZoomTool', label: 'Zoom', keys: ['z'] },
+    {
+      commandName: 'setToolActive',
+      commandOptions: { toolName: 'Zoom' },
+      label: 'Zoom',
+      keys: ['z'],
+    },
     // ~ Window level presets
     {
       commandName: 'windowLevelPreset1',
@@ -238,4 +371,212 @@ window.config = {
       keys: ['9'],
     },
   ],
+  tours: [
+    {
+      id: 'basicViewerTour',
+      route: '/viewer',
+      steps: [
+        {
+          id: 'scroll',
+          title: 'Scrolling Through Images',
+          text: 'You can scroll through the images using the mouse wheel or scrollbar.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'top',
+          },
+          advanceOn: {
+            selector: '.cornerstone-viewport-element',
+            event: 'CORNERSTONE_TOOLS_MOUSE_WHEEL',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'zoom',
+          title: 'Zooming In and Out',
+          text: 'You can zoom the images using the right click.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'left',
+          },
+          advanceOn: {
+            selector: '.cornerstone-viewport-element',
+            event: 'CORNERSTONE_TOOLS_MOUSE_UP',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'pan',
+          title: 'Panning the Image',
+          text: 'You can pan the images using the middle click.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'top',
+          },
+          advanceOn: {
+            selector: '.cornerstone-viewport-element',
+            event: 'CORNERSTONE_TOOLS_MOUSE_UP',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'windowing',
+          title: 'Adjusting Window Level',
+          text: 'You can modify the window level using the left click.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'left',
+          },
+          advanceOn: {
+            selector: '.cornerstone-viewport-element',
+            event: 'CORNERSTONE_TOOLS_MOUSE_UP',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'length',
+          title: 'Using the Measurement Tools',
+          text: 'You can measure the length of a region using the Length tool.',
+          attachTo: {
+            element: '[data-cy="MeasurementTools-split-button-primary"]',
+            on: 'bottom',
+          },
+          advanceOn: {
+            selector: '[data-cy="MeasurementTools-split-button-primary"]',
+            event: 'click',
+          },
+          beforeShowPromise: () =>
+            waitForElement('[data-cy="MeasurementTools-split-button-primary]'),
+        },
+        {
+          id: 'drawAnnotation',
+          title: 'Drawing Length Annotations',
+          text: 'Use the length tool on the viewport to measure the length of a region.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'right',
+          },
+          advanceOn: {
+            selector: 'body',
+            event: 'event::measurement_added',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'trackMeasurement',
+          title: 'Tracking Measurements in the Panel',
+          text: 'Click yes to track the measurements in the measurement panel.',
+          attachTo: {
+            element: '[data-cy="prompt-begin-tracking-yes-btn"]',
+            on: 'bottom',
+          },
+          advanceOn: {
+            selector: '[data-cy="prompt-begin-tracking-yes-btn"]',
+            event: 'click',
+          },
+          beforeShowPromise: () => waitForElement('[data-cy="prompt-begin-tracking-yes-btn"]'),
+        },
+        {
+          id: 'openMeasurementPanel',
+          title: 'Opening the Measurements Panel',
+          text: 'Click the measurements button to open the measurements panel.',
+          attachTo: {
+            element: '#trackedMeasurements-btn',
+            on: 'left-start',
+          },
+          advanceOn: {
+            selector: '#trackedMeasurements-btn',
+            event: 'click',
+          },
+          beforeShowPromise: () => waitForElement('#trackedMeasurements-btn'),
+        },
+        {
+          id: 'scrollAwayFromMeasurement',
+          title: 'Scrolling Away from a Measurement',
+          text: 'Scroll the images using the mouse wheel away from the measurement.',
+          attachTo: {
+            element: '.viewport-element',
+            on: 'left',
+          },
+          advanceOn: {
+            selector: '.cornerstone-viewport-element',
+            event: 'CORNERSTONE_TOOLS_MOUSE_WHEEL',
+          },
+          beforeShowPromise: () => waitForElement('.viewport-element'),
+        },
+        {
+          id: 'jumpToMeasurement',
+          title: 'Jumping to Measurements in the Panel',
+          text: 'Click the measurement in the measurement panel to jump to it.',
+          attachTo: {
+            element: '[data-cy="measurement-item"]',
+            on: 'left-start',
+          },
+          advanceOn: {
+            selector: '[data-cy="measurement-item"]',
+            event: 'click',
+          },
+          beforeShowPromise: () => waitForElement('[data-cy="measurement-item"]'),
+        },
+        {
+          id: 'changeLayout',
+          title: 'Changing Layout',
+          text: 'You can change the layout of the viewer using the layout button.',
+          attachTo: {
+            element: '[data-cy="Layout"]',
+            on: 'bottom',
+          },
+          advanceOn: {
+            selector: '[data-cy="Layout"]',
+            event: 'click',
+          },
+          beforeShowPromise: () => waitForElement('[data-cy="Layout"]'),
+        },
+        {
+          id: 'selectLayout',
+          title: 'Selecting the MPR Layout',
+          text: 'Select the MPR layout to view the images in MPR mode.',
+          attachTo: {
+            element: '[data-cy="MPR"]',
+            on: 'left-start',
+          },
+          advanceOn: {
+            selector: '[data-cy="MPR"]',
+            event: 'click',
+          },
+          beforeShowPromise: () => waitForElement('[data-cy="MPR"]'),
+        },
+      ],
+      tourOptions: {
+        useModalOverlay: true,
+        defaultStepOptions: {
+          buttons: [
+            {
+              text: 'Skip all',
+              action() {
+                this.complete();
+              },
+              secondary: true,
+            },
+          ],
+        },
+      },
+    },
+  ],
 };
+
+function waitForElement(selector, maxAttempts = 20, interval = 25) {
+  return new Promise(resolve => {
+    let attempts = 0;
+
+    const checkForElement = setInterval(() => {
+      const element = document.querySelector(selector);
+
+      if (element || attempts >= maxAttempts) {
+        clearInterval(checkForElement);
+        resolve();
+      }
+
+      attempts++;
+    }, interval);
+  });
+}

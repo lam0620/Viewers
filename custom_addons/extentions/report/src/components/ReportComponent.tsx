@@ -203,7 +203,7 @@ const ReportComponent = ({ props }) => {
       radiologist: ""
     }
   }
-
+  const [collapsed, setCollapsed] = useState(false);
   const [orderData, setOrderData] = useState(emptyOrderData)
   const [reportData, setReportData] = useState(emptyReportData)
 
@@ -988,6 +988,10 @@ const ReportComponent = ({ props }) => {
     );
   }
 
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
+
   return (
     <>
       <div className='bg-secondary-dark z-20 border-black px-1 relative'>
@@ -1144,23 +1148,17 @@ const ReportComponent = ({ props }) => {
           </div>
         </div>
       </div>
-      <div className='body relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto bg-black'
-        style={{ height: 'calc(100vh - 52px' }}
-      >
-        {/* Left panel */}
-        <div className='body-left transition-all duration-300 ease-in-out bg-black border-r border-black justify-start box-content flex flex-col mr-1'
-          style={{
-            // marginLeft: '0px',
-            // maxWidth: '448px',
-            // width: '448px',
-            // position: 'relative',
-          }}
-        >
-          <div className="w-full text-white p-2 mt-2">
-          {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
-
-            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>
-            <div className="flex flex-row">
+      <div className={`body relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}>
+        {/* {left panel } */}
+        <div className="body-left transition-all duration-300 ease-in-out flex flex-col">
+          <div className="w-full text-white p-2 mt-2"> {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
+            <div className="flex justify-between items-center">
+              {!collapsed &&(<div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>)}
+              <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
+                {collapsed ? '': '<<'}
+              </button>
+            </div>
+            {!collapsed && (<div className="flex flex-row">
               <div className="flex w-full flex-row">
                 <div className="flex flex-row w-full">
                   <div className="flex flex-col mt-2 text-right w-full">
@@ -1216,9 +1214,9 @@ const ReportComponent = ({ props }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>)}
           </div>
-          <div className="w-full text-white p-2">
+          {!collapsed && (<div className="w-full text-white p-2">
             <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Order Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
@@ -1306,11 +1304,10 @@ const ReportComponent = ({ props }) => {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-          </div>
-          <div className="w-full text-white p-2">
+          </div>)}
+          {!collapsed &&(<div className="w-full text-white p-2">
             <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Report Information')}</div>
             <div className="flex flex-row">
               <div className="flex w-full flex-row">
@@ -1365,11 +1362,11 @@ const ReportComponent = ({ props }) => {
 
               </div>
             </div>
-          </div>
+          </div>)}
         </div >
 
         {/* Right panel - Findigs/Conclusion*/}
-        < div className="body-right mr-2 main-container flex h-full flex-1 flex-col" >
+        <div className="body-right flex h-full flex-1 flex-col">
           <div className="flex flex-row w-full">
             <div className="flex flex-col text-left w-full">
 
@@ -1490,6 +1487,11 @@ const ReportComponent = ({ props }) => {
                 <div className="flex flex-row justify-between">
                   <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
                     {t('Findings')}
+                  </div>
+                  <div>
+                    <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar}>
+                      {collapsed ? '>>': ''}
+                    </button>
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (

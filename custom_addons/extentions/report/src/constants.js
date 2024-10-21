@@ -13,5 +13,6 @@ export default {
   LOGIN_URL: process.env.USER_MNG_URL + '/login',
 
   DCM_API_ENDPOINT: process.env.DCM_API_ENDPOINT,
-  IS_AUTH: process.env.IS_AUTH
+  IS_AUTH: process.env.IS_AUTH,
+
 }

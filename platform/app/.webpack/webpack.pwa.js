@@ -92,6 +92,18 @@ module.exports = (env, argv) => {
           __dirname,
           'C:/Users/Admin/Documents/dicom-viewer-react/custom_addons/extentions/study-download/node_modules'
         ),
+        path.resolve(
+          __dirname,
+          'C:/Users/Hoangpd/Downloads/dicom-viewer-react/custom_addons/extentions/report/node_modules'
+        ),
+        path.resolve(
+          __dirname,
+          'C:/Users/Hoangpd/Downloads/dicom-viewer-react/custom_addons/extentions/study-download/node_modules'
+        ),
+        path.resolve(
+          __dirname,
+          'C:/Users/Hoangpd/Downloads/dicom-viewer-react/custom_addons/modes/report/node_modules'
+        ),
       ],
     },
     plugins: [
