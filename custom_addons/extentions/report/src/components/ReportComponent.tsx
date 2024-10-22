@@ -248,9 +248,16 @@ const ReportComponent = ({ props }) => {
 
   const [user, setUser] = useState<any>(undefined);
 
-  const hasAddReportPermission = user?.permissions?.includes(Constants.PERMISSION_ADD_REPORT);
-  const hasEditReportPermission = user?.permissions?.includes(Constants.PERMISSION_EDIT_REPORT);
-  const hasDeleteReportPermission = user?.permissions?.includes(Constants.PERMISSION_DELETE_REPORT);
+  const isAuth = Constants.IS_AUTH === 'true';
+  const hasAddReportPermission =
+    user?.permissions?.includes(Constants.PERMISSION_ADD_REPORT) ||
+    user?.is_superuser || !isAuth;
+  const hasEditReportPermission =
+    user?.permissions?.includes(Constants.PERMISSION_EDIT_REPORT) ||
+    user?.is_superuser || !isAuth;
+  const hasDeleteReportPermission =
+    user?.permissions?.includes(Constants.PERMISSION_DELETE_REPORT) ||
+    user?.is_superuser || !isAuth;
 
   const gotoLogin = () => {
     console.log('Report: Authonrization failed. Go to login');
