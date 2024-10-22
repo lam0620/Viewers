@@ -70,6 +70,7 @@ import {
 let nextId = 0;
 const ReportComponent = ({ props }) => {
   const { t } = useTranslation('Report');
+  let test; //test thu ten tren gitlab
   const [appConfig] = useAppConfig();
 
   // Create Document Component
