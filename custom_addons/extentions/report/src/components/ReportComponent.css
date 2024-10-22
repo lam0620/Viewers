@@ -20,6 +20,11 @@
 .border-blue-500 {
   border-color: rgb(59 130 246);
 }
+.bg-secondary-dark {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
 
 /* Base styles */
 

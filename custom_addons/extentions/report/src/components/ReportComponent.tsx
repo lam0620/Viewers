@@ -70,7 +70,6 @@ import {
 let nextId = 0;
 const ReportComponent = ({ props }) => {
   const { t } = useTranslation('Report');
-  let test; //test thu ten tren gitlab
   const [appConfig] = useAppConfig();
 
   // Create Document Component
@@ -1296,7 +1295,7 @@ const ReportComponent = ({ props }) => {
         </div>
       </div>
       <div
-        className={`body relative flex w-full flex-row flex-nowrap items-stretch ${collapsed ? 'collapsed' : ''}`}
+        className={`body relative flex w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}
       >
         {/* {left panel } */}
         <div className="body-left flex flex-col transition-all duration-300 ease-in-out">
