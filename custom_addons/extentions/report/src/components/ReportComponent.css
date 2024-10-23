@@ -1,4 +1,7 @@
-.ck-editor__editable_inline {
+#findings .ck-editor__editable_inline {
+  min-height: 400px;
+}
+#conclusion .ck-editor__editable_inline {
   min-height: 200px;
 }
 
@@ -16,6 +19,11 @@
 
 .border-blue-500 {
   border-color: rgb(59 130 246);
+}
+.bg-secondary-dark {
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 /* Base styles */

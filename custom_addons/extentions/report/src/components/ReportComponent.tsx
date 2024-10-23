@@ -1155,7 +1155,7 @@ const ReportComponent = ({ props }) => {
           </div>
         </div>
       </div>
-      <div className={`body relative flex h-screen w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}>
+      <div className={`body relative flex w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}>
         {/* {left panel } */}
         <div className="body-left transition-all duration-300 ease-in-out flex flex-col">
           <div className="w-full text-white p-2 mt-2"> {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
@@ -1512,7 +1512,7 @@ const ReportComponent = ({ props }) => {
                   </div>
                 )}
                 {!ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div id="findings" className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
                     <div className="editor-container__editor">
 
                       {/* Show report input form */}
@@ -1531,7 +1531,7 @@ const ReportComponent = ({ props }) => {
 
               </div>
 
-              <div className="mb-2 p-2 flex flex-col">
+              <div className="mb-2 px-2 pt-2 flex flex-col">
                 <div className="flex flex-row justify-between">
                   <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
                     {t('Conclusion')}
@@ -1542,12 +1542,12 @@ const ReportComponent = ({ props }) => {
                     <Typography
                       variant="subtitle"
                       className='text-primary-light pl-0 text-left'>
-                      <div className="findings" dangerouslySetInnerHTML={{ __html: reportData.conclusion }} />
+                      <div className="conclusion" dangerouslySetInnerHTML={{ __html: reportData.conclusion }} />
                     </Typography>
                   </div>
                 )}
                 {!ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div id="conclusion" className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
                     <div className="editor-container__editor">
                       <div ref={editorRef}>{isLayoutReady &&
                         <CKEditor
