@@ -104,7 +104,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
             <p className='whitespace-nowrap'>Điện thoại: {orderData.patient.tel}</p>
           </div>
           <p>Chẩn đoán: {orderData.clinical_diagnosis}</p>
-          {templateData.value != "0" && (<p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>)}
+          {templateData.value != "0" && (<p>Bác sĩ chỉ định: {orderData.referring_phys_name}</p>)}
           <p className="text-red-600">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
           <p className="text-red-600 mt-4">MÔ TẢ HÌNH ẢNH:</p>
           <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>

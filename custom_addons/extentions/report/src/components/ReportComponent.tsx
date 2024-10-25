@@ -149,8 +149,8 @@ const ReportComponent = ({ props }) => {
   const emptyOrderData =
   {
     "accession_no": "",
-    "req_phys_code": "",
-    "req_phys_name": "",
+    "referring_phys_code": "",
+    "referring_phys_name": "",
     "clinical_diagnosis": "",
     "order_time": "",
     "modality_type": "",
@@ -1306,7 +1306,7 @@ const ReportComponent = ({ props }) => {
                         <Typography
                           variant="subtitle"
                           className='text-primary-light pl-0 text-right'>
-                          {orderData.req_phys_name}
+                          {orderData.referring_phys_name}
                         </Typography>
                       </div>
                     </div>
