@@ -1,8 +1,11 @@
 #findings .ck-editor__editable_inline {
-  min-height: 400px;
+  min-height: 290px;
 }
 #conclusion .ck-editor__editable_inline {
   min-height: 200px;
+}
+#scantype .ck-editor__editable_inline {
+  min-height: 80px;
 }
 
 .bg-red-500 {
@@ -168,4 +171,8 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+.pl-scan {
+  padding-left: 3.2rem;
+  width: 17.2rem;
 }

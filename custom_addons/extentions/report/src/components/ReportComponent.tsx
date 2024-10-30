@@ -65,6 +65,7 @@ import {
   fetchReportTemplates,
   createReportTemplate,
   fetchDicomMetadata,
+  fetchScandata,
 } from '../services';
 
 let nextId = 0;
@@ -219,6 +220,8 @@ const ReportComponent = ({ props }) => {
     conclusion: '',
     status: '',
     status_origin: '',
+    imaging_scan_type_origin: '',
+    imaging_scan_type: '',
     findings_origin: '',
     conclusion_origin: '',
     created_time: '',
@@ -239,6 +242,7 @@ const ReportComponent = ({ props }) => {
       system: '', // disabled all
       findings: '',
       conclusion: '',
+      imaging_scan_type: '',
       radiologist: '',
     },
   };
@@ -489,6 +493,8 @@ const ReportComponent = ({ props }) => {
     getOrder(accession_no);
     // Get list of radiologists
     getRadiologists();
+    //Get Scan Type
+    //fetchScanType();
 
     try {
       // Get from .env
@@ -665,12 +671,20 @@ const ReportComponent = ({ props }) => {
     // Backup origin report data
     setReportData(reportData => ({ ...reportData, findings_origin: reportData.findings }));
     setReportData(reportData => ({ ...reportData, conclusion_origin: reportData.conclusion }));
+    setReportData(reportData => ({
+      ...reportData,
+      imaging_scan_type_origin: reportData.imaging_scan_type,
+    }));
   };
   const onUndoEditReport = () => {
     // Back report data to origin
     setReportData(reportData => ({ ...reportData, status: reportData.status_origin }));
     setReportData(reportData => ({ ...reportData, findings: reportData.findings_origin }));
     setReportData(reportData => ({ ...reportData, conclusion: reportData.conclusion_origin }));
+    setReportData(reportData => ({
+      ...reportData,
+      imaging_scan_type: reportData.imaging_scan_type_origin,
+    }));
   };
 
   const onDiscardReport = event => {
@@ -773,6 +787,7 @@ const ReportComponent = ({ props }) => {
       let data = {
         accession_no: accession_no,
         study_iuid: study_iuid,
+        imaging_scan_type: reportData.imaging_scan_type,
         findings: reportData.findings,
         conclusion: reportData.conclusion,
         status: status,
@@ -785,6 +800,7 @@ const ReportComponent = ({ props }) => {
     } else {
       // Update the report
       let data = {
+        imaging_scan_type: reportData.imaging_scan_type,
         findings: reportData.findings,
         conclusion: reportData.conclusion,
         status: status,
@@ -878,12 +894,10 @@ const ReportComponent = ({ props }) => {
     setState({ ...state, error: error });
 
     let isError = false;
-
     const findings = reportData.findings;
     const conclusion = reportData.conclusion;
 
     let item = t('Findings');
-
     // Check findings
     if (Utils.isEmpty(findings)) {
       error.findings = t('{0} is required').replace('{0}', item);
@@ -922,6 +936,14 @@ const ReportComponent = ({ props }) => {
     const data = editor.getData();
     setReportData(reportData => ({ ...reportData, findings: data }));
   };
+  const onChangeImagingScanType = (event, editor) => {
+    // const data = event.target.value;
+    // setSelectedScan({ ...selectedScan, label: data });
+    // setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+    const data = editor.getData();
+    setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+  };
+
   const onChangeConclusion = (event, editor) => {
     const data = editor.getData();
     setReportData(reportData => ({ ...reportData, conclusion: data }));
@@ -946,7 +968,6 @@ const ReportComponent = ({ props }) => {
       setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
     }
   };
-
   const onChangePrintTemplateHandler = value => {
     setSelectedPrintTemplate(value);
   };
@@ -1026,6 +1047,46 @@ const ReportComponent = ({ props }) => {
     setCollapsed(!collapsed);
   };
 
+  const fetchScanType = async () => {
+    //fetch Scan Type list
+    let error = state.error;
+    try {
+      const response = await fetchScandata();
+      const response_data = response.data;
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else {
+        setSelectedScan(response_data);
+      }
+    } catch (err) {
+      setState({ ...state, error: err });
+    }
+  };
+
+  const [selectedScan, setSelectedScan] = useState({ value: '', label: '' });
+  const optionScan = [
+    //fake data
+    { value: '0', label: 'Test 1' },
+    { value: '1', label: 'Test 2' },
+  ];
+
+  const selectedScanType = value => {
+    setSelectedScan(value);
+    if (value.value) {
+      const scan = optionScan[value.value].label;
+      setReportData(reportData => ({ ...reportData, imaging_scan_type: scan }));
+    }
+  };
+  const formatTextWithNewlines = text => {
+    return text.split('\n').map((str, index) => (
+      <React.Fragment key={index}>
+        {str}
+        <br />
+      </React.Fragment>
+    ));
+  };
+
   return (
     <>
       <div className="bg-secondary-dark relative z-20 border-black px-1">
@@ -1067,7 +1128,6 @@ const ReportComponent = ({ props }) => {
                       value={selectedPrintTemplate}
                     />
                   </div>
-
                   <ReactToPrint
                     trigger={() => (
                       <Button
@@ -1624,6 +1684,9 @@ const ReportComponent = ({ props }) => {
                       )}
                       {!Utils.isEmpty(state.error.findings) && <li>{state.error.findings}</li>}
                       {!Utils.isEmpty(state.error.conclusion) && <li>{state.error.conclusion}</li>}
+                      {!Utils.isEmpty(state.error.imaging_scan_type) && (
+                        <li>{state.error.imaging_scan_type}</li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -1745,6 +1808,54 @@ const ReportComponent = ({ props }) => {
                 </div>
               )}
               {/* Show report text in label */}
+              <div className="mb-2 flex flex-col px-2 pt-2">
+                <div className="flex flex-row items-center justify-start">
+                  <div
+                    className="text-blue-300"
+                    style={{ fontSize: '17px', display: 'flex', alignItems: 'center' }}
+                  >
+                    {t('Type')}
+                  </div>
+                  {!ReportUtils.isFinalReport(reportData.status) && (
+                    <div className="r pl-scan flex">
+                      <Select
+                        onChange={selectedScanType}
+                        options={optionScan}
+                        data={reportData.imaging_scan_type}
+                        className="flex justify-center text-center"
+                        components={{ ClearIndicator: null }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="editor-container editor-container_classic-editor mt-2">
+                  <div id="scantype" className="editor-container__editor">
+                    {isLayoutReady && !ReportUtils.isFinalReport(reportData.status) && (
+                      <CKEditor
+                        editor={ClassicEditor}
+                        config={editorConfig}
+                        data={reportData.imaging_scan_type}
+                        onChange={onChangeImagingScanType}
+                        className="h-30 w-full px-2"
+                        disabled={ReportUtils.isEditorDisabled(
+                          state.error.fatal,
+                          user?.permissions
+                        )}
+                      />
+                    )}
+                    {ReportUtils.isFinalReport(reportData.status) && (
+                      <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
+                        <div
+                          className="findings"
+                          dangerouslySetInnerHTML={{ __html: reportData.imaging_scan_type }}
+                        />
+                      </Typography>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-0 flex flex-col p-2">
                 <div className="flex flex-row justify-between">
                   <div className="w-full text-blue-300" style={{ fontSize: '17px' }}>
@@ -1839,6 +1950,7 @@ const ReportComponent = ({ props }) => {
                 orderData={orderData}
                 reportData={reportData}
                 templateData={selectedPrintTemplate}
+                //scanData={scanData}
               />
             </div>
           )}

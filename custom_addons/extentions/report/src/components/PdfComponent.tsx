@@ -7,7 +7,6 @@ import './PdfComponent.css';
 import Utils from '../utils';
 import Constants from '../constants';
 
-
 interface PDFReportComponentProps {
   orderData: any;
   reportData: any;
@@ -44,9 +43,9 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
   //   setSign(image.default)
   // );
 
-  const margin = "40px";
-  const marginTop = "20px"
-  const marginBottom = "10px"
+  const margin = '40px';
+  const marginTop = '20px';
+  const marginBottom = '10px';
   const getPageMargins = () => {
     return `@page { margin: ${marginTop} ${margin} ${marginBottom} ${margin} !important; }`;
     //return `@page {size: A4}`;
@@ -61,9 +60,8 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
 
     // signs are uploaded to /media/signs/... (define in nginx)
     // sign = signs/xxx.yyy
-    setSign(Constants.USER_MNG_URL+ reportData.radiologist.sign);
+    setSign(Constants.USER_MNG_URL + reportData.radiologist.sign);
   }, [sign]);
-
 
   return (
     <>
@@ -74,71 +72,92 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
         <div className="header">
           <img src={logo} alt="Logo" />
           <div className="clinic-info mt-0">
-            <h3 className="text-red-500 font-bold">{process.env.ORG_NAME}</h3>
+            <h3 className="font-bold text-red-500">{process.env.ORG_NAME}</h3>
             <p style={{ fontSize: '12px' }}>{process.env.ORG_ADDR}</p>
             <p style={{ fontSize: '12px' }}>Hotline: {process.env.ORG_TEL}</p>
           </div>
         </div>
         <div className="title-barcode border">
-          <h1 className="title">PHIẾU KẾT QUẢ {Utils.getFullModalityType(orderData.modality_type)}</h1>
-          <div className="text-center mr-2 border">
+          <h1 className="title">
+            PHIẾU KẾT QUẢ {Utils.getFullModalityType(orderData.modality_type)}
+          </h1>
+          <div className="mr-2 border text-center">
             <div className="barcode">
               <Barcode value={orderData.patient.pid} />
               {/* <Barcode value='1234' /> */}
-
             </div>
-            <div className='translateX'>{orderData.patient.pid}</div>
+            <div className="translateX">{orderData.patient.pid}</div>
           </div>
         </div>
-
 
         {/* Body */}
         <div className="patient-info">
           <div>
-            <p>Họ tên: <span className="font-semibold">{orderData.patient.fullname}</span></p>
-            <p>Năm sinh: <span className="font-semibold">{Utils.formatDate(orderData.patient.dob)}</span></p>
-            <p>Giới tính: <span className="font-semibold">{Utils.getFullGender_vn(orderData.patient.gender)}</span></p>
+            <p>
+              Họ tên: <span className="font-semibold">{orderData.patient.fullname}</span>
+            </p>
+            <p>
+              Năm sinh:{' '}
+              <span className="font-semibold">{Utils.formatDate(orderData.patient.dob)}</span>
+            </p>
+            <p>
+              Giới tính:{' '}
+              <span className="font-semibold">
+                {Utils.getFullGender_vn(orderData.patient.gender)}
+              </span>
+            </p>
           </div>
           <div>
             <p>Địa chỉ: {orderData.patient.address}</p>
-            <p className='whitespace-nowrap'>Điện thoại: {orderData.patient.tel}</p>
+            <p className="whitespace-nowrap">Điện thoại: {orderData.patient.tel}</p>
           </div>
           <p>Chẩn đoán: {orderData.clinical_diagnosis}</p>
-          {templateData.value != "0" && (<p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>)}
+          {templateData.value != '0' && <p>Bác sĩ chỉ định: {orderData.req_phys_name}</p>}
           <p className="text-red-600">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
-          <p className="text-red-600 mt-4">MÔ TẢ HÌNH ẢNH:</p>
+          <p className="mt-4 text-red-600">KỸ THUẬT:</p>
+          <p
+            className="text-justify"
+            dangerouslySetInnerHTML={{ __html: reportData.imaging_scan_type }}
+          ></p>
+          <p className="mt-4 text-red-600">MÔ TẢ HÌNH ẢNH:</p>
           <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>
-          <p className="text-red-600 mt-4">Kết luận:</p>
-          <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.conclusion }}></p>
+          <p className="mt-4 text-red-600">Kết luận:</p>
+          <p
+            className="text-justify"
+            dangerouslySetInnerHTML={{ __html: reportData.conclusion }}
+          ></p>
         </div>
 
         {/* Footer */}
-        <div className='footer flex justify-between items-end'>
-          <div className='mb-0 border'>
+        <div className="footer flex items-end justify-between">
+          <div className="mb-0 border">
             <QRCode
               value={imageUrl}
-              className='mb-0'
+              className="mb-0"
               imageSettings={{
                 src: logo,
                 excavate: true,
                 height: 25,
-                width: 25
+                width: 25,
               }}
             />
           </div>
           <div>
-            <div className='text-center mr-4 mb-0 border'>
-              <p>Ngày {day} tháng {month} năm {year}</p>
-              <p className='font-semibold'>Bác sĩ</p>
+            <div className="mr-4 mb-0 border text-center">
+              <p>
+                Ngày {day} tháng {month} năm {year}
+              </p>
+              <p className="font-semibold">Bác sĩ</p>
               <div className="flex justify-center">
-                <img src={sign} alt='Sign' width='150' />
+                <img src={sign} alt="Sign" width="150" />
               </div>
-              <p className='font-semibold'>{reportData.radiologist.title}. {reportData.radiologist.fullname}</p>
+              <p className="font-semibold">
+                {reportData.radiologist.title}. {reportData.radiologist.fullname}
+              </p>
             </div>
           </div>
-
         </div>
-      </div >
+      </div>
     </>
   );
 });
