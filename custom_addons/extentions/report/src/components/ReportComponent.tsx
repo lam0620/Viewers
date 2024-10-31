@@ -1,8 +1,17 @@
-import { useSearchParams } from "@hooks";
+import { useSearchParams } from '@hooks';
 import { useTranslation } from 'react-i18next';
 import ReactToPrint from 'react-to-print';
-import React, { useState, useEffect, useRef,useCallback } from 'react';
-import { Button, ButtonEnums, Select, Typography, Dialog,Dropdown,IconButton,Icon } from '@ohif/ui';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  Button,
+  ButtonEnums,
+  Select,
+  Typography,
+  Dialog,
+  Dropdown,
+  IconButton,
+  Icon,
+} from '@ohif/ui';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { WordCount } from 'ckeditor5';
 import Modal from 'react-modal';
@@ -30,25 +39,34 @@ import {
   SelectAll,
   SpecialCharacters,
   Underline,
-  Undo
+  Undo,
 } from 'ckeditor5';
 
 import 'ckeditor5/ckeditor5.css';
-import Cookies from "js-cookie";
-import axios from "axios";
+import Cookies from 'js-cookie';
+import axios from 'axios';
 
 import './ReportComponent.css';
 import './ReportComponent.css';
 import PdfComponent from './PdfComponent';
 import * as ReportUtils from '../reportUtils';
 import Utils from '../utils';
-import Constants from '../constants'
-import { refreshAccessToken, getUserProfile,
-  fetchOrder, fetchRadiologists, fetchDoctorByUserId,
-  createReport, updateReport, discardReport,fetchReportByStudy,
-  fetchReportTemplates, createReportTemplate,
-  fetchDicomMetadata } from '../services'
-
+import Constants from '../constants';
+import {
+  refreshAccessToken,
+  getUserProfile,
+  fetchOrder,
+  fetchRadiologists,
+  fetchDoctorByUserId,
+  createReport,
+  updateReport,
+  discardReport,
+  fetchReportByStudy,
+  fetchReportTemplates,
+  createReportTemplate,
+  fetchDicomMetadata,
+  fetchScandata,
+} from '../services';
 
 let nextId = 0;
 const ReportComponent = ({ props }) => {
@@ -62,10 +80,32 @@ const ReportComponent = ({ props }) => {
   const editorConfig = {
     toolbar: {
       items: [
-        'undo', 'redo', '|', 'selectAll', '|', 'heading', '|', 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|', 'bold', 'italic', 'underline', '|',
-        'specialCharacters', '|', 'alignment', '|', 'indent', 'outdent', '|', 'accessibilityHelp'
+        'undo',
+        'redo',
+        '|',
+        'selectAll',
+        '|',
+        'heading',
+        '|',
+        'fontSize',
+        'fontFamily',
+        'fontColor',
+        'fontBackgroundColor',
+        '|',
+        'bold',
+        'italic',
+        'underline',
+        '|',
+        'specialCharacters',
+        '|',
+        'alignment',
+        '|',
+        'indent',
+        'outdent',
+        '|',
+        'accessibilityHelp',
       ],
-      shouldNotGroupWhenFull: false
+      shouldNotGroupWhenFull: false,
     },
     plugins: [
       AccessibilityHelp,
@@ -87,7 +127,7 @@ const ReportComponent = ({ props }) => {
       SpecialCharacters,
       Underline,
       Undo,
-      WordCount
+      WordCount,
     ],
     // WordCount: {
 
@@ -113,11 +153,11 @@ const ReportComponent = ({ props }) => {
     //   maxCharCount: 10
     // },
     fontFamily: {
-      supportAllValues: true
+      supportAllValues: true,
     },
     fontSize: {
       options: [10, 12, 14, 'default', 18, 20, 22],
-      supportAllValues: true
+      supportAllValues: true,
     },
 
     htmlSupport: {
@@ -126,98 +166,107 @@ const ReportComponent = ({ props }) => {
           name: /^.*$/,
           styles: true,
           attributes: true,
-          classes: true
-        }
-      ]
+          classes: true,
+        },
+      ],
     },
-    initialData:
-      "",
-    placeholder: 'Type or paste your content here!'
+    initialData: '',
+    placeholder: 'Type or paste your content here!',
   };
 
-  let IS_AUTH = "true";
-  try { IS_AUTH = process.env.IS_AUTH; } catch(e) {}
+  let IS_AUTH = 'true';
+  try {
+    IS_AUTH = process.env.IS_AUTH;
+  } catch (e) {}
 
   // Get query params
   const searchParams = useSearchParams();
-  const accession_no = searchParams.get("acn") ? searchParams.get("acn") : "<None>"
-  const study_iuid = searchParams.get("StudyInstanceUIDs")
+  const accession_no = searchParams.get('acn') ? searchParams.get('acn') : '<None>';
+  const study_iuid = searchParams.get('StudyInstanceUIDs');
 
   const componentRef = useRef<HTMLDivElement>(null);
 
-
-  const emptyOrderData =
-  {
-    "accession_no": "",
-    "referring_phys_code": "",
-    "referring_phys_name": "",
-    "clinical_diagnosis": "",
-    "order_time": "",
-    "modality_type": "",
-    "is_insurance_applied": false,
-    "patient": {
-      "pid": "",
-      "fullname": "",
-      "gender": "",
-      "dob": "",
-      "tel": "",
-      "address": "",
-      "insurance_no": ""
+  const emptyOrderData = {
+    accession_no: '',
+    req_phys_code: '',
+    req_phys_name: '',
+    clinical_diagnosis: '',
+    order_time: '',
+    modality_type: '',
+    is_insurance_applied: false,
+    patient: {
+      pid: '',
+      fullname: '',
+      gender: '',
+      dob: '',
+      tel: '',
+      address: '',
+      insurance_no: '',
     },
-    "procedures":
-      [{
-        "proc_id": "",
-        "study_iuid": "",
-        "code": "",
-        "name": "",
-      }]
-  }
+    procedures: [
+      {
+        proc_id: '',
+        study_iuid: '',
+        code: '',
+        name: '',
+      },
+    ],
+  };
   const emptyReportData = {
-    "id": "",
-    "accession_no": "",
-    "study_iuid": "",
-    "findings": "",
-    "conclusion": "",
-    "status": "",
-    "status_origin":"",
-    "findings_origin":"",
-    "conclusion_origin":"",
-    "created_time":"",
-    "radiologist": {
-      "doctor_no": "",
-      "fullname": "",
-      "title": "",
-      "sign": ""
+    id: '',
+    accession_no: '',
+    study_iuid: '',
+    findings: '',
+    conclusion: '',
+    status: '',
+    status_origin: '',
+    imaging_scan_type_origin: '',
+    imaging_scan_type: '',
+    findings_origin: '',
+    conclusion_origin: '',
+    created_time: '',
+    radiologist: {
+      doctor_no: '',
+      fullname: '',
+      title: '',
+      sign: '',
     },
-    "procedure": {
-      "code": "",
-      "name": ""
-    }
-  }
+    procedure: {
+      code: '',
+      name: '',
+    },
+  };
   const emptyError = {
     error: {
-      fatal: "",
-      system: "", // disabled all
-      findings: "",
-      conclusion: "",
-      radiologist: ""
-    }
-  }
+      fatal: '',
+      system: '', // disabled all
+      findings: '',
+      conclusion: '',
+      imaging_scan_type: '',
+      radiologist: '',
+    },
+  };
   const [collapsed, setCollapsed] = useState(false);
-  const [orderData, setOrderData] = useState(emptyOrderData)
-  const [reportData, setReportData] = useState(emptyReportData)
+  const [orderData, setOrderData] = useState(emptyOrderData);
+  const [reportData, setReportData] = useState(emptyReportData);
 
   const [radiologistList, setRadiologistList] = useState({});
-  const [selectedRadiologist, setSelectedRadiologist] = useState({ value: "", label: t('-------- Select --------') });
+  const [selectedRadiologist, setSelectedRadiologist] = useState({
+    value: '',
+    label: t('-------- Select --------'),
+  });
 
-  const [procedureList, setProcedureList] = useState({})
-  const [selectedProcedure, setSelectedProcedure] = useState({ value: "", label: "" });
+  const [procedureList, setProcedureList] = useState({});
+  const [selectedProcedure, setSelectedProcedure] = useState({ value: '', label: '' });
 
   // List orginal objects
   const [reportTemplateOriginList, setReportTemplateOriginList] = useState({});
   // List id:label
   const [reportTemplateList, setReportTemplateList] = useState({});
-  const [selectedReportTemplate, setSelectedReportTemplate] = useState({ value: "", label: t('----- Select template----') });
+  const [selectedReportTemplate, setSelectedReportTemplate] = useState({
+    value: '',
+    label: t('----- Select template----'),
+  });
 
   const [printTemplateList, setPrintTemplateList] = useState({});
   const [selectedPrintTemplate, setSelectedPrintTemplate] = useState({});
@@ -225,18 +274,17 @@ const ReportComponent = ({ props }) => {
   const [info, setInfo] = useState('');
   const [state, setState] = useState(emptyError);
 
-
-  const [showElement, setShowElement] = useState(true)
+  const [showElement, setShowElement] = useState(true);
   const [isConfirmShow, setIsConfirmShow] = useState(false);
   const [isDeleteConfirmShow, setIsDeleteConfirmShow] = useState(false);
 
   //Create dialog box, Use Modal lib to create a dialog box
   Modal.setAppElement('#root');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [reportTemplateName, setReportTemplateName] = useState<any>("");
+  const [reportTemplateName, setReportTemplateName] = useState<any>('');
 
   //set error if report template name is empty at dialog
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
   // function _getQueryFilterValues(params) {
   //   const newParams = new URLSearchParams();
@@ -250,26 +298,25 @@ const ReportComponent = ({ props }) => {
 
   const isAuth = Constants.IS_AUTH === 'true';
   const hasAddReportPermission =
-    user?.permissions?.includes(Constants.PERMISSION_ADD_REPORT) ||
-    user?.is_superuser || !isAuth;
+    user?.permissions?.includes(Constants.PERMISSION_ADD_REPORT) || user?.is_superuser || !isAuth;
   const hasEditReportPermission =
-    user?.permissions?.includes(Constants.PERMISSION_EDIT_REPORT) ||
-    user?.is_superuser || !isAuth;
+    user?.permissions?.includes(Constants.PERMISSION_EDIT_REPORT) || user?.is_superuser || !isAuth;
   const hasDeleteReportPermission =
     user?.permissions?.includes(Constants.PERMISSION_DELETE_REPORT) ||
-    user?.is_superuser || !isAuth;
+    user?.is_superuser ||
+    !isAuth;
 
   const gotoLogin = () => {
     console.log('Report: Authonrization failed. Go to login');
     // Remove cookie
-    Cookies.remove("access_token");
-    Cookies.remove("refresh_token");
-    delete axios.defaults.headers.common["Authorization"];
+    Cookies.remove('access_token');
+    Cookies.remove('refresh_token');
+    delete axios.defaults.headers.common['Authorization'];
 
     //const loginUrl = process.env.LOGIN_URL? process.env.LOGIN_URL:"/login";
     const loginUrl = Constants.USER_MNG_URL + '/login';
     (window as Window).location = loginUrl;
-  }
+  };
 
   // const fetchUser = useCallback(async () => {
   //   try {
@@ -297,7 +344,7 @@ const ReportComponent = ({ props }) => {
    * A doctor has a login user account(user_id)
    * @param userId
    */
-  const getDoctorByUserId = async(userId) => {
+  const getDoctorByUserId = async userId => {
     let error = state.error;
     try {
       const response = await fetchDoctorByUserId(userId);
@@ -306,26 +353,27 @@ const ReportComponent = ({ props }) => {
       if (response_data.result.status == 'NG') {
         error.fatal = response_data.result.msg;
         setState({ ...state, error: error });
-
       } else if (response_data.data.length == 0) {
         error.fatal = t('Login user is not a Radiologist. Please contact your administrator.');
         setState({ ...state, error: error });
-
       } else {
         let newList = [] as any;
         const record = response_data.data[0];
-        newList.push({ value: record.id, label: (Utils.isEmpty(record.title)?"":record.title) + '. ' + record.fullname });
+        newList.push({
+          value: record.id,
+          label: (Utils.isEmpty(record.title) ? '' : record.title) + '. ' + record.fullname,
+        });
         setRadiologistList(newList); // list = login doctor user
         setSelectedRadiologist(newList[0]); // selected = login doctor user
       }
     } catch (err: any) {
-      const errMsg = "Get doctor by user id failed. "+err.code +": "+ err.message;
-      console.log("ERROR: ",errMsg);
+      const errMsg = 'Get doctor by user id failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
       error.fatal = errMsg;
       setState({ ...state, error: error });
     }
-  }
-  const getReportByStudy = async(studyUid) => {
+  };
+  const getReportByStudy = async studyUid => {
     let error = state.error;
     try {
       const response = await fetchReportByStudy(studyUid);
@@ -338,10 +386,10 @@ const ReportComponent = ({ props }) => {
         setReportData(response_data);
       }
     } catch (err: any) {
-      const errMsg = "getReportByStudy failed. "+err.code +": "+ err.message;
-      console.log("ERROR: ",errMsg);
+      const errMsg = 'getReportByStudy failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
     }
-  }
+  };
   // Process access_token
   // useEffect(() => {
   //   const accessToken = Cookies.get("access_token");
@@ -393,39 +441,34 @@ const ReportComponent = ({ props }) => {
         getDoctorByUserId(usr.id);
       }
     } catch (error) {
-      console.log('Get login user failed. ', error.code + ":" +error.message);
+      console.log('Get login user failed. ', error.code + ':' + error.message);
     }
 
     return usr;
   };
 
   const checkAuth = async () => {
-    const accessToken = Cookies.get("access_token");
-    const refreshToken = Cookies.get("refresh_token");
+    const accessToken = Cookies.get('access_token');
+    const refreshToken = Cookies.get('refresh_token');
     let loginUser = null as any;
 
     if (accessToken && refreshToken) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
       // fetchUser();
       loginUser = await getLoginUser();
-
     } else if (refreshToken) {
       const refreshAccessTokenAndFetchUser = async () => {
         try {
           const response = await refreshAccessToken({
             refresh_token: refreshToken,
           });
-          const {
-            access_token: newAccessToken,
-            refresh_token: newRefreshToken,
-          } = response.data?.data;
+          const { access_token: newAccessToken, refresh_token: newRefreshToken } =
+            response.data?.data;
 
-          Cookies.set("access_token", newAccessToken, { expires: 1 });
-          Cookies.set("refresh_token", newRefreshToken, { expires: 7 });
+          Cookies.set('access_token', newAccessToken, { expires: 1 });
+          Cookies.set('refresh_token', newRefreshToken, { expires: 7 });
 
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${newAccessToken}`;
+          axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
 
           // fetchUser();
           return await getLoginUser();
@@ -446,37 +489,35 @@ const ReportComponent = ({ props }) => {
   };
 
   useEffect(() => {
-
     // Get Order
     getOrder(accession_no);
     // Get list of radiologists
     getRadiologists();
+    //Get Scan Type
+    //fetchScanType();
 
     try {
       // Get from .env
-      let printTemlates = JSON.parse(process.env.ORG_PRINT_TEMPLATE_LIST??"");
+      let printTemlates = JSON.parse(process.env.ORG_PRINT_TEMPLATE_LIST ?? '');
       setPrintTemplateList(printTemlates);
       setSelectedPrintTemplate(printTemlates[0]);
-    } catch(e) {
-      console.log('Get print template failed',e);
+    } catch (e) {
+      console.log('Get print template failed', e);
     }
 
     setIsLayoutReady(true);
     return () => setIsLayoutReady(false);
   }, []);
 
-
   useEffect(() => {
     // Get report template
     if (orderData.modality_type) {
       getReportTemplates(orderData.modality_type);
     }
-
   }, [orderData.modality_type]);
 
-
-  const getOrder = async (accession) => {
-    if (IS_AUTH === "true") {
+  const getOrder = async accession => {
+    if (IS_AUTH === 'true') {
       // Check Auth first
       checkAuth();
     }
@@ -494,15 +535,13 @@ const ReportComponent = ({ props }) => {
 
       if (response_data.result.status == 'NG') {
         // let errors = {''};
-        error.fatal = response_data.result.msg
+        error.fatal = response_data.result.msg;
         setState({ ...state, error: error });
-
       } else if (Utils.isObjectEmpty(response_data.data)) {
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
         error.fatal = t('No applicable order found');
         setState({ ...state, error: error });
-
       } else {
         let proceList = [];
         response_data.data.procedures.map((procedure, index) => {
@@ -510,24 +549,26 @@ const ReportComponent = ({ props }) => {
           if (!Utils.isObjectEmpty(procedure.report) && procedure.study_iuid === study_iuid) {
             let report = procedure.report;
             report.procedure = {
-              "proc_id": procedure.proc_id, // procedure
-              "code": procedure.code, // procedure_type
-              "name": procedure.name// procedure_type
-            }
+              proc_id: procedure.proc_id, // procedure
+              code: procedure.code, // procedure_type
+              name: procedure.name, // procedure_type
+            };
             report.status_origin = report.status;
             setReportData(report);
 
             // Check report exist
             if (report.id) {
               // Add current value to selectedRadiologist
-              const title = Utils.isEmpty(report.radiologist.title)?"": report.radiologist.title;
-              setSelectedRadiologist({ value: report.radiologist.id, label: title + '. ' + report.radiologist.fullname });
+              const title = Utils.isEmpty(report.radiologist.title) ? '' : report.radiologist.title;
+              setSelectedRadiologist({
+                value: report.radiologist.id,
+                label: title + '. ' + report.radiologist.fullname,
+              });
               setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
             }
           }
           // No report yet
-          proceList.push({ value: procedure.proc_id, label: procedure.name })
-
+          proceList.push({ value: procedure.proc_id, label: procedure.name });
         });
 
         // Set to procedure list
@@ -538,14 +579,13 @@ const ReportComponent = ({ props }) => {
         }
         setOrderData(response_data.data);
       }
-
     } catch (err: any) {
-      const errMsg = "Get Order failed. "+err.code +": "+ err.message;
-      console.log("ERROR: ",errMsg);
+      const errMsg = 'Get Order failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
       error.fatal = errMsg;
       setState({ ...state, error: error });
     }
-  }
+  };
   const getRadiologists = async () => {
     let error = state.error;
     try {
@@ -563,17 +603,22 @@ const ReportComponent = ({ props }) => {
       } else {
         let newList = [];
 
-        response_data.data.map(item => (newList.push({ value: item.id, label: Utils.isEmpty(item.title)?"":item.title + '. ' + item.fullname })));
+        response_data.data.map(item =>
+          newList.push({
+            value: item.id,
+            label: Utils.isEmpty(item.title) ? '' : item.title + '. ' + item.fullname,
+          })
+        );
         setRadiologistList(newList);
       }
     } catch (err: any) {
-      const errMsg = "Get Radiologist failed. "+err.code +": "+ err.message;
-      console.log("ERROR: ",errMsg);
+      const errMsg = 'Get Radiologist failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
       error.fatal = errMsg;
       setState({ ...state, error: error });
     }
-  }
-  const getReportTemplates = async (modality) => {
+  };
+  const getReportTemplates = async modality => {
     let error = state.error;
     try {
       const response = await fetchReportTemplates(modality);
@@ -592,52 +637,61 @@ const ReportComponent = ({ props }) => {
         let originalList = [];
 
         //response_data.data.map(item => (newList.push({ value: item.id, label: item.name })));
-        response_data.data.map(item => (
-          newList.push({ value: item.id, label: item.name }),
-          originalList[item.id] = {"findings":item.findings, "conclusion":item.conclusion}
-
-        ));
+        response_data.data.map(
+          item => (
+            newList.push({ value: item.id, label: item.name }),
+            (originalList[item.id] = { findings: item.findings, conclusion: item.conclusion })
+          )
+        );
         setReportTemplateList(newList);
 
         // Set to orginal list of get data when select
         setReportTemplateOriginList(originalList);
       }
     } catch (err: any) {
-      const errMsg = "Get Report template failed. "+err.code +": "+ err.message;
-      console.log("ERROR: ",errMsg);
+      const errMsg = 'Get Report template failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
       error.fatal = errMsg;
       setState({ ...state, error: error });
     }
-  }
+  };
   // const clearState = () => {
   //   setErrors({ ...emptyError });
   // };
 
-  const onClearError = (event) => {
+  const onClearError = event => {
     // Clear error
     let error = ReportUtils.initEmptyReportError();
     setState({ ...state, error: error });
-  }
+  };
 
-  const onEditReport = (event) => {
+  const onEditReport = event => {
     // Update status and the sreen auto reload
     setReportData(reportData => ({ ...reportData, status: Constants.DRAFT }));
     // Backup origin report data
     setReportData(reportData => ({ ...reportData, findings_origin: reportData.findings }));
     setReportData(reportData => ({ ...reportData, conclusion_origin: reportData.conclusion }));
-  }
+    setReportData(reportData => ({
+      ...reportData,
+      imaging_scan_type_origin: reportData.imaging_scan_type,
+    }));
+  };
   const onUndoEditReport = () => {
     // Back report data to origin
     setReportData(reportData => ({ ...reportData, status: reportData.status_origin }));
     setReportData(reportData => ({ ...reportData, findings: reportData.findings_origin }));
     setReportData(reportData => ({ ...reportData, conclusion: reportData.conclusion_origin }));
-  }
+    setReportData(reportData => ({
+      ...reportData,
+      imaging_scan_type: reportData.imaging_scan_type_origin,
+    }));
+  };
 
-  const onDiscardReport = (event) => {
+  const onDiscardReport = event => {
     setIsDeleteConfirmShow(true);
-  }
+  };
 
-  const doDiscardReport = async (reportId:any) => {
+  const doDiscardReport = async (reportId: any) => {
     let error = state.error;
     try {
       // Call Rest API
@@ -652,31 +706,30 @@ const ReportComponent = ({ props }) => {
         setInfo(t('The report is discarded'));
         // Clear report data in state
         setReportData(emptyReportData);
-        setShowElement(true)
+        setShowElement(true);
       }
     } catch (err) {
       // handle error
       console.log(err.response.data.result);
-      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg;
       error.system = msg;
       setState({ ...state, error: error });
     }
     // Set number of time showing information message, 3s
     setTimeout(function () {
       setInfo('');
-      setShowElement(false)
+      setShowElement(false);
     }, 3000);
+  };
 
-  }
-
-  const onClose = (event) => {
+  const onClose = event => {
     // Close the current tab
     window.close();
   };
-  const onCloseConfirm = (event) => {
+  const onCloseConfirm = event => {
     setIsConfirmShow(false);
   };
-  const onApproveOnConfirm = (event) => {
+  const onApproveOnConfirm = event => {
     switch (event.action.id) {
       case 'yes':
         setIsConfirmShow(false);
@@ -688,7 +741,7 @@ const ReportComponent = ({ props }) => {
     }
   };
 
-  const onDeleteOnConfirm = (event) => {
+  const onDeleteOnConfirm = event => {
     switch (event.action.id) {
       case 'yes':
         setIsDeleteConfirmShow(false);
@@ -699,7 +752,7 @@ const ReportComponent = ({ props }) => {
         break;
     }
   };
-  const onApprove = (event) => {
+  const onApprove = event => {
     let isError = validate();
 
     // No error
@@ -709,7 +762,7 @@ const ReportComponent = ({ props }) => {
     // Final status => call at onConfirmSubmit
     //doReport(event, Constants.FINAL);
   };
-  const onSaveReport = (event) => {
+  const onSaveReport = event => {
     let isError = validate();
     // Draft status
     if (!isError) {
@@ -719,7 +772,6 @@ const ReportComponent = ({ props }) => {
     //alert(state.workingItem.report);
     // Generate a HL7 msg
   };
-
 
   const doReport = async (event, status) => {
     // Validate first, if error, set error to state and show
@@ -732,27 +784,27 @@ const ReportComponent = ({ props }) => {
     // if (!isError) {
     if (Utils.isEmpty(reportData.id)) {
       // Create a new report
-      let data =
-      {
-        "accession_no": accession_no,
-        "study_iuid": study_iuid,
-        "findings": reportData.findings,
-        "conclusion": reportData.conclusion,
-        "status": status,
-        "radiologist_id": selectedRadiologist.value,
-        "procedure_id": selectedProcedure.value
-      }
+      let data = {
+        accession_no: accession_no,
+        study_iuid: study_iuid,
+        imaging_scan_type: reportData.imaging_scan_type,
+        findings: reportData.findings,
+        conclusion: reportData.conclusion,
+        status: status,
+        radiologist_id: selectedRadiologist.value,
+        procedure_id: selectedProcedure.value,
+      };
 
       // Create
       await onCreateReport(event, data);
     } else {
       // Update the report
-      let data =
-      {
-        "findings": reportData.findings,
-        "conclusion": reportData.conclusion,
-        "status": status,
-      }
+      let data = {
+        imaging_scan_type: reportData.imaging_scan_type,
+        findings: reportData.findings,
+        conclusion: reportData.conclusion,
+        status: status,
+      };
       // Update
       await onUpdateReport(event, reportData.id, data);
     }
@@ -760,17 +812,15 @@ const ReportComponent = ({ props }) => {
     // Set number of time showing information message, 3s
     setTimeout(function () {
       setInfo('');
-      setShowElement(false)
+      setShowElement(false);
     }, 3000);
-  }
-
+  };
 
   const onCreateReport = async (event, data) => {
     console.log(data);
 
     let error = state.error;
     // event.preventDefault();
-
 
     try {
       // Call Rest API
@@ -780,17 +830,15 @@ const ReportComponent = ({ props }) => {
 
       if (response_data.result.status == 'NG') {
         error.system = response_data.result.msg;
-        if (response_data.result.msg.includes("duplicate key value")) {
+        if (response_data.result.msg.includes('duplicate key value')) {
           error.system = t('The report already exists');
         }
         setState({ ...state, error: error });
         // Get exist report
         //getReportByStudy(study_iuid);
-
       } else {
-        let info_msg = 'The report is saved as draft'
-        if (data.status === Constants.FINAL)
-          info_msg = 'The report is approved'
+        let info_msg = 'The report is saved as draft';
+        if (data.status === Constants.FINAL) info_msg = 'The report is approved';
 
         setInfo(t(info_msg));
         // Set latest report
@@ -800,11 +848,11 @@ const ReportComponent = ({ props }) => {
     } catch (err) {
       // handle error
       console.log(err.response.data.result);
-      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg;
       error.system = msg;
       setState({ ...state, error: error });
     }
-  }
+  };
 
   const onUpdateReport = async (event, id, data) => {
     console.log(data);
@@ -814,7 +862,6 @@ const ReportComponent = ({ props }) => {
 
     //setInfo('')
 
-
     try {
       const response = await updateReport(id, data);
 
@@ -823,11 +870,9 @@ const ReportComponent = ({ props }) => {
       if (response_data.result.status == 'NG') {
         error.system = response_data.result.msg;
         setState({ ...state, error: error });
-
       } else {
-        let info_msg = 'The report is updated as draft'
-        if (data.status === Constants.FINAL)
-          info_msg = 'The report is re-approved'
+        let info_msg = 'The report is updated as draft';
+        if (data.status === Constants.FINAL) info_msg = 'The report is re-approved';
 
         setInfo(t(info_msg));
         // Set latest report
@@ -837,12 +882,11 @@ const ReportComponent = ({ props }) => {
     } catch (err) {
       // handle error
       console.log(err.response.data.result);
-      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg
+      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg;
       error.system = msg;
       setState({ ...state, error: error });
     }
-  }
-
+  };
 
   const validate = (isCreateReport = true) => {
     // Reset error to empty
@@ -850,12 +894,10 @@ const ReportComponent = ({ props }) => {
     setState({ ...state, error: error });
 
     let isError = false;
-
     const findings = reportData.findings;
     const conclusion = reportData.conclusion;
 
     let item = t('Findings');
-
     // Check findings
     if (Utils.isEmpty(findings)) {
       error.findings = t('{0} is required').replace('{0}', item);
@@ -889,26 +931,33 @@ const ReportComponent = ({ props }) => {
     return isError;
   };
 
-
-  const onChangeFindings = (event, editor) => {//Update data when input finding
+  const onChangeFindings = (event, editor) => {
+    //Update data when input finding
     const data = editor.getData();
     setReportData(reportData => ({ ...reportData, findings: data }));
-
   };
+  const onChangeImagingScanType = (event, editor) => {
+    // const data = event.target.value;
+    // setSelectedScan({ ...selectedScan, label: data });
+    // setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+    const data = editor.getData();
+    setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+  };
+
   const onChangeConclusion = (event, editor) => {
     const data = editor.getData();
     setReportData(reportData => ({ ...reportData, conclusion: data }));
   };
 
-  const onChangeRadiologistHandler = (value) => {
+  const onChangeRadiologistHandler = value => {
     setSelectedRadiologist(value);
   };
 
-  const onChangeProcedureHandler = (value) => {
+  const onChangeProcedureHandler = value => {
     setSelectedProcedure(value);
   };
 
-  const onChangeReportTemplateHandler = (value) => {
+  const onChangeReportTemplateHandler = value => {
     setSelectedReportTemplate(value);
 
     // Fill to textbox
@@ -919,17 +968,16 @@ const ReportComponent = ({ props }) => {
       setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
     }
   };
-
-  const onChangePrintTemplateHandler = (value) => {
+  const onChangePrintTemplateHandler = value => {
     setSelectedPrintTemplate(value);
-  }
+  };
 
   const isShowReportTemplate = () => {
     let isError = validate(false);
     if (!isError) {
       setIsDialogOpen(true);
-      setErrorMessage("");
-      setReportTemplateName("");
+      setErrorMessage('');
+      setReportTemplateName('');
     }
   };
 
@@ -942,11 +990,11 @@ const ReportComponent = ({ props }) => {
     let error = state.error;
     if (name) {
       const data = {
-        "name": name,
-        "type": "custom",
-        "modality": orderData.modality_type,
-        "findings": reportData.findings,
-        "conclusion": reportData.conclusion,
+        name: name,
+        type: 'custom',
+        modality: orderData.modality_type,
+        findings: reportData.findings,
+        conclusion: reportData.conclusion,
       };
       try {
         const response = await createReportTemplate(data);
@@ -955,11 +1003,11 @@ const ReportComponent = ({ props }) => {
           error.fatal = response_data.result.msg;
           setState({ ...state, error: error });
           setIsDialogOpen(false);
-        } else{
-          getReportTemplates(orderData.modality_type);//get report template without refresh page.
+        } else {
+          getReportTemplates(orderData.modality_type); //get report template without refresh page.
           setIsDialogOpen(false);
         }
-      }catch (err) {
+      } catch (err) {
         setState({ ...state, error: err });
       }
     } else {
@@ -971,59 +1019,89 @@ const ReportComponent = ({ props }) => {
   const menuOptions = [
     {
       icon: '',
-      title: user? user.last_name + " "+user.first_name:"Anonymous User",
-      onClick: () => {}
-    }
+      title: user ? user.last_name + ' ' + user.first_name : 'Anonymous User',
+      onClick: () => {},
+    },
   ];
 
   // Push Logout if auth
-  if (IS_AUTH === "true") {
+  if (IS_AUTH === 'true') {
     menuOptions.push({
       icon: 'profile',
       title: t('Header:Change password'),
-      onClick: () => {window.location.href = "/profile/change-password"}
+      onClick: () => {
+        window.location.href = '/profile/change-password';
+      },
     });
 
-    menuOptions.push(
-      {
-        icon: 'power-off',
-        title: t('Header:Logout'),
-        onClick: () => {
-          gotoLogin();
-        },
-      }
-    );
+    menuOptions.push({
+      icon: 'power-off',
+      title: t('Header:Logout'),
+      onClick: () => {
+        gotoLogin();
+      },
+    });
   }
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
 
+  const fetchScanType = async () => {
+    //fetch Scan Type list
+    let error = state.error;
+    try {
+      const response = await fetchScandata();
+      const response_data = response.data;
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else {
+        setSelectedScan(response_data);
+      }
+    } catch (err) {
+      setState({ ...state, error: err });
+    }
+  };
+
+  const [selectedScan, setSelectedScan] = useState({ value: '', label: '' });
+  const optionScan = [
+    //fake data
+    { value: '0', label: 'Test 1' },
+    { value: '1', label: 'Test 2' },
+  ];
+
+  const selectedScanType = value => {
+    setSelectedScan(value);
+    if (value.value) {
+      const scan = optionScan[value.value].label;
+      setReportData(reportData => ({ ...reportData, imaging_scan_type: scan }));
+    }
+  };
+  const formatTextWithNewlines = text => {
+    return text.split('\n').map((str, index) => (
+      <React.Fragment key={index}>
+        {str}
+        <br />
+      </React.Fragment>
+    ));
+  };
+
   return (
     <>
-      <div className='bg-secondary-dark z-20 border-black px-1 relative'>
-        <div className='relative h-[48px] items-center'>
+      <div className="bg-secondary-dark relative z-20 border-black px-1">
+        <div className="relative h-[48px] items-center">
           <div className="absolute left-0 top-1/2 flex -translate-y-1/2 items-center">
-            <div
-              className={classNames(
-                'mr-3 inline-flex items-center'
-              )}
-            >
+            <div className={classNames('mr-3 inline-flex items-center')}>
               <div className="ml-1">
-                {appConfig.whiteLabeling?.createLogoComponentFn?.(React, props) || ""}
+                {appConfig.whiteLabeling?.createLogoComponentFn?.(React, props) || ''}
               </div>
             </div>
           </div>
           <div className="absolute right-0 top-1/2 flex -translate-y-1/2 select-none items-center">
             <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
             <div className="flex-shrink-0">
-              <Dropdown
-                id="options"
-                showDropdownIcon={false}
-                list={menuOptions}
-                alignment="right"
-
-              >
+              <Dropdown id="options" showDropdownIcon={false} list={menuOptions} alignment="right">
                 <IconButton
                   id={'options-settings-icon'}
                   variant="text"
@@ -1037,114 +1115,235 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
 
-          <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform flex gap-2'>
-            {ReportUtils.isPrintEnabled(reportData.status) && !Utils.isObjectEmpty(printTemplateList) && (
-              <><div className="text-white mt-1 whitespace-nowrap">{t('Print template')}: </div>
-              <div className="w-40">
-                <Select
-                  isClearable={false}
-                  onChange={onChangePrintTemplateHandler}
-                  options={printTemplateList}
-                  value={selectedPrintTemplate}
-                />
-              </div>
-
-              <ReactToPrint
-                trigger={() => (
-                  <Button className={'button-class'}
-                    type={ButtonEnums.type.primary}
-                    size={ButtonEnums.size.medium}
-                    disabled={!ReportUtils.isPrintEnabled(reportData.status)}
-                    startIcon={
-                      <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-printer"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg>
-                    }
-                  >
-                    {t('Print Preview')}
-                  </Button>
-                )}
-                content={() => componentRef.current}
-              />
-              {hasEditReportPermission && (
-              <Button className={'button-class'}
-                type={ButtonEnums.type.primary}
-                size={ButtonEnums.size.medium}
-                startIcon={
-                  <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /><path d="m15 5 4 4" /></svg>
-                }
-                onClick={onEditReport}
-                className={'text-[13px]'}
-                disabled={!ReportUtils.isEditEnabled(reportData.status)}
-              >
-                {t('Edit')}
-              </Button>
+          <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform gap-2">
+            {ReportUtils.isPrintEnabled(reportData.status) &&
+              !Utils.isObjectEmpty(printTemplateList) && (
+                <>
+                  <div className="mt-1 whitespace-nowrap text-white">{t('Print template')}: </div>
+                  <div className="w-40">
+                    <Select
+                      isClearable={false}
+                      onChange={onChangePrintTemplateHandler}
+                      options={printTemplateList}
+                      value={selectedPrintTemplate}
+                    />
+                  </div>
+                  <ReactToPrint
+                    trigger={() => (
+                      <Button
+                        className={'button-class'}
+                        type={ButtonEnums.type.primary}
+                        size={ButtonEnums.size.medium}
+                        disabled={!ReportUtils.isPrintEnabled(reportData.status)}
+                        startIcon={
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            style={{ fill: 'none' }}
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-printer"
+                          >
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                            <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                            <rect x="6" y="14" width="12" height="8" rx="1" />
+                          </svg>
+                        }
+                      >
+                        {t('Print Preview')}
+                      </Button>
+                    )}
+                    content={() => componentRef.current}
+                  />
+                  {hasEditReportPermission && (
+                    <Button
+                      className={'button-class'}
+                      type={ButtonEnums.type.primary}
+                      size={ButtonEnums.size.medium}
+                      startIcon={
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ fill: 'none' }}
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-pencil"
+                        >
+                          <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                      }
+                      onClick={onEditReport}
+                      className={'text-[13px]'}
+                      disabled={!ReportUtils.isEditEnabled(reportData.status)}
+                    >
+                      {t('Edit')}
+                    </Button>
+                  )}
+                  {hasDeleteReportPermission && (
+                    <Button
+                      className={'button-class'}
+                      type={ButtonEnums.type.primary}
+                      size={ButtonEnums.size.medium}
+                      startIcon={
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          style={{ fill: 'none' }}
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="lucide lucide-trash-2"
+                        >
+                          <path d="M3 6h18" />
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                          <line x1="10" x2="10" y1="11" y2="17" />
+                          <line x1="14" x2="14" y1="11" y2="17" />
+                        </svg>
+                      }
+                      onClick={onDiscardReport}
+                      className={'text-[13px]'}
+                      disabled={!ReportUtils.isEditEnabled(reportData.status)}
+                    >
+                      {t('Discard')}
+                    </Button>
+                  )}
+                </>
               )}
-              {hasDeleteReportPermission && (
-              <Button className={'button-class'}
-                type={ButtonEnums.type.primary}
-                size={ButtonEnums.size.medium}
-                startIcon={
-                  <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                }
-                onClick={onDiscardReport}
-                className={'text-[13px]'}
-                disabled={!ReportUtils.isEditEnabled(reportData.status)}
-              >
-                {t('Discard')}
-              </Button>
-              )}
-            </>)}
 
             {/* Icons: https://lucide.dev/icons */}
-            {hasAddReportPermission && !ReportUtils.isPrintEnabled(reportData.status) && (<>
-              <Button className={'button-class'}
-                type={ButtonEnums.type.primary}
-                size={ButtonEnums.size.medium}
-                startIcon={
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-square-check-big"><path d="m9 11 3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-                }
-                onClick={onApprove}
-                className={'text-[13px]'}
-                style={{ fill: 'none' }}
-                disabled={!ReportUtils.isApproveEnabled(reportData.status, state.error.fatal)}
-              >
-                {t('Approve')}
-              </Button>
+            {hasAddReportPermission && !ReportUtils.isPrintEnabled(reportData.status) && (
+              <>
+                <Button
+                  className={'button-class'}
+                  type={ButtonEnums.type.primary}
+                  size={ButtonEnums.size.medium}
+                  startIcon={
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ fill: 'none' }}
+                      className="lucide lucide-square-check-big"
+                    >
+                      <path d="m9 11 3 3L22 4" />
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                    </svg>
+                  }
+                  onClick={onApprove}
+                  className={'text-[13px]'}
+                  style={{ fill: 'none' }}
+                  disabled={!ReportUtils.isApproveEnabled(reportData.status, state.error.fatal)}
+                >
+                  {t('Approve')}
+                </Button>
 
-              {reportData.status_origin != 'F' && reportData.status_origin != 'C' && (
-                <Button className={'button-class'}
-                  type={ButtonEnums.type.primary}
-                  size={ButtonEnums.size.medium}
-                  startIcon={
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /><path d="M7 3v4a1 1 0 0 0 1 1h7" /></svg>
-                  }
-                  onClick={onSaveReport}
-                  className={'text-[13px]'}
-                  disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
-                >
-                  {t('Save as Draft')}
-                </Button>
-              )}
-              {reportData.status_origin != reportData.status && (
-                <Button className={'button-class'}
-                  type={ButtonEnums.type.primary}
-                  size={ButtonEnums.size.medium}
-                  startIcon={
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: 'none' }} className="lucide lucide-undo-2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
-                  }
-                  onClick={onUndoEditReport}
-                  className={'text-[13px]'}
-                >
-                  {t('Undo')}
-                </Button>
-              )}
-            </>
+                {reportData.status_origin != 'F' && reportData.status_origin != 'C' && (
+                  <Button
+                    className={'button-class'}
+                    type={ButtonEnums.type.primary}
+                    size={ButtonEnums.size.medium}
+                    startIcon={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ fill: 'none' }}
+                        className="lucide lucide-save"
+                      >
+                        <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                        <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+                        <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+                      </svg>
+                    }
+                    onClick={onSaveReport}
+                    className={'text-[13px]'}
+                    disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
+                  >
+                    {t('Save as Draft')}
+                  </Button>
+                )}
+                {reportData.status_origin != reportData.status && (
+                  <Button
+                    className={'button-class'}
+                    type={ButtonEnums.type.primary}
+                    size={ButtonEnums.size.medium}
+                    startIcon={
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ fill: 'none' }}
+                        className="lucide lucide-undo-2"
+                      >
+                        <path d="M9 14 4 9l5-5" />
+                        <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+                      </svg>
+                    }
+                    onClick={onUndoEditReport}
+                    className={'text-[13px]'}
+                  >
+                    {t('Undo')}
+                  </Button>
+                )}
+              </>
             )}
 
-            <Button className={'button-class'}
+            <Button
+              className={'button-class'}
               type={ButtonEnums.type.secondary}
               size={ButtonEnums.size.medium}
               startIcon={
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ fill: 'none' }}
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-square-x"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <path d="m15 9-6 6" />
+                  <path d="m9 9 6 6" />
+                </svg>
               }
               onClick={onClose}
               className={'text-[13px]'}
@@ -1155,116 +1354,162 @@ const ReportComponent = ({ props }) => {
           </div>
         </div>
       </div>
-      <div className={`body relative flex w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}>
+      <div
+        className={`body relative flex w-full flex-row flex-nowrap items-stretch overflow-auto ${collapsed ? 'collapsed' : ''}`}
+      >
         {/* {left panel } */}
-        <div className="body-left transition-all duration-300 ease-in-out flex flex-col">
-          <div className="w-full text-white p-2 mt-2"> {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
-            <div className="flex justify-between items-center">
-              {!collapsed &&(<div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Patient Information')}</div>)}
-              <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar} title={t("Thu gọn")}>
-                {collapsed ? '': <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-left-from-line"><path d="m9 6-6 6 6 6"/><path d="M3 12h14"/><path d="M21 19V5"/></svg>}
+        <div className="body-left flex flex-col transition-all duration-300 ease-in-out">
+          <div className="mt-2 w-full p-2 text-white">
+            {' '}
+            {/* Test show image: <img src={Constants.USER_MNG_URL + reportData.radiologist.sign} ></img> */}
+            <div className="flex items-center justify-between">
+              {!collapsed && (
+                <div className="font-semibold text-blue-300" style={{ fontSize: '17px' }}>
+                  {t('Patient Information')}
+                </div>
+              )}
+              <button
+                className="toggle-button bg-gray-700 px-2 py-1 text-white"
+                onClick={toggleSidebar}
+                title={t('Thu gọn')}
+              >
+                {collapsed ? (
+                  ''
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    className="lucide lucide-arrow-left-from-line"
+                  >
+                    <path d="m9 6-6 6 6 6" />
+                    <path d="M3 12h14" />
+                    <path d="M21 19V5" />
+                  </svg>
+                )}
               </button>
             </div>
-
-            {!collapsed && (<div className="flex flex-row">
-              <div className="flex w-full flex-row">
-                <div className="flex flex-row w-full">
-                  <div className="flex flex-col mt-2 text-right w-full">
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('Patient Name')}
-                        </Typography>
-
+            {!collapsed && (
+              <div className="flex flex-row">
+                <div className="flex w-full flex-row">
+                  <div className="flex w-full flex-row">
+                    <div className="mt-2 flex w-full flex-col text-right">
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('Patient Name')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {orderData.patient.fullname}
+                          </Typography>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {orderData.patient.fullname}
-                        </Typography>
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('PID')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {orderData.patient.pid}
+                          </Typography>
+                        </div>
                       </div>
-                    </div>
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('PID')}
-                        </Typography>
-                      </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {orderData.patient.pid}
-                        </Typography>
-                      </div>
-                    </div>
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('DOB')}
-                        </Typography>
-                      </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {Utils.formatDate(orderData.patient.dob)}
-                        </Typography>
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('DOB')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {Utils.formatDate(orderData.patient.dob)}
+                          </Typography>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>)}
+            )}
           </div>
-          {!collapsed && (<div className="w-full text-white p-2">
-            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Order Information')}</div>
-            <div className="flex flex-row">
-              <div className="flex w-full flex-row">
-                <div className="flex flex-row w-full">
-                  <div className="flex flex-col mt-2 text-right w-full">
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('ACN')}
-                        </Typography>
+          {!collapsed && (
+            <div className="w-full p-2 text-white">
+              <div className="font-semibold text-blue-300" style={{ fontSize: '17px' }}>
+                {t('Order Information')}
+              </div>
+              <div className="flex flex-row">
+                <div className="flex w-full flex-row">
+                  <div className="flex w-full flex-row">
+                    <div className="mt-2 flex w-full flex-col text-right">
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('ACN')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {orderData.accession_no}
+                          </Typography>
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {orderData.accession_no}
-                        </Typography>
-                      </div>
-                    </div>
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('Procedure')}
-                        </Typography>
-                      </div>
-                      {/* {ReportUtils.isFinalReport(reportData.status) && ( */}
-                      <div className=" flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {reportData.procedure.name? reportData.procedure.name: selectedProcedure.label}
-                        </Typography>
-                      </div>
-                      {/* )} */}
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('Procedure')}
+                          </Typography>
+                        </div>
+                        {/* {ReportUtils.isFinalReport(reportData.status) && ( */}
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {reportData.procedure.name
+                              ? reportData.procedure.name
+                              : selectedProcedure.label}
+                          </Typography>
+                        </div>
+                        {/* )} */}
 
-                      {/* {!ReportUtils.isFinalReport(reportData.status) && (<div className="flex flex-col">
+                        {/* {!ReportUtils.isFinalReport(reportData.status) && (<div className="flex flex-col">
                         <div className="flex flex-col w-56">
                           <Select
                             isClearable={false}
@@ -1276,137 +1521,195 @@ const ReportComponent = ({ props }) => {
                         </div>
                       </div>
                       )} */}
-                    </div>
-                    <div className="mb-2 mt-4 flex flex-row justify-between">
-                      <div className="flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('Indication')}
-                        </Typography>
                       </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {orderData.clinical_diagnosis}
-                        </Typography>
+                      <div className="mb-2 mt-4 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('Indication')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {orderData.clinical_diagnosis}
+                          </Typography>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="mb-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('Ordering Physician')}
-                        </Typography>
-                      </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-right'>
-                          {orderData.referring_phys_name}
-                        </Typography>
+                      <div className="mb-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('Ordering Physician')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light pl-0 text-right"
+                          >
+                            {orderData.req_phys_name}
+                          </Typography>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>)}
-          {!collapsed &&(<div className="w-full text-white p-2">
-            <div className='font-semibold text-blue-300' style={{ fontSize: '17px' }}>{t('Report Information')}</div>
-            <div className="flex flex-row">
-              <div className="flex w-full flex-row">
-                <div className="flex flex-row w-full">
-                  <div className="flex flex-col text-right w-full">
-                    <div className="mt-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-left'>
-                          {t('Status')}
-                        </Typography>
-                      </div>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className={`pl-0 text-right ${ReportUtils.getStatusStyle(reportData.status)}`}>
-                          {t(ReportUtils.getStatusFull(reportData.status))} - {reportData.created_time}
-                        </Typography>
-                      </div>
-                    </div>
-
-                    <div className="mt-2 flex flex-row justify-between">
-                      <div className=" flex flex-col items-center whitespace-nowrap mr-4">
-                        <Typography
-                          variant="subtitle"
-                          className='font-semibold text-primary-light w-full text-right'>
-                          {t('Radiologist')}
-                        </Typography>
+          )}
+          {!collapsed && (
+            <div className="w-full p-2 text-white">
+              <div className="font-semibold text-blue-300" style={{ fontSize: '17px' }}>
+                {t('Report Information')}
+              </div>
+              <div className="flex flex-row">
+                <div className="flex w-full flex-row">
+                  <div className="flex w-full flex-row">
+                    <div className="flex w-full flex-col text-right">
+                      <div className="mt-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-left font-semibold"
+                          >
+                            {t('Status')}
+                          </Typography>
+                        </div>
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="subtitle"
+                            className={`pl-0 text-right ${ReportUtils.getStatusStyle(reportData.status)}`}
+                          >
+                            {t(ReportUtils.getStatusFull(reportData.status))} -{' '}
+                            {reportData.created_time}
+                          </Typography>
+                        </div>
                       </div>
 
-                      {reportData.id && (<div className="flex flex-col">
-                        <Typography
-                          variant="subtitle"
-                          className='text-primary-light pl-0 text-left'>
-                          {reportData.radiologist.title??""}. {reportData.radiologist.fullname}
-                        </Typography>
-                      </div>)}
-                      {!reportData.id && (<div className="flex flex-col w-56">
-                        <Select
-                          isClearable={false}
-                          onChange={onChangeRadiologistHandler}
-                          options={radiologistList}
-                          value={selectedRadiologist}
-                          isDisabled={Utils.isObjectEmpty(radiologistList)}
-                        />
+                      <div className="mt-2 flex flex-row justify-between">
+                        <div className="mr-4 flex flex-col items-center whitespace-nowrap">
+                          <Typography
+                            variant="subtitle"
+                            className="text-primary-light w-full text-right font-semibold"
+                          >
+                            {t('Radiologist')}
+                          </Typography>
+                        </div>
 
-                      </div>)}
+                        {reportData.id && (
+                          <div className="flex flex-col">
+                            <Typography
+                              variant="subtitle"
+                              className="text-primary-light pl-0 text-left"
+                            >
+                              {reportData.radiologist.title ?? ''}.{' '}
+                              {reportData.radiologist.fullname}
+                            </Typography>
+                          </div>
+                        )}
+                        {!reportData.id && (
+                          <div className="flex w-56 flex-col">
+                            <Select
+                              isClearable={false}
+                              onChange={onChangeRadiologistHandler}
+                              options={radiologistList}
+                              value={selectedRadiologist}
+                              isDisabled={Utils.isObjectEmpty(radiologistList)}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
-          </div>)}
-        </div >
-        {collapsed &&(<div className="w-10 ">
-          <button className="toggle-button bg-gray-700 text-white px-2 py-1" onClick={toggleSidebar} title={t("Mở rộng")}>
-            {collapsed ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-right-from-line"><path d="M3 5v14"/><path d="M21 12H7"/><path d="m15 18 6-6-6-6"/></svg>: ''}
-          </button>
-        </div>)}
+          )}
+        </div>
+        {collapsed && (
+          <div className="w-10">
+            <button
+              className="toggle-button bg-gray-700 px-2 py-1 text-white"
+              onClick={toggleSidebar}
+              title={t('Mở rộng')}
+            >
+              {collapsed ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  className="lucide lucide-arrow-right-from-line"
+                >
+                  <path d="M3 5v14" />
+                  <path d="M21 12H7" />
+                  <path d="m15 18 6-6-6-6" />
+                </svg>
+              ) : (
+                ''
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Right panel - Findigs/Conclusion*/}
         <div className="body-right flex h-full flex-1 flex-col">
-          <div className="flex flex-row w-full">
-            <div className="flex flex-col text-left w-full">
-
-              {!ReportUtils.isReportErrorEmpty(state.error) && (<div role="alert" className="ml-2 mr-2">
-                <div className="bg-red-500 text-white font-bold rounded-t px-4 py-2 flex justify-between">
-                  <div>{t('Error')}</div>
-                  {/* <div onClick={onClearError} style={{ cursor: 'pointer' }}><svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg></div> */}
+          <div className="flex w-full flex-row">
+            <div className="flex w-full flex-col text-left">
+              {!ReportUtils.isReportErrorEmpty(state.error) && (
+                <div role="alert" className="ml-2 mr-2">
+                  <div className="flex justify-between rounded-t bg-red-500 px-4 py-2 font-bold text-white">
+                    <div>{t('Error')}</div>
+                    {/* <div onClick={onClearError} style={{ cursor: 'pointer' }}><svg xmlns="http://www.w3.org/2000/svg" style={{ fill: 'none' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-square-x"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg></div> */}
+                  </div>
+                  <div className="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                    <ul className="list-disc">
+                      {!Utils.isEmpty(state.error.fatal) && <li>{state.error.fatal}</li>}
+                      {!Utils.isEmpty(state.error.system) && <li>{state.error.system}</li>}
+                      {!Utils.isEmpty(state.error.radiologist) && (
+                        <li>{state.error.radiologist}</li>
+                      )}
+                      {!Utils.isEmpty(state.error.findings) && <li>{state.error.findings}</li>}
+                      {!Utils.isEmpty(state.error.conclusion) && <li>{state.error.conclusion}</li>}
+                      {!Utils.isEmpty(state.error.imaging_scan_type) && (
+                        <li>{state.error.imaging_scan_type}</li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
-                <div className="border border-t-0 border-red-400 rounded-b bg-red-100 px-4 py-3 text-red-700">
-                  <ul className="list-disc">
-                    {!Utils.isEmpty(state.error.fatal) && (<li>{state.error.fatal}</li>)}
-                    {!Utils.isEmpty(state.error.system) && (<li>{state.error.system}</li>)}
-                    {!Utils.isEmpty(state.error.radiologist) && (<li>{state.error.radiologist}</li>)}
-                    {!Utils.isEmpty(state.error.findings) && (<li>{state.error.findings}</li>)}
-                    {!Utils.isEmpty(state.error.conclusion) && (<li>{state.error.conclusion}</li>)}
-                  </ul>
+              )}
+              {!Utils.isEmpty(info) && showElement && (
+                <div
+                  className="ml-2 mr-2 flex items-center rounded border border-t-0 border-blue-500 bg-blue-500 px-4 py-3 text-white"
+                  role="alert"
+                >
+                  <svg
+                    className="mr-2 h-3 w-4 fill-current"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M12.432 0c1.34 0 2.01.912 2.01 1.957 0 1.305-1.164 2.512-2.679 2.512-1.269 0-2.009-.75-1.974-1.99C9.789 1.436 10.67 0 12.432 0zM8.309 20c-1.058 0-1.833-.652-1.093-3.524l1.214-5.092c.211-.814.246-1.141 0-1.141-.317 0-1.689.562-2.502 1.117l-.528-.88c2.572-2.186 5.531-3.467 6.801-3.467 1.057 0 1.233 1.273.705 3.23l-1.391 5.352c-.246.945-.141 1.271.106 1.271.317 0 1.357-.392 2.379-1.207l.6.814C12.098 19.02 9.365 20 8.309 20z" />
+                  </svg>
+                  <p>{info}</p>
                 </div>
-              </div>)}
-              {(!Utils.isEmpty(info) && showElement) && (<div className="ml-2 mr-2 flex items-center border border-t-0 border-blue-500 rounded bg-blue-500 px-4 py-3 text-white" role="alert">
-                <svg className="fill-current w-4 h-3 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M12.432 0c1.34 0 2.01.912 2.01 1.957 0 1.305-1.164 2.512-2.679 2.512-1.269 0-2.009-.75-1.974-1.99C9.789 1.436 10.67 0 12.432 0zM8.309 20c-1.058 0-1.833-.652-1.093-3.524l1.214-5.092c.211-.814.246-1.141 0-1.141-.317 0-1.689.562-2.502 1.117l-.528-.88c2.572-2.186 5.531-3.467 6.801-3.467 1.057 0 1.233 1.273.705 3.23l-1.391 5.352c-.246.945-.141 1.271.106 1.271.317 0 1.357-.392 2.379-1.207l.6.814C12.098 19.02 9.365 20 8.309 20z" /></svg>
-                <p>{info}</p>
-              </div>
               )}
 
               {!hasAddReportPermission && !ReportUtils.isFinalReport(reportData.status) && (
                 <div className="body mt-2 flex justify-between p-2">
-                  <div className='w-full text-red-500' style={{ fontSize: '17px' }}>
+                  <div className="w-full text-red-500" style={{ fontSize: '17px' }}>
                     {t('No report yet')}
                   </div>
                 </div>
@@ -1482,153 +1785,241 @@ const ReportComponent = ({ props }) => {
                       <input
                         type="text"
                         value={reportTemplateName}
-                        onChange={(e) => {
+                        onChange={e => {
                           setReportTemplateName(e.target.value);
                         }}
                         placeholder={errorMessage || t('Enter the report template name')}
-                        className={errorMessage ? 'rounded error' : 'rounded'}
+                        className={errorMessage ? 'error rounded' : 'rounded'}
                       />
-                      <button className="bg-customblue-30 text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-50 active:bg-customblue-20" onClick={isCloseReportTemplate}>{t('Cancel')}</button>
-                      <button className="bg-primary-main text-white transition duration-300 ease-in-out focus:outline-none hover:bg-customblue-80 active:bg-customblue-40" onClick={onSaveReportTemplate}>{t('Save')}</button>
-
+                      <button
+                        className="bg-customblue-30 hover:bg-customblue-50 active:bg-customblue-20 text-white transition duration-300 ease-in-out focus:outline-none"
+                        onClick={isCloseReportTemplate}
+                      >
+                        {t('Cancel')}
+                      </button>
+                      <button
+                        className="bg-primary-main hover:bg-customblue-80 active:bg-customblue-40 text-white transition duration-300 ease-in-out focus:outline-none"
+                        onClick={onSaveReportTemplate}
+                      >
+                        {t('Save')}
+                      </button>
                     </Modal>
                   </div>
                 </div>
               )}
               {/* Show report text in label */}
-              <div className="mt-0 p-2 flex flex-col">
+              <div className="mb-2 flex flex-col px-2 pt-2">
+                <div className="flex flex-row items-center justify-start">
+                  <div
+                    className="text-blue-300"
+                    style={{ fontSize: '17px', display: 'flex', alignItems: 'center' }}
+                  >
+                    {t('Type')}
+                  </div>
+                  {!ReportUtils.isFinalReport(reportData.status) && (
+                    <div className="r pl-scan flex">
+                      <Select
+                        onChange={selectedScanType}
+                        options={optionScan}
+                        data={reportData.imaging_scan_type}
+                        className="flex justify-center text-center"
+                        components={{ ClearIndicator: null }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="editor-container editor-container_classic-editor mt-2">
+                  <div id="scantype" className="editor-container__editor">
+                    {isLayoutReady && !ReportUtils.isFinalReport(reportData.status) && (
+                      <CKEditor
+                        editor={ClassicEditor}
+                        config={editorConfig}
+                        data={reportData.imaging_scan_type}
+                        onChange={onChangeImagingScanType}
+                        className="h-30 w-full px-2"
+                        disabled={ReportUtils.isEditorDisabled(
+                          state.error.fatal,
+                          user?.permissions
+                        )}
+                      />
+                    )}
+                    {ReportUtils.isFinalReport(reportData.status) && (
+                      <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
+                        <div
+                          className="findings"
+                          dangerouslySetInnerHTML={{ __html: reportData.imaging_scan_type }}
+                        />
+                      </Typography>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-0 flex flex-col p-2">
                 <div className="flex flex-row justify-between">
-                  <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
+                  <div className="w-full text-blue-300" style={{ fontSize: '17px' }}>
                     {t('Findings')}
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="flex flex-col mt-2">
-                    <Typography
-                      variant="subtitle"
-                      className='text-primary-light pl-0 text-left'>
-                      <div className="findings" dangerouslySetInnerHTML={{ __html: reportData.findings }} />
+                  <div className="mt-2 flex flex-col">
+                    <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
+                      <div
+                        className="findings"
+                        dangerouslySetInnerHTML={{ __html: reportData.findings }}
+                      />
                     </Typography>
                   </div>
                 )}
                 {!ReportUtils.isFinalReport(reportData.status) && (
-                  <div id="findings" className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div
+                    id="findings"
+                    className="editor-container editor-container_classic-editor"
+                    ref={editorContainerRef}
+                  >
                     <div className="editor-container__editor">
-
                       {/* Show report input form */}
-                      <div ref={editorRef}>{isLayoutReady &&
-                        <CKEditor
-                          editor={ClassicEditor}
-                          config={editorConfig}
-                          data={reportData.findings}
-                          onChange={onChangeFindings}
-                          disabled={ReportUtils.isEditorDisabled(state.error.fatal, user?.permissions)}
-                        />}
+                      <div ref={editorRef}>
+                        {isLayoutReady && (
+                          <CKEditor
+                            editor={ClassicEditor}
+                            config={editorConfig}
+                            data={reportData.findings}
+                            onChange={onChangeFindings}
+                            disabled={ReportUtils.isEditorDisabled(
+                              state.error.fatal,
+                              user?.permissions
+                            )}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
-
               </div>
 
-              <div className="mb-2 px-2 pt-2 flex flex-col">
+              <div className="mb-2 flex flex-col px-2 pt-2">
                 <div className="flex flex-row justify-between">
-                  <div className='w-full text-blue-300' style={{ fontSize: '17px' }}>
+                  <div className="w-full text-blue-300" style={{ fontSize: '17px' }}>
                     {t('Conclusion')}
                   </div>
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
-                  <div className="flex flex-col mt-2">
-                    <Typography
-                      variant="subtitle"
-                      className='text-primary-light pl-0 text-left'>
-                      <div className="conclusion" dangerouslySetInnerHTML={{ __html: reportData.conclusion }} />
+                  <div className="mt-2 flex flex-col">
+                    <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
+                      <div
+                        className="conclusion"
+                        dangerouslySetInnerHTML={{ __html: reportData.conclusion }}
+                      />
                     </Typography>
                   </div>
                 )}
                 {!ReportUtils.isFinalReport(reportData.status) && (
-                  <div id="conclusion" className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div
+                    id="conclusion"
+                    className="editor-container editor-container_classic-editor"
+                    ref={editorContainerRef}
+                  >
                     <div className="editor-container__editor">
-                      <div ref={editorRef}>{isLayoutReady &&
-                        <CKEditor
-                          editor={ClassicEditor}
-                          config={editorConfig}
-                          data={reportData.conclusion}
-                          onChange={onChangeConclusion}
-                          disabled={ReportUtils.isEditorDisabled(state.error.fatal, user?.permissions)}
-                        />}</div>
+                      <div ref={editorRef}>
+                        {isLayoutReady && (
+                          <CKEditor
+                            editor={ClassicEditor}
+                            config={editorConfig}
+                            data={reportData.conclusion}
+                            onChange={onChangeConclusion}
+                            disabled={ReportUtils.isEditorDisabled(
+                              state.error.fatal,
+                              user?.permissions
+                            )}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-
             </div>
           </div>
 
-          {
-            ReportUtils.isFinalReport(reportData.status) && (<div style={{ display: 'none' }}>
+          {ReportUtils.isFinalReport(reportData.status) && (
+            <div style={{ display: 'none' }}>
               <PdfComponent
                 ref={componentRef}
                 orderData={orderData}
                 reportData={reportData}
                 templateData={selectedPrintTemplate}
+                //scanData={scanData}
               />
             </div>
-            )
-          }
-        </div >
-      </div >
+          )}
+        </div>
+      </div>
 
       {/* Approve Confirm dialog */}
-      {isConfirmShow && (<div className="w-1/2 absolute flex justify-center right-2" style={{ top: '100px', right: '100px' }}>
-        <Dialog
-          title={t('Confirm')}
-          text={t('Diagnostic report will be approved by [{0}]. Are you sure to approve?').replace('{0}', selectedRadiologist.label)}
-          onClose={onCloseConfirm}
-          noCloseButton={false}
-          onShow={() => { }}
-          onSubmit={onApproveOnConfirm}
-          actions={[
-            {
-              id: 'cancel',
-              text: t('Cancel'),
-              type: ButtonEnums.type.secondary,
-            },
-            {
-              id: 'yes',
-              text: t('Agree'),
-              type: ButtonEnums.type.primary,
-              classes: ['reject-yes-button'],
-            },
-          ]}
-        /></div>)}
+      {isConfirmShow && (
+        <div
+          className="absolute right-2 flex w-1/2 justify-center"
+          style={{ top: '100px', right: '100px' }}
+        >
+          <Dialog
+            title={t('Confirm')}
+            text={t(
+              'Diagnostic report will be approved by [{0}]. Are you sure to approve?'
+            ).replace('{0}', selectedRadiologist.label)}
+            onClose={onCloseConfirm}
+            noCloseButton={false}
+            onShow={() => {}}
+            onSubmit={onApproveOnConfirm}
+            actions={[
+              {
+                id: 'cancel',
+                text: t('Cancel'),
+                type: ButtonEnums.type.secondary,
+              },
+              {
+                id: 'yes',
+                text: t('Agree'),
+                type: ButtonEnums.type.primary,
+                classes: ['reject-yes-button'],
+              },
+            ]}
+          />
+        </div>
+      )}
 
       {/* Delete Confirm dialog */}
-      {isDeleteConfirmShow && (<div className="w-1/2 absolute flex justify-center right-2" style={{ top: '100px', right: '100px' }}>
-        <Dialog
-          title={t('Confirm')}
-          text={t('Are your sure to discard this report?')}
-          onClose={onCloseConfirm}
-          noCloseButton={false}
-          onShow={() => { }}
-          onSubmit={onDeleteOnConfirm}
-          actions={[
-            {
-              id: 'cancel',
-              text: t('Cancel'),
-              type: ButtonEnums.type.secondary,
-            },
-            {
-              id: 'yes',
-              text: t('Agree'),
-              type: ButtonEnums.type.primary,
-              classes: ['reject-yes-button'],
-            },
-          ]}
-        /></div>)}
+      {isDeleteConfirmShow && (
+        <div
+          className="absolute right-2 flex w-1/2 justify-center"
+          style={{ top: '100px', right: '100px' }}
+        >
+          <Dialog
+            title={t('Confirm')}
+            text={t('Are your sure to discard this report?')}
+            onClose={onCloseConfirm}
+            noCloseButton={false}
+            onShow={() => {}}
+            onSubmit={onDeleteOnConfirm}
+            actions={[
+              {
+                id: 'cancel',
+                text: t('Cancel'),
+                type: ButtonEnums.type.secondary,
+              },
+              {
+                id: 'yes',
+                text: t('Agree'),
+                type: ButtonEnums.type.primary,
+                classes: ['reject-yes-button'],
+              },
+            ]}
+          />
+        </div>
+      )}
     </>
   );
 };
-ReportComponent.propTypes = {
-};
+ReportComponent.propTypes = {};
 export default ReportComponent;

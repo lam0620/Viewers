@@ -2149,7 +2149,7 @@
     "@docusaurus/theme-search-algolia" "2.4.3"
     "@docusaurus/types" "2.4.3"
 
-"@docusaurus/react-loadable@5.5.2", "react-loadable@npm:@docusaurus/react-loadable@5.5.2":
+"@docusaurus/react-loadable@5.5.2":
   version "5.5.2"
   resolved "https://registry.yarnpkg.com/@docusaurus/react-loadable/-/react-loadable-5.5.2.tgz#81aae0db81ecafbdaee3651f12804580868fa6ce"
   integrity sha512-A3dYjdBGuy0IGT+wyLIGIKLRE+sAk1iNk0f1HjNDysO7u8lhL4N3VEm+FAubmJbAztn94F7MxBTPmnixbiyFdQ==
@@ -3414,6 +3414,90 @@
   integrity sha512-D4iHGTdAnEEVsB8fl95m1hiz7D5YiRdQ9b/OEb3BYRVwbLsGHcRVPz+u+BgRLNk0Q0/4iZCBqDN96j2XNxfXrA==
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
+
+"@ohif/cli@file:platform/cli":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/core" "7.24.7"
+    "@ohif/cli" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-cli-3.9.0-beta.80-40ba01e0-7489-41ad-9b8c-f1b156bdca3d-1729571617741/node_modules/@ohif/cli"
+    axios "^0.28.0"
+    chalk "^5.0.0"
+    execa "^8.0.1"
+    gitignore "^0.7.0"
+    inquirer "^8.2.0"
+    listr "^0.14.3"
+    mustache "^4.2.0"
+    ncp "^2.0.0"
+    node-fetch "^3.1.1"
+    pkg-install "^1.0.0"
+    registry-url "^6.0.0"
+    spdx-license-list "^6.4.0"
+    util "^0.12.4"
+    yarn-programmatic "^0.1.2"
+
+"@ohif/core@file:platform/core":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/core" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-core-3.9.0-beta.80-8bdba581-8f02-4e50-899b-1df993335b2d-1729571617749/node_modules/@ohif/core"
+    dcmjs "*"
+    dicomweb-client "^0.10.4"
+    gl-matrix "^3.4.3"
+    isomorphic-base64 "^1.0.2"
+    lodash.clonedeep "^4.5.0"
+    lodash.merge "^4.6.2"
+    lodash.mergewith "^4.6.2"
+    moment "*"
+    object-hash "2.1.1"
+    query-string "^6.14.0"
+    validate.js "^0.12.0"
+
+"@ohif/extension-cornerstone-dicom-sr@file:extensions/cornerstone-dicom-sr":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@cornerstonejs/adapters" "^1.82.4"
+    "@cornerstonejs/core" "^1.82.4"
+    "@cornerstonejs/tools" "^1.82.4"
+    "@ohif/extension-cornerstone-dicom-sr" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-cornerstone-dicom-sr-3.9.0-beta.80-6cb23692-729e-4267-956c-659d90bf6791-1729571617754/node_modules/@ohif/extension-cornerstone-dicom-sr"
+    classnames "^2.3.2"
+
+"@ohif/extension-dicom-pdf@file:extensions/dicom-pdf":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/extension-dicom-pdf" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-dicom-pdf-3.9.0-beta.80-14ae6829-2ca6-49ab-863e-af1c7e81fc38-1729571617748/node_modules/@ohif/extension-dicom-pdf"
+    classnames "^2.3.2"
+
+"@ohif/extension-dicom-video@file:extensions/dicom-video":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/extension-dicom-video" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-dicom-video-3.9.0-beta.80-03797b2d-b786-40c6-90c2-c97ca1d57c1e-1729571617752/node_modules/@ohif/extension-dicom-video"
+    classnames "^2.3.2"
+
+"@ohif/extension-measurement-tracking@file:extensions/measurement-tracking":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/extension-measurement-tracking" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-measurement-tracking-3.9.0-beta.80-e311b815-678b-40b8-961c-69c78274746b-1729571617744/node_modules/@ohif/extension-measurement-tracking"
+    "@ohif/ui" "3.9.0-beta.80"
+    "@xstate/react" "^3.2.2"
+    xstate "^4.10.0"
+
+"@ohif/extension-test@file:extensions/test-extension":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/extension-test" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-test-3.9.0-beta.80-b4674241-b29c-4c63-9f27-ca8e0df19e53-1729571617752/node_modules/@ohif/extension-test"
+    classnames "^2.3.2"
+
+"@ohif/extension-tmtv@file:extensions/tmtv":
+  version "3.9.0-beta.80"
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@ohif/extension-tmtv" "file:../../AppData/Local/Yarn/Cache/v6/npm-@ohif-extension-tmtv-3.9.0-beta.80-4c02e87c-4849-46d0-bf24-7421b9896a11-1729571617753/node_modules/@ohif/extension-tmtv"
+    classnames "^2.3.2"
 
 "@oozcitak/dom@1.15.10":
   version "1.15.10"
@@ -18406,6 +18490,14 @@ react-loadable-ssr-addon-v5-slorber@^1.0.1:
   dependencies:
     "@babel/runtime" "^7.10.3"
 
+"react-loadable@npm:@docusaurus/react-loadable@5.5.2":
+  version "5.5.2"
+  resolved "https://registry.yarnpkg.com/@docusaurus/react-loadable/-/react-loadable-5.5.2.tgz#81aae0db81ecafbdaee3651f12804580868fa6ce"
+  integrity sha512-A3dYjdBGuy0IGT+wyLIGIKLRE+sAk1iNk0f1HjNDysO7u8lhL4N3VEm+FAubmJbAztn94F7MxBTPmnixbiyFdQ==
+  dependencies:
+    "@types/react" "*"
+    prop-types "^15.6.2"
+
 react-modal@3.11.2:
   version "3.11.2"
   resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.11.2.tgz#bad911976d4add31aa30dba8a41d11e21c4ac8a4"
@@ -20215,7 +20307,7 @@ string-natural-compare@^3.0.1:
   resolved "https://registry.yarnpkg.com/string-natural-compare/-/string-natural-compare-3.0.1.tgz#7a42d58474454963759e8e8b7ae63d71c1e7fdf4"
   integrity sha512-n3sPwynL1nwKi3WJ6AIsClwBMa0zTi54fn2oLU6ndfTSIO05xaznjSf15PcBZU6FNWbmN5Q6cxT4V5hGvB4taw==
 
-"string-width-cjs@npm:string-width@^4.2.0", "string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.2, string-width@^4.2.3:
+"string-width-cjs@npm:string-width@^4.2.0":
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -20232,6 +20324,15 @@ string-width@^1.0.1:
     code-point-at "^1.0.0"
     is-fullwidth-code-point "^1.0.0"
     strip-ansi "^3.0.0"
+
+"string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.0.0, string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.2, string-width@^4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
+  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+  dependencies:
+    emoji-regex "^8.0.0"
+    is-fullwidth-code-point "^3.0.0"
+    strip-ansi "^6.0.1"
 
 string-width@^2.1.1:
   version "2.1.1"
@@ -20319,7 +20420,7 @@ stringify-object@^3.3.0:
     is-obj "^1.0.1"
     is-regexp "^1.0.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -20339,6 +20440,13 @@ strip-ansi@^4.0.0:
   integrity sha512-4XaJ2zQdCzROZDivEVIDPkcQn8LMFSa8kj8Gxb/Lnwzv9A8VctNZ+lfivC/sV3ivW8ElJTERXZoPBRrZKkNKow==
   dependencies:
     ansi-regex "^3.0.0"
+
+strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
 
 strip-ansi@^7.0.0, strip-ansi@^7.0.1:
   version "7.1.0"
@@ -22412,7 +22520,7 @@ worker-loader@3.0.8, worker-loader@^3.0.8:
     loader-utils "^2.0.0"
     schema-utils "^3.0.0"
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -22433,6 +22541,15 @@ wrap-ansi@^6.0.1, wrap-ansi@^6.2.0:
   version "6.2.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-6.2.0.tgz#e9393ba07102e6c91a3b221478f0257cd2856e53"
   integrity sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"
