@@ -56,5 +56,8 @@
   "Undo": "Huỷ chỉnh sửa",
   "Are your sure to discard this report?": "Bạn có chắc chắn muốn huỷ kết quả này không?",
   "The report already exists": "Kết quả tồn tại rồi. Bạn không thể tạo mới. Vui lòng đóng và mở lại",
-  "Protocol": "Kỹ thuật chụp"
+  "Protocol": "Kỹ thuật chụp",
+  "Regular": "Thường quy",
+  "Medicine": "Có thuốc",
+  "By Desease": "Theo bệnh"
 }

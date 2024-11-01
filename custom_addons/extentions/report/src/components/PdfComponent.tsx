@@ -117,7 +117,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
           <p className="mt-4 text-red-600">KỸ THUẬT:</p>
           <p
             className="text-justify"
-            dangerouslySetInnerHTML={{ __html: reportData.imaging_scan_type }}
+            dangerouslySetInnerHTML={{ __html: reportData.scan_protocol }}
           ></p>
           <p className="mt-4 text-red-600">MÔ TẢ HÌNH ẢNH:</p>
           <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>

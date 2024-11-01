@@ -270,13 +270,13 @@ const ReportComponent = ({ props }) => {
 
   // Scan protocol
   const [scanProtocolOriginList, setScanProtocolOriginList] = useState({});
+  const [selectedRadio, setSelectedRadio] = useState('regular');
   // List id:label
   const [scanProtocolList, setScanProtocolList] = useState({});
   const [selectedScanProtocol, setSelectedScanProtocol] = useState({
     value: '',
     label: t('----- Select protocol ----'),
   });
-
 
   const [printTemplateList, setPrintTemplateList] = useState({});
   const [selectedPrintTemplate, setSelectedPrintTemplate] = useState({});
@@ -668,8 +668,7 @@ const ReportComponent = ({ props }) => {
     }
   };
 
-
-  const getScanProtocols = async (modality) => {
+  const getScanProtocols = async modality => {
     //fetch Scan Type list
     let error = state.error;
     // try {
@@ -706,14 +705,17 @@ const ReportComponent = ({ props }) => {
         response_data.data.map(
           item => (
             newList.push({ value: item.id, label: item.name }),
-            (originalList[item.id] = { regular: item.regular, by_medicine: item.by_medicine, by_disease: item.by_disease })
+            (originalList[item.id] = {
+              regular: item.regular,
+              by_medicine: item.by_medicine,
+              by_disease: item.by_disease,
+            })
           )
         );
       }
       setScanProtocolList(newList);
       // Set to orginal list of get data when select
       setScanProtocolOriginList(originalList);
-
     } catch (err: any) {
       const errMsg = 'Get Protocol failed. ' + err.code + ': ' + err.message;
       console.log('ERROR: ', errMsg);
@@ -721,7 +723,6 @@ const ReportComponent = ({ props }) => {
       setState({ ...state, error: error });
     }
   };
-
 
   // const clearState = () => {
   //   setErrors({ ...emptyError });
@@ -749,7 +750,10 @@ const ReportComponent = ({ props }) => {
     setReportData(reportData => ({ ...reportData, status: reportData.status_origin }));
     setReportData(reportData => ({ ...reportData, findings: reportData.findings_origin }));
     setReportData(reportData => ({ ...reportData, conclusion: reportData.conclusion_origin }));
-    setReportData(reportData => ({...reportData,  scan_protocol: reportData.scan_protocol_origin }));
+    setReportData(reportData => ({
+      ...reportData,
+      scan_protocol: reportData.scan_protocol_origin,
+    }));
   };
 
   const onDiscardReport = event => {
@@ -1035,16 +1039,30 @@ const ReportComponent = ({ props }) => {
   };
   const onChangeProtocolHandler = value => {
     setSelectedScanProtocol(value);
-    if (value.value) {
+    if (value && value.value) {
       const regular = scanProtocolOriginList[value.value].regular;
-      const by_medicine = scanProtocolOriginList[value.value].by_medicine;
-      const by_disease = scanProtocolOriginList[value.value].by_disease;
       setReportData(reportData => ({ ...reportData, scan_protocol: regular }));
-      // setReportData(reportData => ({ ...reportData, by_medicine: by_medicine }));
-      // setReportData(reportData => ({ ...reportData, by_disease: by_disease }));
+      setSelectedRadio('regular');
     }
   };
 
+  const handleOptionChangeRadioBtn = type => {
+    if (selectedScanProtocol && selectedScanProtocol.value) {
+      let data;
+      switch (type) {
+        case 'by_medicine':
+          data = scanProtocolOriginList[selectedScanProtocol.value].by_medicine;
+          break;
+        case 'by_disease':
+          data = scanProtocolOriginList[selectedScanProtocol.value].by_disease;
+          break;
+        default:
+          data = scanProtocolOriginList[selectedScanProtocol.value].regular;
+      }
+      setReportData(reportData => ({ ...reportData, scan_protocol: data }));
+      setSelectedRadio(type);
+    }
+  };
 
   const onChangePrintTemplateHandler = value => {
     setSelectedPrintTemplate(value);
@@ -1123,15 +1141,6 @@ const ReportComponent = ({ props }) => {
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
-  };
-
-  const formatTextWithNewlines = text => {
-    return text.split('\n').map((str, index) => (
-      <React.Fragment key={index}>
-        {str}
-        <br />
-      </React.Fragment>
-    ));
   };
 
   return (
@@ -1731,7 +1740,9 @@ const ReportComponent = ({ props }) => {
                       )}
                       {!Utils.isEmpty(state.error.findings) && <li>{state.error.findings}</li>}
                       {!Utils.isEmpty(state.error.conclusion) && <li>{state.error.conclusion}</li>}
-                      {!Utils.isEmpty(state.error.scan_protocol) && (<li>{state.error.scan_protocol}</li>)}
+                      {!Utils.isEmpty(state.error.scan_protocol) && (
+                        <li>{state.error.scan_protocol}</li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -1862,17 +1873,52 @@ const ReportComponent = ({ props }) => {
                     {t('Protocol')}
                   </div>
                   {!ReportUtils.isFinalReport(reportData.status) && (
-                    <div className="r pl-scan flex">
-                      <Select
-                        isClearable={false}
-                        onChange={onChangeProtocolHandler}
-                        options={scanProtocolList}
-                        value={selectedScanProtocol}
-                        // data={reportData.scan_protocol}
-                        className="flex justify-center text-center"
-                        components={{ ClearIndicator: null }}
-                      />
-
+                    <div className="flex flex-row">
+                      <div className="r pl-scan flex">
+                        <Select
+                          isClearable={false}
+                          onChange={onChangeProtocolHandler}
+                          options={scanProtocolList}
+                          value={selectedScanProtocol}
+                          className="flex justify-center text-center"
+                          components={{ ClearIndicator: null }}
+                        />
+                      </div>
+                      <div className="ml-2 flex items-center space-x-4 text-white">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            value="regular"
+                            onChange={() => handleOptionChangeRadioBtn('regular')}
+                            checked={selectedRadio === 'regular'}
+                            name="option"
+                            className="form-radio bg-black text-white"
+                          />
+                          <span className="ml-1">{t('Regular')}</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            value="by_medicine"
+                            onChange={() => handleOptionChangeRadioBtn('by_medicine')}
+                            checked={selectedRadio === 'by_medicine'}
+                            name="option"
+                            className="form-radio bg-black text-white"
+                          />
+                          <span className="ml-1">{t('Medicine')}</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            value="by_disease"
+                            onChange={() => handleOptionChangeRadioBtn('by_disease')}
+                            checked={selectedRadio === 'by_disease'}
+                            name="option"
+                            className="form-radio bg-black text-white"
+                          />
+                          <span className="ml-1">{t('By Disease')}</span>
+                        </label>
+                      </div>
                     </div>
                   )}
                 </div>
