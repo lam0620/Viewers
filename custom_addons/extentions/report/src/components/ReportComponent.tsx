@@ -1865,16 +1865,16 @@ const ReportComponent = ({ props }) => {
               )}
               {/* Show report text in label */}
               <div className="mb-2 flex flex-col px-2 pt-2">
-                <div className="flex flex-row items-center justify-start">
-                  <div
-                    className="text-blue-300"
-                    style={{ fontSize: '17px', display: 'flex', alignItems: 'center' }}
-                  >
-                    {t('Protocol')}
-                  </div>
-                  {!ReportUtils.isFinalReport(reportData.status) && (
-                    <div className="flex flex-row">
-                      <div className="r pl-scan flex">
+                <div className="body flex flex-row items-center">
+                  <div className="flex justify-between">
+                    <div
+                      className="text-blue-300"
+                      style={{ fontSize: '17px', display: 'flex', alignItems: 'center' }}
+                    >
+                      {t('Protocol')}
+                    </div>
+                    {!ReportUtils.isFinalReport(reportData.status) && (
+                      <div className="pl-scan ml-2">
                         <Select
                           isClearable={false}
                           onChange={onChangeProtocolHandler}
@@ -1884,44 +1884,46 @@ const ReportComponent = ({ props }) => {
                           components={{ ClearIndicator: null }}
                         />
                       </div>
-                      <div className="ml-2 flex items-center space-x-4 text-white">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="regular"
-                            onChange={() => handleOptionChangeRadioBtn('regular')}
-                            checked={selectedRadio === 'regular'}
-                            name="option"
-                            className="form-radio bg-black text-white"
-                            disabled={!selectedRadio}
-                          />
-                          <span className="ml-1">{t('Regular')}</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="by_medicine"
-                            onChange={() => handleOptionChangeRadioBtn('by_medicine')}
-                            checked={selectedRadio === 'by_medicine'}
-                            name="option"
-                            className="form-radio bg-black text-white"
-                            disabled={!selectedRadio}
-                          />
-                          <span className="ml-1">{t('Medicine')}</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            value="by_disease"
-                            onChange={() => handleOptionChangeRadioBtn('by_disease')}
-                            checked={selectedRadio === 'by_disease'}
-                            name="option"
-                            className="form-radio bg-black text-white"
-                            disabled={!selectedRadio}
-                          />
-                          <span className="ml-1">{t('By Disease')}</span>
-                        </label>
-                      </div>
+                    )}
+                  </div>
+                  {!ReportUtils.isFinalReport(reportData.status) && (
+                    <div className="flex flex-row justify-center text-white">
+                      <label className="ml-4 flex items-center md:ml-0">
+                        <input
+                          type="radio"
+                          value="regular"
+                          onChange={() => handleOptionChangeRadioBtn('regular')}
+                          checked={selectedRadio === 'regular'}
+                          name="option"
+                          className="form-radio bg-black text-white"
+                          disabled={!selectedRadio}
+                        />
+                        <span className="ml-1">{t('Regular')}</span>
+                      </label>
+                      <label className="ml-4 flex items-center md:ml-0">
+                        <input
+                          type="radio"
+                          value="by_medicine"
+                          onChange={() => handleOptionChangeRadioBtn('by_medicine')}
+                          checked={selectedRadio === 'by_medicine'}
+                          name="option"
+                          className="form-radio bg-black text-white"
+                          disabled={!selectedRadio}
+                        />
+                        <span className="ml-1">{t('Medicine')}</span>
+                      </label>
+                      <label className="ml-4 flex items-center md:ml-0">
+                        <input
+                          type="radio"
+                          value="by_disease"
+                          onChange={() => handleOptionChangeRadioBtn('by_disease')}
+                          checked={selectedRadio === 'by_disease'}
+                          name="option"
+                          className="form-radio bg-black text-white"
+                          disabled={!selectedRadio}
+                        />
+                        <span className="ml-1">{t('By Disease')}</span>
+                      </label>
                     </div>
                   )}
                 </div>
