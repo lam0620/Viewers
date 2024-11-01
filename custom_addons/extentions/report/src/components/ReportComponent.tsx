@@ -1194,7 +1194,7 @@ const ReportComponent = ({ props }) => {
                   className={'button-class'}
                   type={ButtonEnums.type.primary}
                   size={ButtonEnums.size.medium}
-                  disabled={!reportData.status}
+                  // disabled={!reportData.status}
                   startIcon={
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1449,11 +1449,11 @@ const ReportComponent = ({ props }) => {
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    className="lucide lucide-arrow-left-from-line"
+                    class="lucide lucide-align-justify"
                   >
-                    <path d="m9 6-6 6 6 6" />
-                    <path d="M3 12h14" />
-                    <path d="M21 19V5" />
+                    <path d="M3 12h18" />
+                    <path d="M3 18h18" />
+                    <path d="M3 6h18" />
                   </svg>
                 )}
               </button>
@@ -1715,11 +1715,11 @@ const ReportComponent = ({ props }) => {
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  className="lucide lucide-arrow-right-from-line"
+                  class="lucide lucide-align-justify"
                 >
-                  <path d="M3 5v14" />
-                  <path d="M21 12H7" />
-                  <path d="m15 18 6-6-6-6" />
+                  <path d="M3 12h18" />
+                  <path d="M3 18h18" />
+                  <path d="M3 6h18" />
                 </svg>
               ) : (
                 ''
@@ -2049,14 +2049,17 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
 
-          {reportData.status && (
+          {(reportData.findings ||
+            reportData.conclusion ||
+            reportData.scan_protocol ||
+            orderData.accession_no) && (
             <div style={{ display: 'none' }}>
               <PdfComponent
                 ref={componentRef}
                 orderData={orderData}
                 reportData={reportData}
                 templateData={selectedPrintTemplate}
-                //scanData={scanData}
+                // scanData={scanData}
               />
             </div>
           )}
