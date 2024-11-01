@@ -65,7 +65,7 @@ import {
   fetchReportTemplates,
   createReportTemplate,
   fetchDicomMetadata,
-  fetchScandata,
+  fetchScanProtocols,
 } from '../services';
 
 let nextId = 0;
@@ -220,8 +220,8 @@ const ReportComponent = ({ props }) => {
     conclusion: '',
     status: '',
     status_origin: '',
-    imaging_scan_type_origin: '',
-    imaging_scan_type: '',
+    scan_protocol_origin: '',
+    scan_protocol: '',
     findings_origin: '',
     conclusion_origin: '',
     created_time: '',
@@ -242,7 +242,7 @@ const ReportComponent = ({ props }) => {
       system: '', // disabled all
       findings: '',
       conclusion: '',
-      imaging_scan_type: '',
+      scan_protocol: '',
       radiologist: '',
     },
   };
@@ -265,8 +265,18 @@ const ReportComponent = ({ props }) => {
   const [reportTemplateList, setReportTemplateList] = useState({});
   const [selectedReportTemplate, setSelectedReportTemplate] = useState({
     value: '',
-    label: t('----- Select template----'),
+    label: t('----- Select template ----'),
   });
+
+  // Scan protocol
+  const [scanProtocolOriginList, setScanProtocolOriginList] = useState({});
+  // List id:label
+  const [scanProtocolList, setScanProtocolList] = useState({});
+  const [selectedScanProtocol, setSelectedScanProtocol] = useState({
+    value: '',
+    label: t('----- Select protocol ----'),
+  });
+
 
   const [printTemplateList, setPrintTemplateList] = useState({});
   const [selectedPrintTemplate, setSelectedPrintTemplate] = useState({});
@@ -513,6 +523,8 @@ const ReportComponent = ({ props }) => {
     // Get report template
     if (orderData.modality_type) {
       getReportTemplates(orderData.modality_type);
+      // Get Scan protocol
+      getScanProtocols(orderData.modality_type);
     }
   }, [orderData.modality_type]);
 
@@ -655,6 +667,62 @@ const ReportComponent = ({ props }) => {
       setState({ ...state, error: error });
     }
   };
+
+
+  const getScanProtocols = async (modality) => {
+    //fetch Scan Type list
+    let error = state.error;
+    // try {
+    //   const response = await fetchScanProtocols(modality);
+    //   const response_data = response.data;
+    //   if (response_data.result.status == 'NG') {
+    //     error.fatal = response_data.result.msg;
+    //     setState({ ...state, error: error });
+    //   } else {
+    //     setSelectedScan(response_data);
+    //   }
+    // } catch (err) {
+    //   setState({ ...state, error: err });
+    // }
+    try {
+      const response = await fetchScanProtocols(modality);
+      const response_data = response?.data;
+      let newList = [] as any;
+      let originalList = [] as any;
+
+      if (response_data.result.status == 'NG') {
+        error.fatal = response_data.result.msg;
+        setState({ ...state, error: error });
+      } else if (Utils.isObjectEmpty(response_data.data)) {
+        // Get data from image and set to
+        //setRadiologistList(response_data.data);
+        // error.fatal = t('There is no any radiologist. Please contact your administrator.');
+        // setState({ ...state, error: error });
+      } else {
+        // let newList = [];
+        // let originalList = [];
+
+        //response_data.data.map(item => (newList.push({ value: item.id, label: item.name })));
+        response_data.data.map(
+          item => (
+            newList.push({ value: item.id, label: item.name }),
+            (originalList[item.id] = { regular: item.regular, by_medicine: item.by_medicine, by_disease: item.by_disease })
+          )
+        );
+      }
+      setScanProtocolList(newList);
+      // Set to orginal list of get data when select
+      setScanProtocolOriginList(originalList);
+
+    } catch (err: any) {
+      const errMsg = 'Get Protocol failed. ' + err.code + ': ' + err.message;
+      console.log('ERROR: ', errMsg);
+      error.fatal = errMsg;
+      setState({ ...state, error: error });
+    }
+  };
+
+
   // const clearState = () => {
   //   setErrors({ ...emptyError });
   // };
@@ -673,7 +741,7 @@ const ReportComponent = ({ props }) => {
     setReportData(reportData => ({ ...reportData, conclusion_origin: reportData.conclusion }));
     setReportData(reportData => ({
       ...reportData,
-      imaging_scan_type_origin: reportData.imaging_scan_type,
+      scan_protocol_origin: reportData.scan_protocol,
     }));
   };
   const onUndoEditReport = () => {
@@ -681,10 +749,7 @@ const ReportComponent = ({ props }) => {
     setReportData(reportData => ({ ...reportData, status: reportData.status_origin }));
     setReportData(reportData => ({ ...reportData, findings: reportData.findings_origin }));
     setReportData(reportData => ({ ...reportData, conclusion: reportData.conclusion_origin }));
-    setReportData(reportData => ({
-      ...reportData,
-      imaging_scan_type: reportData.imaging_scan_type_origin,
-    }));
+    setReportData(reportData => ({...reportData,  scan_protocol: reportData.scan_protocol_origin }));
   };
 
   const onDiscardReport = event => {
@@ -787,7 +852,7 @@ const ReportComponent = ({ props }) => {
       let data = {
         accession_no: accession_no,
         study_iuid: study_iuid,
-        imaging_scan_type: reportData.imaging_scan_type,
+        scan_protocol: reportData.scan_protocol,
         findings: reportData.findings,
         conclusion: reportData.conclusion,
         status: status,
@@ -800,7 +865,7 @@ const ReportComponent = ({ props }) => {
     } else {
       // Update the report
       let data = {
-        imaging_scan_type: reportData.imaging_scan_type,
+        scan_protocol: reportData.scan_protocol,
         findings: reportData.findings,
         conclusion: reportData.conclusion,
         status: status,
@@ -936,12 +1001,12 @@ const ReportComponent = ({ props }) => {
     const data = editor.getData();
     setReportData(reportData => ({ ...reportData, findings: data }));
   };
-  const onChangeImagingScanType = (event, editor) => {
+  const onChangeScanProtocol = (event, editor) => {
     // const data = event.target.value;
     // setSelectedScan({ ...selectedScan, label: data });
-    // setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+    // setReportData(reportData => ({ ...reportData, scan_protocol: data }));
     const data = editor.getData();
-    setReportData(reportData => ({ ...reportData, imaging_scan_type: data }));
+    setReportData(reportData => ({ ...reportData, scan_protocol: data }));
   };
 
   const onChangeConclusion = (event, editor) => {
@@ -968,6 +1033,19 @@ const ReportComponent = ({ props }) => {
       setReportData(reportData => ({ ...reportData, conclusion: conclusion }));
     }
   };
+  const onChangeProtocolHandler = value => {
+    setSelectedScanProtocol(value);
+    if (value.value) {
+      const regular = scanProtocolOriginList[value.value].regular;
+      const by_medicine = scanProtocolOriginList[value.value].by_medicine;
+      const by_disease = scanProtocolOriginList[value.value].by_disease;
+      setReportData(reportData => ({ ...reportData, scan_protocol: regular }));
+      // setReportData(reportData => ({ ...reportData, by_medicine: by_medicine }));
+      // setReportData(reportData => ({ ...reportData, by_disease: by_disease }));
+    }
+  };
+
+
   const onChangePrintTemplateHandler = value => {
     setSelectedPrintTemplate(value);
   };
@@ -1047,37 +1125,6 @@ const ReportComponent = ({ props }) => {
     setCollapsed(!collapsed);
   };
 
-  const fetchScanType = async () => {
-    //fetch Scan Type list
-    let error = state.error;
-    try {
-      const response = await fetchScandata();
-      const response_data = response.data;
-      if (response_data.result.status == 'NG') {
-        error.fatal = response_data.result.msg;
-        setState({ ...state, error: error });
-      } else {
-        setSelectedScan(response_data);
-      }
-    } catch (err) {
-      setState({ ...state, error: err });
-    }
-  };
-
-  const [selectedScan, setSelectedScan] = useState({ value: '', label: '' });
-  const optionScan = [
-    //fake data
-    { value: '0', label: 'Test 1' },
-    { value: '1', label: 'Test 2' },
-  ];
-
-  const selectedScanType = value => {
-    setSelectedScan(value);
-    if (value.value) {
-      const scan = optionScan[value.value].label;
-      setReportData(reportData => ({ ...reportData, imaging_scan_type: scan }));
-    }
-  };
   const formatTextWithNewlines = text => {
     return text.split('\n').map((str, index) => (
       <React.Fragment key={index}>
@@ -1684,9 +1731,7 @@ const ReportComponent = ({ props }) => {
                       )}
                       {!Utils.isEmpty(state.error.findings) && <li>{state.error.findings}</li>}
                       {!Utils.isEmpty(state.error.conclusion) && <li>{state.error.conclusion}</li>}
-                      {!Utils.isEmpty(state.error.imaging_scan_type) && (
-                        <li>{state.error.imaging_scan_type}</li>
-                      )}
+                      {!Utils.isEmpty(state.error.scan_protocol) && (<li>{state.error.scan_protocol}</li>)}
                     </ul>
                   </div>
                 </div>
@@ -1814,17 +1859,20 @@ const ReportComponent = ({ props }) => {
                     className="text-blue-300"
                     style={{ fontSize: '17px', display: 'flex', alignItems: 'center' }}
                   >
-                    {t('Type')}
+                    {t('Protocol')}
                   </div>
                   {!ReportUtils.isFinalReport(reportData.status) && (
                     <div className="r pl-scan flex">
                       <Select
-                        onChange={selectedScanType}
-                        options={optionScan}
-                        data={reportData.imaging_scan_type}
+                        isClearable={false}
+                        onChange={onChangeProtocolHandler}
+                        options={scanProtocolList}
+                        value={selectedScanProtocol}
+                        // data={reportData.scan_protocol}
                         className="flex justify-center text-center"
                         components={{ ClearIndicator: null }}
                       />
+
                     </div>
                   )}
                 </div>
@@ -1835,8 +1883,8 @@ const ReportComponent = ({ props }) => {
                       <CKEditor
                         editor={ClassicEditor}
                         config={editorConfig}
-                        data={reportData.imaging_scan_type}
-                        onChange={onChangeImagingScanType}
+                        data={reportData.scan_protocol}
+                        onChange={onChangeScanProtocol}
                         className="h-30 w-full px-2"
                         disabled={ReportUtils.isEditorDisabled(
                           state.error.fatal,
@@ -1848,7 +1896,7 @@ const ReportComponent = ({ props }) => {
                       <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
                         <div
                           className="findings"
-                          dangerouslySetInnerHTML={{ __html: reportData.imaging_scan_type }}
+                          dangerouslySetInnerHTML={{ __html: reportData.scan_protocol }}
                         />
                       </Typography>
                     )}

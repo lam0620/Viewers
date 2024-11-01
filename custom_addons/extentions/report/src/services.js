@@ -67,6 +67,6 @@ export const fetchDicomMetadata = async (study_iuid) => {
   return axios.get(`${DCM_API_ENDPOINT}/rs/studies/${study_iuid}/metadata`)
 }
 //get scan
-export const fetchScandata = async ()=>{
-  return axios.get(`${INTEG_API_ENDPOINT}/report-imaging-scan-type`)
+export const fetchScanProtocols = async (modality)=>{
+  return axios.get(`${INTEG_API_ENDPOINT}/scan-protocols?modality=${modality}`)
 }

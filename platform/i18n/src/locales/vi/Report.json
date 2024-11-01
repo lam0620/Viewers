@@ -27,7 +27,8 @@
   "{0} is required": "{0} là bắt buộc",
   "Error": "Lỗi",
   "-------- Select --------": "-------- Chọn Bs --------",
-  "----- Select template----": "-------- Chọn mẫu --------",
+  "----- Select template ----": "-------- Chọn mẫu --------",
+  "----- Select protocol ----": "---- Chọn kỹ thuật chụp ----",
   "Report template": "Mẫu kết quả",
   "Create Report Template": "Tạo mẫu kết quả",
   "Enter the report template name": "Nhập tên mẫu kết quả",
@@ -55,5 +56,5 @@
   "Undo": "Huỷ chỉnh sửa",
   "Are your sure to discard this report?": "Bạn có chắc chắn muốn huỷ kết quả này không?",
   "The report already exists": "Kết quả tồn tại rồi. Bạn không thể tạo mới. Vui lòng đóng và mở lại",
-  "Type": "Kỹ thuật chụp"
+  "Protocol": "Kỹ thuật chụp"
 }
