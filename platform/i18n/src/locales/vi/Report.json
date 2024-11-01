@@ -50,7 +50,7 @@
   "The report is re-approved": "Kết quả đã được duyệt lại",
   "Incorrect data! Please close and open the report again": "Thao tác sai! Vui lòng đóng và mở lại",
   "There is no any radiologist. Please contact your administrator.": "Không tồn tại bác sĩ đọc ảnh. Vui lòng liên hệ với người quản trị",
-  "No applicable order found": "Không tìm thấy chỉ định tương ứng",
+  "No appropriate Order found. Please contact administrator and ensure HIS has already sent the order to PACS": "Không tìm thấy chỉ định tương ứng. Liên hệ với người quản trị và đảm bảo HIS đã chuyển chỉ định của ca này qua PACS",
   "Diagnostic report will be approved by [{0}]. Are you sure to approve?": "Duyệt kết quả bỡi [{0}]. Bạn có đồng ý duyệt không?",
   "No report yet": "Chưa có kết quả",
   "Undo": "Huỷ chỉnh sửa",

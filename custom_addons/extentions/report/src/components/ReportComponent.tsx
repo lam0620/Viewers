@@ -552,7 +552,9 @@ const ReportComponent = ({ props }) => {
       } else if (Utils.isObjectEmpty(response_data.data)) {
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
-        error.fatal = t('No applicable order found');
+        error.fatal = t(
+          'No appropriate Order found. Please contact administrator and ensure HIS has already sent the order to PACS'
+        );
         setState({ ...state, error: error });
       } else {
         let proceList = [];
@@ -1184,38 +1186,43 @@ const ReportComponent = ({ props }) => {
                       value={selectedPrintTemplate}
                     />
                   </div>
-                  <ReactToPrint
-                    trigger={() => (
-                      <Button
-                        className={'button-class'}
-                        type={ButtonEnums.type.primary}
-                        size={ButtonEnums.size.medium}
-                        disabled={!ReportUtils.isPrintEnabled(reportData.status)}
-                        startIcon={
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            style={{ fill: 'none' }}
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="lucide lucide-printer"
-                          >
-                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                            <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
-                            <rect x="6" y="14" width="12" height="8" rx="1" />
-                          </svg>
-                        }
-                      >
-                        {t('Print Preview')}
-                      </Button>
-                    )}
-                    content={() => componentRef.current}
-                  />
+                </>
+              )}
+            <ReactToPrint
+              trigger={() => (
+                <Button
+                  className={'button-class'}
+                  type={ButtonEnums.type.primary}
+                  size={ButtonEnums.size.medium}
+                  disabled={!reportData.status}
+                  startIcon={
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ fill: 'none' }}
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="lucide lucide-printer"
+                    >
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                      <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" />
+                      <rect x="6" y="14" width="12" height="8" rx="1" />
+                    </svg>
+                  }
+                >
+                  {t('Print Preview')}
+                </Button>
+              )}
+              content={() => componentRef.current}
+            />
+            {ReportUtils.isPrintEnabled(reportData.status) &&
+              !Utils.isObjectEmpty(printTemplateList) && (
+                <>
                   {hasEditReportPermission && (
                     <Button
                       className={'button-class'}
@@ -2042,7 +2049,7 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
 
-          {ReportUtils.isFinalReport(reportData.status) && (
+          {reportData.status && (
             <div style={{ display: 'none' }}>
               <PdfComponent
                 ref={componentRef}
