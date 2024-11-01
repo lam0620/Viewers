@@ -270,7 +270,7 @@ const ReportComponent = ({ props }) => {
 
   // Scan protocol
   const [scanProtocolOriginList, setScanProtocolOriginList] = useState({});
-  const [selectedRadio, setSelectedRadio] = useState('regular');
+  const [selectedRadio, setSelectedRadio] = useState('');
   // List id:label
   const [scanProtocolList, setScanProtocolList] = useState({});
   const [selectedScanProtocol, setSelectedScanProtocol] = useState({
@@ -1039,7 +1039,7 @@ const ReportComponent = ({ props }) => {
   };
   const onChangeProtocolHandler = value => {
     setSelectedScanProtocol(value);
-    if (value && value.value) {
+    if (value.value) {
       const regular = scanProtocolOriginList[value.value].regular;
       setReportData(reportData => ({ ...reportData, scan_protocol: regular }));
       setSelectedRadio('regular');
@@ -1893,6 +1893,7 @@ const ReportComponent = ({ props }) => {
                             checked={selectedRadio === 'regular'}
                             name="option"
                             className="form-radio bg-black text-white"
+                            disabled={!selectedRadio}
                           />
                           <span className="ml-1">{t('Regular')}</span>
                         </label>
@@ -1904,6 +1905,7 @@ const ReportComponent = ({ props }) => {
                             checked={selectedRadio === 'by_medicine'}
                             name="option"
                             className="form-radio bg-black text-white"
+                            disabled={!selectedRadio}
                           />
                           <span className="ml-1">{t('Medicine')}</span>
                         </label>
@@ -1915,6 +1917,7 @@ const ReportComponent = ({ props }) => {
                             checked={selectedRadio === 'by_disease'}
                             name="option"
                             className="form-radio bg-black text-white"
+                            disabled={!selectedRadio}
                           />
                           <span className="ml-1">{t('By Disease')}</span>
                         </label>
