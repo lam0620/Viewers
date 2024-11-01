@@ -2049,10 +2049,7 @@ const ReportComponent = ({ props }) => {
             </div>
           </div>
 
-          {(reportData.findings ||
-            reportData.conclusion ||
-            reportData.scan_protocol ||
-            orderData.accession_no) && (
+          {orderData.accession_no && (
             <div style={{ display: 'none' }}>
               <PdfComponent
                 ref={componentRef}
