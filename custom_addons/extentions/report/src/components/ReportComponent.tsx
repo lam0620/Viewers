@@ -1889,6 +1889,7 @@ const ReportComponent = ({ props }) => {
                           value={selectedScanProtocol}
                           className="flex justify-center text-center"
                           components={{ ClearIndicator: null }}
+                          isDisabled={!orderData.accession_no}
                         />
                       </div>
                     )}
