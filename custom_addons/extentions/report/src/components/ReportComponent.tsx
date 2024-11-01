@@ -1194,7 +1194,7 @@ const ReportComponent = ({ props }) => {
                   className={'button-class'}
                   type={ButtonEnums.type.primary}
                   size={ButtonEnums.size.medium}
-                  // disabled={!reportData.status}
+                  disabled={!orderData.accession_no}
                   startIcon={
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
