@@ -188,8 +188,8 @@ const ReportComponent = ({ props }) => {
 
   const emptyOrderData = {
     accession_no: '',
-    req_phys_code: '',
-    req_phys_name: '',
+    referring_phys_code: '',
+    referring_phys_name: '',
     clinical_diagnosis: '',
     order_time: '',
     modality_type: '',
@@ -383,23 +383,23 @@ const ReportComponent = ({ props }) => {
       setState({ ...state, error: error });
     }
   };
-  const getReportByStudy = async studyUid => {
-    let error = state.error;
-    try {
-      const response = await fetchReportByStudy(studyUid);
-      const response_data = response?.data;
+  // const getReportByStudy = async studyUid => {
+  //   let error = state.error;
+  //   try {
+  //     const response = await fetchReportByStudy(studyUid);
+  //     const response_data = response?.data;
 
-      if (response_data.result.status == 'NG') {
-        error.fatal = response_data.result.msg;
-        setState({ ...state, error: error });
-      } else {
-        setReportData(response_data);
-      }
-    } catch (err: any) {
-      const errMsg = 'getReportByStudy failed. ' + err.code + ': ' + err.message;
-      console.log('ERROR: ', errMsg);
-    }
-  };
+  //     if (response_data.result.status == 'NG') {
+  //       error.fatal = response_data.result.msg;
+  //       setState({ ...state, error: error });
+  //     } else {
+  //       setReportData(response_data);
+  //     }
+  //   } catch (err: any) {
+  //     const errMsg = 'getReportByStudy failed. ' + err.code + ': ' + err.message;
+  //     console.log('ERROR: ', errMsg);
+  //   }
+  // };
   // Process access_token
   // useEffect(() => {
   //   const accessToken = Cookies.get("access_token");
@@ -552,12 +552,13 @@ const ReportComponent = ({ props }) => {
       } else if (Utils.isObjectEmpty(response_data.data)) {
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
+
         error.fatal = t(
           'No appropriate Order found. Please contact administrator and ensure HIS has already sent the order to PACS'
         );
         setState({ ...state, error: error });
       } else {
-        let proceList = [];
+        let proceList = [] as any;
         response_data.data.procedures.map((procedure, index) => {
           // Get report of current studyInstanceUid
           if (!Utils.isObjectEmpty(procedure.report) && procedure.study_iuid === study_iuid) {
@@ -580,6 +581,12 @@ const ReportComponent = ({ props }) => {
               });
               setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
             }
+          } else {
+            // Set temp procedure to reportdata here to print review incase no report yet
+            const proc_name = selectedProcedure.label? selectedProcedure.label: procedure.name;
+            const proc_code = selectedProcedure.value? selectedProcedure.value: procedure.code;
+            const pr_procedure = {name:proc_name, code:proc_code}
+            setReportData(reportData => ({ ...reportData, procedure: pr_procedure }));
           }
           // No report yet
           proceList.push({ value: procedure.proc_id, label: procedure.name });
@@ -1618,7 +1625,7 @@ const ReportComponent = ({ props }) => {
                             variant="subtitle"
                             className="text-primary-light pl-0 text-right"
                           >
-                            {orderData.req_phys_name}
+                            {orderData.referring_phys_name}
                           </Typography>
                         </div>
                       </div>
