@@ -316,6 +316,7 @@ const ReportComponent = ({ props }) => {
     user?.is_superuser ||
     !isAuth;
 
+
   const gotoLogin = () => {
     console.log('Report: Authonrization failed. Go to login');
     // Remove cookie
@@ -354,7 +355,7 @@ const ReportComponent = ({ props }) => {
    * A doctor has a login user account(user_id)
    * @param userId
    */
-  const getDoctorByUserId = async userId => {
+  const getDoctorByUserId = async (userId, isAdminOrSuperUser) => {
     let error = state.error;
     try {
       const response = await fetchDoctorByUserId(userId);
@@ -364,7 +365,12 @@ const ReportComponent = ({ props }) => {
         error.fatal = response_data.result.msg;
         setState({ ...state, error: error });
       } else if (response_data.data.length == 0) {
-        error.fatal = t('Login user is not a Radiologist. Please contact your administrator.');
+        if (isAdminOrSuperUser) {
+          const info_msg = t('You login with administrator privileges');
+          setInfo(t(info_msg));
+        } else {
+          error.fatal = t('You are not set up as a radiologist yet. Please contact your administrator.');
+        }
         setState({ ...state, error: error });
       } else {
         let newList = [] as any;
@@ -447,8 +453,10 @@ const ReportComponent = ({ props }) => {
       usr = await response?.data?.data;
       // Check user exist
       if (usr) {
+        // root or admin user
+        const isAdminOrSuperUser = usr?.is_superuser || usr?.username == 'admin'
         // Get Doctor by user_id
-        getDoctorByUserId(usr.id);
+        getDoctorByUserId(usr.id, isAdminOrSuperUser);
       }
     } catch (error) {
       console.log('Get login user failed. ', error.code + ':' + error.message);
@@ -554,7 +562,7 @@ const ReportComponent = ({ props }) => {
         setReportData(emptyReportData);
 
         error.fatal = t(
-          'No appropriate Order found. Please contact administrator and ensure HIS has already sent the order to PACS'
+          'No appropriate Order found. Please contact your administrator and ensure HIS has already sent the order to PACS'
         );
         setState({ ...state, error: error });
       } else {
