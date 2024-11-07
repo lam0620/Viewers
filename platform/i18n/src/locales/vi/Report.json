@@ -61,5 +61,7 @@
   "Protocol": "Kỹ thuật chụp",
   "Regular": "Thường quy",
   "Medicine": "Có thuốc",
-  "By Disease": "Theo bệnh"
+  "By Disease": "Theo bệnh",
+  "Collapse":"Thu gọn",
+  "Expand":"Mở rộng"
 }

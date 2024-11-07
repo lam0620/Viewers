@@ -1238,9 +1238,10 @@ const ReportComponent = ({ props }) => {
             {ReportUtils.isPrintEnabled(reportData.status) &&
               !Utils.isObjectEmpty(printTemplateList) && (
                 <>
+                  {/* Edit final report permission */}
                   {hasEditReportPermission && (
                     <Button
-                      className={'button-class'}
+                      className={'button-class text-[13px]'}
                       type={ButtonEnums.type.primary}
                       size={ButtonEnums.size.medium}
                       startIcon={
@@ -1262,15 +1263,16 @@ const ReportComponent = ({ props }) => {
                         </svg>
                       }
                       onClick={onEditReport}
-                      className={'text-[13px]'}
-                      disabled={!ReportUtils.isEditEnabled(reportData.status)}
+                        disabled={!ReportUtils.isEditEnabled(reportData.status)}
                     >
                       {t('Edit')}
                     </Button>
                   )}
+
+                  {/* Delete final report permission */}
                   {hasDeleteReportPermission && (
                     <Button
-                      className={'button-class'}
+                      className={'button-class text-[13px]'}
                       type={ButtonEnums.type.primary}
                       size={ButtonEnums.size.medium}
                       startIcon={
@@ -1295,7 +1297,6 @@ const ReportComponent = ({ props }) => {
                         </svg>
                       }
                       onClick={onDiscardReport}
-                      className={'text-[13px]'}
                       disabled={!ReportUtils.isEditEnabled(reportData.status)}
                     >
                       {t('Discard')}
@@ -1305,10 +1306,11 @@ const ReportComponent = ({ props }) => {
               )}
 
             {/* Icons: https://lucide.dev/icons */}
+            {/* Create as Draft and Approve report permission */}
             {hasAddReportPermission && !ReportUtils.isPrintEnabled(reportData.status) && (
               <>
                 <Button
-                  className={'button-class'}
+                  className={'button-class text-[13px]'}
                   type={ButtonEnums.type.primary}
                   size={ButtonEnums.size.medium}
                   startIcon={
@@ -1330,7 +1332,6 @@ const ReportComponent = ({ props }) => {
                     </svg>
                   }
                   onClick={onApprove}
-                  className={'text-[13px]'}
                   style={{ fill: 'none' }}
                   disabled={!ReportUtils.isApproveEnabled(reportData.status, state.error.fatal)}
                 >
@@ -1339,7 +1340,7 @@ const ReportComponent = ({ props }) => {
 
                 {reportData.status_origin != 'F' && reportData.status_origin != 'C' && (
                   <Button
-                    className={'button-class'}
+                    className={'button-class text-[13px]'}
                     type={ButtonEnums.type.primary}
                     size={ButtonEnums.size.medium}
                     startIcon={
@@ -1362,7 +1363,6 @@ const ReportComponent = ({ props }) => {
                       </svg>
                     }
                     onClick={onSaveReport}
-                    className={'text-[13px]'}
                     disabled={!ReportUtils.isSaveEnabled(reportData.status, state.error.fatal)}
                   >
                     {t('Save as Draft')}
@@ -1370,7 +1370,7 @@ const ReportComponent = ({ props }) => {
                 )}
                 {reportData.status_origin != reportData.status && (
                   <Button
-                    className={'button-class'}
+                    className={'button-class text-[13px]'}
                     type={ButtonEnums.type.primary}
                     size={ButtonEnums.size.medium}
                     startIcon={
@@ -1392,7 +1392,6 @@ const ReportComponent = ({ props }) => {
                       </svg>
                     }
                     onClick={onUndoEditReport}
-                    className={'text-[13px]'}
                   >
                     {t('Undo')}
                   </Button>
@@ -1401,7 +1400,7 @@ const ReportComponent = ({ props }) => {
             )}
 
             <Button
-              className={'button-class'}
+              className={'button-class text-[13px]'}
               type={ButtonEnums.type.secondary}
               size={ButtonEnums.size.medium}
               startIcon={
@@ -1424,7 +1423,6 @@ const ReportComponent = ({ props }) => {
                 </svg>
               }
               onClick={onClose}
-              className={'text-[13px]'}
               style={{ fill: 'none' }}
             >
               {t('Close')}
@@ -1449,7 +1447,7 @@ const ReportComponent = ({ props }) => {
               <button
                 className="toggle-button bg-gray-700 px-2 py-1 text-white"
                 onClick={toggleSidebar}
-                title={t('Thu gọn')}
+                title={t('Collapse')}
               >
                 {collapsed ? (
                   ''
@@ -1461,10 +1459,10 @@ const ReportComponent = ({ props }) => {
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-align-justify"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-align-justify"
                   >
                     <path d="M3 12h18" />
                     <path d="M3 18h18" />
@@ -1717,7 +1715,7 @@ const ReportComponent = ({ props }) => {
             <button
               className="toggle-button bg-gray-700 px-2 py-1 text-white"
               onClick={toggleSidebar}
-              title={t('Mở rộng')}
+              title={t('Expand')}
             >
               {collapsed ? (
                 <svg
@@ -1727,10 +1725,10 @@ const ReportComponent = ({ props }) => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-align-justify"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-align-justify"
                 >
                   <path d="M3 12h18" />
                   <path d="M3 18h18" />
