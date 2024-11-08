@@ -15,8 +15,7 @@ if (IS_AUTH !== "true") {
 }
 
 export const fetchOrder = async (accession_no) => {
-  //return axios.get(`${INTEG_API_ENDPOINT}/orders/acn/${accession_no}`)
-  return axios.get(`${INTEG_API_ENDPOINT}/orders?accession=${accession_no}`)
+  return axios.get(`${INTEG_API_ENDPOINT}/orders?accession_no=${accession_no}`)
 }
 
 export const fetchRadiologists = async () => {
