@@ -557,7 +557,7 @@ const ReportComponent = ({ props }) => {
         // let errors = {''};
         error.fatal = response_data.result.msg;
         setState({ ...state, error: error });
-      } else if (Utils.isObjectEmpty(response_data.data)) {
+      } else if (Utils.isObjectEmpty(response_data.data) || response_data.data.length == 0) {
         setOrderData(emptyOrderData);
         setReportData(emptyReportData);
 
@@ -567,37 +567,41 @@ const ReportComponent = ({ props }) => {
         setState({ ...state, error: error });
       } else {
         let proceList = [] as any;
-        response_data.data.procedures.map((procedure, index) => {
-          // Get report of current studyInstanceUid
-          if (!Utils.isObjectEmpty(procedure.report) && procedure.study_iuid === study_iuid) {
-            let report = procedure.report;
-            report.procedure = {
-              proc_id: procedure.proc_id, // procedure
-              code: procedure.code, // procedure_type
-              name: procedure.name, // procedure_type
-            };
-            report.status_origin = report.status;
-            setReportData(report);
+        response_data.data.map((order, index) => {
+          order.procedures.map((procedure, index) => {
+            // Get report of current studyInstanceUid
+            if (!Utils.isObjectEmpty(procedure.report) && procedure.study_iuid === study_iuid) {
+              let report = procedure.report;
+              report.procedure = {
+                proc_id: procedure.proc_id, // procedure
+                code: procedure.code, // procedure_type
+                name: procedure.name, // procedure_type
+              };
+              report.status_origin = report.status;
+              setReportData(report);
 
-            // Check report exist
-            if (report.id) {
-              // Add current value to selectedRadiologist
-              const title = Utils.isEmpty(report.radiologist.title) ? '' : report.radiologist.title;
-              setSelectedRadiologist({
-                value: report.radiologist.id,
-                label: title + '. ' + report.radiologist.fullname,
-              });
-              setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
+              // Check report exist
+              if (report.id) {
+                // Add current value to selectedRadiologist
+                const title = Utils.isEmpty(report.radiologist.title) ? '' : report.radiologist.title;
+                setSelectedRadiologist({
+                  value: report.radiologist.id,
+                  label: title + '. ' + report.radiologist.fullname,
+                });
+                setSelectedProcedure({ value: report.procedure.proc_id, label: procedure.name });
+              }
+            } else {
+              // Set temp procedure to reportdata here to print review incase no report yet
+              const proc_name = selectedProcedure.label? selectedProcedure.label: procedure.name;
+              const proc_code = selectedProcedure.value? selectedProcedure.value: procedure.code;
+              const pr_procedure = {name:proc_name, code:proc_code}
+              setReportData(reportData => ({ ...reportData, procedure: pr_procedure }));
             }
-          } else {
-            // Set temp procedure to reportdata here to print review incase no report yet
-            const proc_name = selectedProcedure.label? selectedProcedure.label: procedure.name;
-            const proc_code = selectedProcedure.value? selectedProcedure.value: procedure.code;
-            const pr_procedure = {name:proc_name, code:proc_code}
-            setReportData(reportData => ({ ...reportData, procedure: pr_procedure }));
-          }
-          // No report yet
-          proceList.push({ value: procedure.proc_id, label: procedure.name });
+            // No report yet
+            proceList.push({ value: procedure.proc_id, label: procedure.name });
+          });
+
+          setOrderData(order);
         });
 
         // Set to procedure list
@@ -606,7 +610,7 @@ const ReportComponent = ({ props }) => {
         if (Utils.isEmpty(selectedProcedure.value) && proceList.length > 0) {
           setSelectedProcedure(proceList[0]);
         }
-        setOrderData(response_data.data);
+        // setOrderData(response_data.data);
       }
     } catch (err: any) {
       const errMsg = 'Get Order failed. ' + err.code + ': ' + err.message;
@@ -1452,22 +1456,10 @@ const ReportComponent = ({ props }) => {
                 {collapsed ? (
                   ''
                 ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-align-justify"
-                  >
-                    <path d="M3 12h18" />
-                    <path d="M3 18h18" />
-                    <path d="M3 6h18" />
-                  </svg>
+                  <Icon
+                    name='side-panel-close-left'
+                    className="text-primary-active"
+                  />
                 )}
               </button>
             </div>
@@ -1718,22 +1710,10 @@ const ReportComponent = ({ props }) => {
               title={t('Expand')}
             >
               {collapsed ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-align-justify"
-                >
-                  <path d="M3 12h18" />
-                  <path d="M3 18h18" />
-                  <path d="M3 6h18" />
-                </svg>
+                <Icon
+                  name='side-panel-close-right'
+                  className="text-primary-active"
+                />
               ) : (
                 ''
               )}
