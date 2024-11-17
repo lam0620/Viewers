@@ -83,6 +83,14 @@ const formatDate = (dob) => {
     return dob;
   }
 };
+const formatYear = (dob) => {
+  if (dob.length >= 4) {
+    const year = dob.substring(0, 4);
+    return `${year}`;
+  } else {
+    return dob;
+  }
+};
 const getImageUrl = (name) => {
   //return new URL(`../assets/signs/$name`, import.meta.url).href;
   return new URL(name, import.meta.url).href;
@@ -97,6 +105,7 @@ export default {
   getFullGender_vn: getFullGender_vn,
   getFullModalityType: getFullModalityType,
   formatDate: formatDate,
+  formatYear:formatYear,
   getImageUrl: getImageUrl,
 
 }

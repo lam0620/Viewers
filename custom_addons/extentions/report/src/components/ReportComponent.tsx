@@ -76,7 +76,14 @@ const ReportComponent = ({ props }) => {
   // Create Document Component
   const editorContainerRef = useRef(null);
   const editorRef = useRef(null);
+
+  // Reference to editor data (findings)
+  const editorFindingsRef = useRef(null);
+  const editorConclusionRef = useRef(null);
+  const editorProtocolRef = useRef(null);
+
   const [isLayoutReady, setIsLayoutReady] = useState(false);
+
   const editorConfig = {
     toolbar: {
       items: [
@@ -174,17 +181,18 @@ const ReportComponent = ({ props }) => {
     placeholder: 'Type or paste your content here!',
   };
 
-  let IS_AUTH = 'true';
-  try {
-    IS_AUTH = process.env.IS_AUTH;
-  } catch (e) {}
+  // let IS_AUTH = 'true';
+  // try {
+  const IS_AUTH = process.env.IS_AUTH||'true';
+  // } catch (e) {}
 
   // Get query params
   const searchParams = useSearchParams();
   const accession_no = searchParams.get('acn') ? searchParams.get('acn') : '<None>';
   const study_iuid = searchParams.get('StudyInstanceUIDs');
 
-  const componentRef = useRef<HTMLDivElement>(null);
+  const componentRef = useRef<HTMLDivElement | null>(null);
+  const onBeforePrintResolve = useRef<(() => void) | null>(null);
 
   const emptyOrderData = {
     accession_no: '',
@@ -235,6 +243,7 @@ const ReportComponent = ({ props }) => {
       code: '',
       name: '',
     },
+    resolve: () => undefined // Add this to resolve changing editor data when clicking Print Review
   };
   const emptyError = {
     error: {
@@ -246,6 +255,7 @@ const ReportComponent = ({ props }) => {
       radiologist: '',
     },
   };
+
   const [collapsed, setCollapsed] = useState(false);
   const [orderData, setOrderData] = useState(emptyOrderData);
   const [reportData, setReportData] = useState(emptyReportData);
@@ -634,7 +644,7 @@ const ReportComponent = ({ props }) => {
         error.fatal = t('There is no any radiologist. Please contact your administrator.');
         setState({ ...state, error: error });
       } else {
-        let newList = [];
+        let newList = [] as any;
 
         response_data.data.map(item =>
           newList.push({
@@ -666,8 +676,8 @@ const ReportComponent = ({ props }) => {
         error.fatal = t('There is no any radiologist. Please contact your administrator.');
         setState({ ...state, error: error });
       } else {
-        let newList = [];
-        let originalList = [];
+        let newList = [] as any;
+        let originalList = [] as any;
 
         //response_data.data.map(item => (newList.push({ value: item.id, label: item.name })));
         response_data.data.map(
@@ -800,8 +810,9 @@ const ReportComponent = ({ props }) => {
       }
     } catch (err) {
       // handle error
-      console.log(err.response.data.result);
-      let msg = err.response.data.result.item + ' ' + err.response.data.result.msg;
+      console.log(err.response.data);
+      //let msg = err.response.data.result.item + ' ' + err.response.data.result.msg;
+      let msg = err.response.data.detail? err.response.data.detail: err.message;
       error.system = msg;
       setState({ ...state, error: error });
     }
@@ -843,6 +854,10 @@ const ReportComponent = ({ props }) => {
     }
   };
   const onApprove = event => {
+    // Format as font-family, font-size
+    formatEditorData();
+
+    // Check error
     let isError = validate();
 
     // No error
@@ -853,7 +868,12 @@ const ReportComponent = ({ props }) => {
     //doReport(event, Constants.FINAL);
   };
   const onSaveReport = event => {
+    // Format as font-family, font-size
+    formatEditorData();
+
+    // Check error
     let isError = validate();
+
     // Draft status
     if (!isError) {
       doReport(event, Constants.DRAFT);
@@ -864,14 +884,9 @@ const ReportComponent = ({ props }) => {
   };
 
   const doReport = async (event, status) => {
-    // Validate first, if error, set error to state and show
-    // let isError = validate();
-
-    // setInfo('');
     setShowElement(true);
 
     // If no error (error = empty)
-    // if (!isError) {
     if (Utils.isEmpty(reportData.id)) {
       // Create a new report
       let data = {
@@ -905,6 +920,7 @@ const ReportComponent = ({ props }) => {
       setShowElement(false);
     }, 3000);
   };
+
 
   const onCreateReport = async (event, data) => {
     console.log(data);
@@ -1021,22 +1037,81 @@ const ReportComponent = ({ props }) => {
     return isError;
   };
 
+
+  const handleOnBeforeGetContent =  () => {
+    return new Promise((resolve) => {
+      // Re-format editor data and set to state (setReportData)
+      formatEditorData();
+
+      // To make sure to get changed editor data
+      setReportData(reportData => ({ ...reportData, resolve : resolve }));
+    });
+  };
+
+  useEffect(() => {
+    const {resolve} = reportData;
+    if (resolve) {
+        resolve();
+    }
+  }, [reportData]);
+
+  const formatEditorData = () => {
+    // Don't do if it is in label
+    if (reportData.status == 'F' || reportData.status == 'C') return;
+
+    const editorFindings = editorFindingsRef.current;
+    const editorConclusion = editorConclusionRef.current;
+    const editorProtocol = editorProtocolRef.current;
+
+    // 'Select All' to change font
+    editorProtocol.execute( 'selectAll' );
+    editorProtocol.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
+    editorProtocol.execute( 'fontSize', { value: Constants.FONT_SIZE } );
+
+    editorFindings.execute( 'selectAll' );
+    editorFindings.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
+    editorFindings.execute( 'fontSize', { value: Constants.FONT_SIZE } );
+
+    editorConclusion.execute( 'selectAll' );
+    editorConclusion.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
+    editorConclusion.execute( 'fontSize', { value: Constants.FONT_SIZE} );
+
+     // if not bold now, set bold  for conclusion
+    if (!editorConclusion.commands.get( 'bold' ).value)
+      editorConclusion.execute( 'bold' );
+
+    // Get editor data
+    const findingsData= editorFindings.getData();
+    const conclusionData= editorConclusion.getData();
+    const protocolData= editorProtocol.getData();
+
+    // Set this because set state as below not update immediately
+    // reportData.findings = findingsData;
+    // reportData.conclusion =conclusionData;
+    // reportData.scan_protocol = protocolData;
+
+    // Set to state
+    setReportData(reportData => ({ ...reportData, findings: findingsData }));
+    setReportData(reportData => ({ ...reportData, conclusion: conclusionData }));
+    setReportData(reportData => ({ ...reportData, scan_protocol: protocolData}));
+
+    // return [findingsData, conclusionData, protocolData];
+  }
+
   const onChangeFindings = (event, editor) => {
-    //Update data when input finding
-    const data = editor.getData();
-    setReportData(reportData => ({ ...reportData, findings: data }));
+    // Get editor data and save by editorXXXRef in doReport
+    // //Update data when input finding
+    // const data = editor.getData();
+    // setReportData(reportData => ({ ...reportData, findings: data }));
   };
   const onChangeScanProtocol = (event, editor) => {
-    // const data = event.target.value;
-    // setSelectedScan({ ...selectedScan, label: data });
+    // const data = editor.getData();
     // setReportData(reportData => ({ ...reportData, scan_protocol: data }));
-    const data = editor.getData();
-    setReportData(reportData => ({ ...reportData, scan_protocol: data }));
   };
 
   const onChangeConclusion = (event, editor) => {
-    const data = editor.getData();
-    setReportData(reportData => ({ ...reportData, conclusion: data }));
+    // const data = editor.getData();
+    // setReportData(reportData => ({ ...reportData, conclusion: data }));
   };
 
   const onChangeRadiologistHandler = value => {
@@ -1238,6 +1313,7 @@ const ReportComponent = ({ props }) => {
                 </Button>
               )}
               content={() => componentRef.current}
+              onBeforeGetContent={handleOnBeforeGetContent }
             />
             {ReportUtils.isPrintEnabled(reportData.status) &&
               !Utils.isObjectEmpty(printTemplateList) && (
@@ -1942,6 +2018,7 @@ const ReportComponent = ({ props }) => {
                           state.error.fatal,
                           user?.permissions
                         )}
+                        onReady={editor => {editorProtocolRef.current = editor;}}
                       />
                     )}
                     {ReportUtils.isFinalReport(reportData.status) && (
@@ -1991,6 +2068,7 @@ const ReportComponent = ({ props }) => {
                               state.error.fatal,
                               user?.permissions
                             )}
+                            onReady={editor => {editorFindingsRef.current = editor;}}
                           />
                         )}
                       </div>
@@ -2033,6 +2111,7 @@ const ReportComponent = ({ props }) => {
                               state.error.fatal,
                               user?.permissions
                             )}
+                            onReady={editor => {editorConclusionRef.current = editor;}}
                           />
                         )}
                       </div>
@@ -2050,7 +2129,6 @@ const ReportComponent = ({ props }) => {
                 orderData={orderData}
                 reportData={reportData}
                 templateData={selectedPrintTemplate}
-                // scanData={scanData}
               />
             </div>
           )}

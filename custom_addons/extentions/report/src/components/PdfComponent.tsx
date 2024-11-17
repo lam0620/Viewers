@@ -38,6 +38,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
 
   const [sign, setSign] = useState('');
 
+
   // Error when select the Print template, fixed by using useEffect()
   // import(`../../assets/signs/` + reportData.radiologist.sign).then((image) =>
   //   setSign(image.default)
@@ -98,7 +99,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
             </p>
             <p>
               Năm sinh:{' '}
-              <span className="font-semibold">{Utils.formatDate(orderData.patient.dob)}</span>
+              <span className="font-semibold">{Utils.formatYear(orderData.patient.dob)}</span>
             </p>
             <p>
               Giới tính:{' '}
@@ -115,17 +116,11 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
           {templateData.value != '0' && <p>Bác sĩ chỉ định: {orderData.referring_phys_name}</p>}
           <p className="text-red-600">Vùng yêu cầu chụp: {reportData.procedure.name}</p>
           <p className="mt-4 text-red-600">KỸ THUẬT:</p>
-          <p
-            className="text-justify"
-            dangerouslySetInnerHTML={{ __html: reportData.scan_protocol }}
-          ></p>
+          <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.scan_protocol }}></p>
           <p className="mt-4 text-red-600">MÔ TẢ HÌNH ẢNH:</p>
           <p className="text-justify" dangerouslySetInnerHTML={{ __html: reportData.findings }}></p>
-          <p className="mt-4 text-red-600">Kết luận:</p>
-          <p
-            className="text-justify"
-            dangerouslySetInnerHTML={{ __html: reportData.conclusion }}
-          ></p>
+          <p className="mt-4 text-red-600">KẾT LUẬN:</p>
+          <p className="text-justify font-semibold" dangerouslySetInnerHTML={{ __html: reportData.conclusion }} ></p>
         </div>
 
         {/* Footer */}

@@ -3,6 +3,9 @@ export default {
   FINAL: 'F',
   CORRECTED: 'C',
 
+  FONT_SIZE: '14',
+  FONT_FAMILY: 'Arial',
+
   PERMISSION_VIEW_REPORT : "view_report",
   PERMISSION_ADD_REPORT : "add_report",
   PERMISSION_EDIT_REPORT : "edit_report",

@@ -70,9 +70,9 @@ export const getStatusFull = (status) => {
   if (status === 'D') {
     statusText = 'Draft';
   } else if (status === 'F') {
-    statusText = 'Final';
+    statusText = 'Approved';
   } else if (status === 'C') {
-    statusText = 'Final';
+    statusText = 'Approved';
   }
   return statusText;
 }
