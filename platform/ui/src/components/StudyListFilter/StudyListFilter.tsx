@@ -134,12 +134,6 @@ const StudyListFilter = ({
                 >
                   {numOfStudies > 100 ? '>100' : numOfStudies} {t('studies')}
                 </Typography>
-                <Typography
-                  variant="h6"
-                  className="text-primary-light"
-                >
-                  {`${t('Studies')} `}
-                </Typography>
               </div>
             </div>
           </div>
