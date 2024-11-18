@@ -5,7 +5,6 @@ window.config = {
   // whiteLabeling: {},
   extensions: [],
   modes: [],
-  customizationService: {},
   showStudyList: true,
   // some windows systems have issues with more than 3 web workers
   maxNumberOfWebWorkers: 3,
@@ -16,6 +15,18 @@ window.config = {
   experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  useExperimentalUI: false,
+  showPatientInfo: 'visible',
+  investigationalUseDialog: {
+    option: 'never',
+  },
+  studyPrefetcher: {
+    enabled: true,
+    displaySetsCount: 2,
+    maxNumPrefetchRequests: 10,
+    order: 'closest',
+  },
+
   maxNumRequests: {
     interaction: 100,
     thumbnail: 75,
@@ -40,11 +51,13 @@ window.config = {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
       sourceName: 'dicomweb',
       configuration: {
-        friendlyName: 'AWS S3 Static wado server',
-        name: 'aws',
-        wadoUriRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
-        qidoRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
-        wadoRoot: 'https://d14fa38qiwhyfd.cloudfront.net/dicomweb',
+        friendlyName: 'PACS Server',
+        name: 'pacs',
+
+        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
+        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
@@ -197,6 +210,74 @@ window.config = {
   //       ))
   //   },
   // },
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/custom_logo.png',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
+
+  customizationService: {
+    cornerstoneOverlayTopRight: {
+      id: 'cornerstoneOverlayTopRight',
+      items: [
+        {
+          id: 'PatientNameOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientName',
+          // label: 'Name:',
+          title: 'Patient Name',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientName &&
+            instance.PatientName.Alphabetic,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientName.Alphabetic),
+        },
+        {
+          id: 'PatientAgeOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientAge',
+          // label: 'Age:',
+          title: 'Patient Age',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientAge,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientAge),
+        },
+        {
+          id: 'PatientSexOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientSex',
+          // label: 'Gender:',
+          title: 'PatientSex',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientSex,
+          contentF: ({ instance }) =>
+            instance.PatientSex === 'F' ? 'Female' : instance.PatientSex === 'M' ? 'Male' : instance.PatientSex,
+        }
+      ],
+    },
+  },
+
   hotkeys: [
     {
       commandName: 'incrementActiveViewport',

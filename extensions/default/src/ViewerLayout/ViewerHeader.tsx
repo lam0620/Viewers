@@ -11,6 +11,12 @@ import { Toolbar } from '../Toolbar/Toolbar';
 import HeaderPatientInfo from './HeaderPatientInfo';
 import { PatientInfoVisibility } from './HeaderPatientInfo/HeaderPatientInfo';
 
+// For login user check
+import Cookies from "js-cookie";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+//End for login user
+
 const { availableLanguages, defaultLanguage, currentLanguage } = i18n;
 
 function ViewerHeader({
@@ -59,7 +65,7 @@ function ViewerHeader({
       onClick: () =>
         show({
           content: AboutModal,
-          title: t('AboutModal:About OHIF Viewer'),
+          title: 'DICOM Viewer',
           contentProps: { versionNumber, commitHash },
           containerDimensions: 'max-w-4xl max-h-4xl',
         }),
@@ -97,15 +103,69 @@ function ViewerHeader({
     },
   ];
 
-  if (appConfig.oidc) {
+  // Add logout for user login
+  // if (appConfig.oidc) {
+  //   menuOptions.push({
+  //     title: t('Header:Logout'),
+  //     icon: 'power-off',
+  //     onClick: async () => {
+  //       navigate(`/logout?redirect_uri=${encodeURIComponent(window.location.href)}`);
+  //     },
+  //   });
+  // }
+  const ANONYMOUS_USER = "Anonymous User";
+  let IS_AUTH = "true";
+  try { IS_AUTH = process.env.IS_AUTH; } catch(e) {}
+
+  const displayName = () => {
+    try {
+      // If auth
+      if (IS_AUTH === "true") {
+        const accessToken = Cookies.get("access_token");
+        if (accessToken) {
+          const decodedUser = jwtDecode(accessToken) as any;
+          return decodedUser.display_name;
+        } else {
+          // Allow anonymous view. No redirect to login
+          // gotoLogin();
+          return ANONYMOUS_USER;
+        }
+      } else {
+        return ANONYMOUS_USER;
+      }
+    } catch(e) {
+      return ANONYMOUS_USER;
+    }
+  };
+
+  // Push Logout if auth
+  if (IS_AUTH === "true" && displayName() !== ANONYMOUS_USER) {
+    menuOptions.unshift({
+      icon: 'profile',
+      title: t('Header:Change password'),
+      onClick: () => {window.location.href = "/profile/change-password"}
+    });
     menuOptions.push({
-      title: t('Header:Logout'),
       icon: 'power-off',
-      onClick: async () => {
-        navigate(`/logout?redirect_uri=${encodeURIComponent(window.location.href)}`);
+      title: t('Header:Logout'),
+      onClick: () => {
+        // Remove cookie
+        Cookies.remove("access_token");
+        Cookies.remove("refresh_token");
+        delete axios.defaults.headers.common["Authorization"];
+
+        const loginUrl = process.env.USER_MNG_URL? process.env.USER_MNG_URL + '/login':"/login";
+        (window as Window).location = loginUrl;
       },
     });
   }
+  // Push to first as profile's login user name
+  menuOptions.unshift({
+    icon: '',
+    title: displayName(),
+    onClick: () => {}
+  });
+  // End add logout
 
   return (
     <Header

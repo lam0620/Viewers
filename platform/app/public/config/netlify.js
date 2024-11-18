@@ -2,9 +2,12 @@
 
 window.config = {
   routerBasename: '/',
+  // whiteLabeling: {},
   extensions: [],
   modes: [],
   showStudyList: true,
+  // some windows systems have issues with more than 3 web workers
+  maxNumberOfWebWorkers: 3,
   // below flag is for performance reasons, but it might not work for all servers
   showWarningMessageForCrossOrigin: true,
   showCPUFallbackMessage: true,
@@ -12,12 +15,41 @@ window.config = {
   experimentalStudyBrowserSort: false,
   strictZSpacingForVolumeViewport: true,
   groupEnabledModesFirst: true,
+  useExperimentalUI: false,
+  showPatientInfo: 'visible',
+  investigationalUseDialog: {
+    option: 'never',
+  },
+  studyPrefetcher: {
+    enabled: true,
+    displaySetsCount: 2,
+    maxNumPrefetchRequests: 10,
+    order: 'closest',
+  },
+
+  maxNumRequests: {
+    interaction: 100,
+    thumbnail: 75,
+    // Prefetch number is dependent on the http protocol. For http 2 or
+    // above, the number of requests can be go a lot higher.
+    prefetch: 25,
+  },
   // filterQueryParam: false,
-  defaultDataSourceName: 'ohif',
+  defaultDataSourceName: 'dicomweb',
+  /* Dynamic config allows user to pass "configUrl" query string this allows to load config without recompiling application. The regex will ensure valid configuration source */
+  // dangerouslyUseDynamicConfig: {
+  //   enabled: true,
+  //   // regex will ensure valid configuration source and default is /.*/ which matches any character. To use this, setup your own regex to choose a specific source of configuration only.
+  //   // Example 1, to allow numbers and letters in an absolute or sub-path only.
+  //   // regex: /(0-9A-Za-z.]+)(\/[0-9A-Za-z.]+)*/
+  //   // Example 2, to restricts to either hosptial.com or othersite.com.
+  //   // regex: /(https:\/\/hospital.com(\/[0-9A-Za-z.]+)*)|(https:\/\/othersite.com(\/[0-9A-Za-z.]+)*)/
+  //   regex: /.*/,
+  // },
   dataSources: [
     {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
-      sourceName: 'ohif',
+      sourceName: 'dicomweb',
       configuration: {
         friendlyName: 'AWS S3 Static wado server',
         name: 'aws',
@@ -72,7 +104,6 @@ window.config = {
         omitQuotationForMultipartRequest: true,
       },
     },
-
     {
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
       sourceName: 'ohif3',
@@ -158,6 +189,93 @@ window.config = {
     // Could use services manager here to bring up a dialog/modal if needed.
     console.warn('test, navigate to https://ohif.org/');
   },
+  // whiteLabeling: {
+  //   /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+  //   createLogoComponentFn: function (React) {
+  //     return React.createElement(
+  //       'a',
+  //       {
+  //         target: '_self',
+  //         rel: 'noopener noreferrer',
+  //         className: 'text-purple-600 line-through',
+  //         href: '/',
+  //       },
+  //       React.createElement('img',
+  //         {
+  //           src: './assets/customLogo.svg',
+  //           className: 'w-8 h-8',
+  //         }
+  //       ))
+  //   },
+  // },
+  whiteLabeling: {
+    /* Optional: Should return a React component to be rendered in the "Logo" section of the application's Top Navigation bar */
+    createLogoComponentFn: function (React) {
+      return React.createElement(
+        'a',
+        {
+          target: '_self',
+          rel: 'noopener noreferrer',
+          className: 'text-purple-600 line-through',
+          href: '/',
+        },
+        React.createElement('img',
+          {
+            src: './assets/custom_logo.png',
+            className: 'w-8 h-8',
+          }
+        ))
+    },
+  },
+
+  customizationService: {
+    cornerstoneOverlayTopRight: {
+      id: 'cornerstoneOverlayTopRight',
+      items: [
+        {
+          id: 'PatientNameOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientName',
+          // label: 'Name:',
+          title: 'Patient Name',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientName &&
+            instance.PatientName.Alphabetic,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientName.Alphabetic),
+        },
+        {
+          id: 'PatientAgeOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientAge',
+          // label: 'Age:',
+          title: 'Patient Age',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientAge,
+          contentF: ({ instance, formatters: { formatPN } }) =>
+            formatPN(instance.PatientAge),
+        },
+        {
+          id: 'PatientSexOverlay',
+          customizationType: 'ohif.overlayItem',
+          attribute: 'PatientSex',
+          // label: 'Gender:',
+          title: 'PatientSex',
+          color: '#rgba(89,201,226,255)',
+          condition: ({ instance }) =>
+            instance &&
+            instance.PatientSex,
+          contentF: ({ instance }) =>
+            instance.PatientSex === 'F' ? 'Female' : instance.PatientSex === 'M' ? 'Male' : instance.PatientSex,
+        }
+      ],
+    },
+  },
+
   hotkeys: [
     {
       commandName: 'incrementActiveViewport',
@@ -198,7 +316,12 @@ window.config = {
     //   label: 'Next Series',
     //   keys: ['pageup'],
     // },
-    { commandName: 'setZoomTool', label: 'Zoom', keys: ['z'] },
+    {
+      commandName: 'setToolActive',
+      commandOptions: { toolName: 'Zoom' },
+      label: 'Zoom',
+      keys: ['z'],
+    },
     // ~ Window level presets
     {
       commandName: 'windowLevelPreset1',
