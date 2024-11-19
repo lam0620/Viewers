@@ -190,7 +190,11 @@ function WorkList({
         const accessToken = Cookies.get("access_token");
         if (accessToken) {
           const decodedUser = jwtDecode(accessToken) as any;
-          return decodedUser.display_name;
+          if (decodedUser.display_name !== undefined) {
+            return decodedUser.display_name;
+          } else {
+            gotoLogin();
+          }
         } else {
           gotoLogin();
           return ANONYMOUS_USER;

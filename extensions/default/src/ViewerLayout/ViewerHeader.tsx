@@ -121,7 +121,7 @@ function ViewerHeader({
         const accessToken = Cookies.get("access_token");
         if (accessToken) {
           const decodedUser = jwtDecode(accessToken) as any;
-          return decodedUser.display_name;
+          return decodedUser.display_name!== undefined? decodedUser.display_name: ANONYMOUS_USER;
         } else {
           // Allow anonymous view. No redirect to login
           // gotoLogin();
