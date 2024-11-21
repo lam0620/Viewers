@@ -387,6 +387,9 @@ function createDicomWebApi(dicomWebConfig, servicesManager) {
        * This is done recursively, for sub-sequences.
        */
       const addRetrieveBulkDataNaturalized = (naturalized, instance = naturalized) => {
+        // Temp fix by Lam
+        if (naturalized == null) return;
+
         for (const key of Object.keys(naturalized)) {
           const value = naturalized[key];
 

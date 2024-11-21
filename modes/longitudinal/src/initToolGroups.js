@@ -96,6 +96,7 @@ function initDefaultToolGroup(
     enabled: [
       { toolName: toolNames.ImageOverlayViewer },
       { toolName: toolNames.ReferenceLines },
+      { toolName: toolNames.ImageSliceSync  },
       {
         toolName: SRToolNames.SRSCOORD3DPoint,
       },
