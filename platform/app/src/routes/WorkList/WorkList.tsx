@@ -453,6 +453,10 @@ function WorkList({
               // Add accession number to url for reporting
               if (mode.routeName == 'report') {
                 query.append('acn', accession);
+              } else {
+                // Add hangingProtocol 2x2
+                // TODO: should MR, CT only
+                query.append('hangingProtocolId', '@ohif/mnGrid');
               }
               const segmentation = t('Modes:Segmentation');
 

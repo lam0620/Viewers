@@ -70,6 +70,19 @@ function Header({
               {WhiteLabeling?.createLogoComponentFn?.(React, props) || <Icons.OHIFLogo />}
             </div>
           </div>
+
+          <div className="ml-1 flex justify-start">
+            <a
+              href={`${process.env.USER_MNG_URL}/worklist`}
+              className="ml-7 flex items-center justify-center text-red-400 underline"
+            >
+              {t('Worklist')}
+            </a>
+
+            <p className="ml-1 flex items-center justify-center text-white">
+              {t(' | Studylist')}
+            </p>
+          </div>
         </div>
         <div className="absolute top-1/2 left-[250px] h-8 -translate-y-1/2">{Secondary}</div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
