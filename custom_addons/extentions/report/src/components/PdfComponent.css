@@ -44,7 +44,7 @@
   }
 
   .header img {
-    width: 100px;
+    width: 45px;
   }
 
   .clinic-info {
@@ -105,5 +105,9 @@
 
   .border {
     border: 0px solid green;
+  }
+  .logo {
+    width: 60px;
+    height: auto;
   }
 }

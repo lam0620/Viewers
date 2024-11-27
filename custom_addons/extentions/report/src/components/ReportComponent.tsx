@@ -40,6 +40,9 @@ import {
   SpecialCharacters,
   Underline,
   Undo,
+  RemoveFormat,
+  SourceEditing,
+  Clipboard
 } from 'ckeditor5';
 
 import 'ckeditor5/ckeditor5.css';
@@ -84,32 +87,37 @@ const ReportComponent = ({ props }) => {
 
   const [isLayoutReady, setIsLayoutReady] = useState(false);
 
+  // const FONT_SIZE = '14px';
+  // const FONT_FAMILY = 'Arial';
   const editorConfig = {
     toolbar: {
       items: [
+        // 'clipboard',
         'undo',
         'redo',
         '|',
         'selectAll',
         '|',
-        'heading',
+        // 'heading',
         '|',
-        'fontSize',
-        'fontFamily',
-        'fontColor',
-        'fontBackgroundColor',
-        '|',
+        // 'fontSize',
+        // 'fontFamily',
+        // 'fontColor',
+        // 'fontBackgroundColor',
+        // '|',
         'bold',
         'italic',
         'underline',
+        'removeFormat',
         '|',
-        'specialCharacters',
-        '|',
-        'alignment',
-        '|',
-        'indent',
-        'outdent',
-        '|',
+        // 'specialCharacters',
+        // '|',
+        // 'alignment',
+        // '|',
+        // 'indent',
+        // 'outdent',
+        // '|',
+        'sourceEditing',
         'accessibilityHelp',
       ],
       shouldNotGroupWhenFull: false,
@@ -122,19 +130,22 @@ const ReportComponent = ({ props }) => {
       Essentials,
       FontBackgroundColor,
       FontColor,
-      FontFamily,
-      FontSize,
+      // FontFamily,
+      // FontSize,
       GeneralHtmlSupport,
       // Heading,
       Indent,
       IndentBlock,
       Italic,
-      Paragraph,
+      Paragraph, // Allow to select all
       SelectAll,
-      SpecialCharacters,
+      // SpecialCharacters,
+      RemoveFormat,
+      SourceEditing,
+      Clipboard,
       Underline,
       Undo,
-      WordCount,
+      // WordCount,
     ],
     // WordCount: {
 
@@ -159,13 +170,13 @@ const ReportComponent = ({ props }) => {
     //   // Maximum allowed Char Count, -1 is default for unlimited
     //   maxCharCount: 10
     // },
-    fontFamily: {
-      supportAllValues: true,
-    },
-    fontSize: {
-      options: [10, 12, 14, 'default', 18, 20, 22],
-      supportAllValues: true,
-    },
+    // fontFamily: {
+    //   supportAllValues: true,
+    // },
+    // fontSize: {
+    //   options: [10, 12, 14, 'default', 18, 20, 22],
+    //   supportAllValues: true,
+    // },
 
     htmlSupport: {
       allow: [
@@ -176,6 +187,11 @@ const ReportComponent = ({ props }) => {
           classes: true,
         },
       ],
+      // disallow: [
+      //   {
+      //     name: '{font,font-size,font-family}'
+      //   }
+      // ]
     },
     initialData: '',
     placeholder: 'Type or paste your content here!',
@@ -854,6 +870,9 @@ const ReportComponent = ({ props }) => {
     }
   };
   const onApprove = event => {
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     // Format as font-family, font-size
     formatEditorData();
 
@@ -868,6 +887,9 @@ const ReportComponent = ({ props }) => {
     //doReport(event, Constants.FINAL);
   };
   const onSaveReport = event => {
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     // Format as font-family, font-size
     formatEditorData();
 
@@ -961,7 +983,7 @@ const ReportComponent = ({ props }) => {
   };
 
   const onUpdateReport = async (event, id, data) => {
-    console.log(data);
+    // console.log(data);
 
     let error = state.error;
     // event.preventDefault();
@@ -1065,20 +1087,26 @@ const ReportComponent = ({ props }) => {
 
     // 'Select All' to change font
     editorProtocol.execute( 'selectAll' );
-    editorProtocol.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
-    editorProtocol.execute( 'fontSize', { value: Constants.FONT_SIZE } );
+    // The remove format feature lets you quickly remove any text formatting applied using inline HTML elements
+    // and CSS styles, like basic text styles (bold, italic) or font family, size, and color.
+    // This feature does not remove block-level formatting (headings, images) or semantic data (links).
+    editorProtocol.execute( 'removeFormat' );
+    // editorProtocol.execute( 'fontFamily', { value: FONT_FAMILY } );
+    // editorProtocol.execute( 'fontSize', { value: FONT_SIZE } );
 
     editorFindings.execute( 'selectAll' );
-    editorFindings.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
-    editorFindings.execute( 'fontSize', { value: Constants.FONT_SIZE } );
+    editorFindings.execute( 'removeFormat' );
+    // editorFindings.execute( 'fontFamily', { value: FONT_FAMILY } );
+    // editorFindings.execute( 'fontSize', { value: FONT_SIZE } );
 
     editorConclusion.execute( 'selectAll' );
-    editorConclusion.execute( 'fontFamily', { value: Constants.FONT_FAMILY } );
-    editorConclusion.execute( 'fontSize', { value: Constants.FONT_SIZE} );
+    editorConclusion.execute( 'removeFormat' );
+    // editorConclusion.execute( 'fontFamily', { value: FONT_FAMILY } );
+    // editorConclusion.execute( 'fontSize', { value: FONT_SIZE} );
 
      // if not bold now, set bold  for conclusion
-    if (!editorConclusion.commands.get( 'bold' ).value)
-      editorConclusion.execute( 'bold' );
+    // if (!editorConclusion.commands.get( 'bold' ).value)
+    //   editorConclusion.execute( 'bold' );
 
     // Get editor data
     const findingsData= editorFindings.getData();
@@ -2085,7 +2113,7 @@ const ReportComponent = ({ props }) => {
                 </div>
                 {ReportUtils.isFinalReport(reportData.status) && (
                   <div className="mt-2 flex flex-col">
-                    <Typography variant="subtitle" className="text-primary-light pl-0 text-left">
+                    <Typography variant="subtitle" className="text-primary-light pl-0 text-left font-semibold">
                       <div
                         className="conclusion"
                         dangerouslySetInnerHTML={{ __html: reportData.conclusion }}

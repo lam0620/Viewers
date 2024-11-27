@@ -71,7 +71,7 @@ const PDFReportComponent = forwardRef<HTMLDivElement, PDFReportComponentProps>((
 
         {/* Header */}
         <div className="header">
-          <img src={logo} alt="Logo" />
+          <img src={logo} alt="Logo"/>
           <div className="clinic-info mt-0">
             <h3 className="font-bold text-red-500">{process.env.ORG_NAME}</h3>
             <p style={{ fontSize: '12px' }}>{process.env.ORG_ADDR}</p>
