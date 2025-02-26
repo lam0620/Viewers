@@ -44,7 +44,8 @@
   }
 
   .header img {
-    width: 45px;
+    height: 87px;
+    width: auto;
   }
 
   .clinic-info {

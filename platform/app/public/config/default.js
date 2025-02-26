@@ -53,10 +53,9 @@ window.config = {
       configuration: {
         friendlyName: 'PACS Server',
         name: 'pacs',
-
-        wadoUriRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/wado',
-        qidoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
-        wadoRoot: 'http://192.168.201.54:8080/dcm4chee-arc/aets/DCM4CHEE/rs',
+        wadoUriRoot: 'http://192.168.201.80/dicomweb/VHC/wado',
+        qidoRoot: 'http://192.168.201.80/dicomweb/VHC/rs',
+        wadoRoot: 'http://192.168.201.80/dicomweb/VHC/rs',
 
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
@@ -508,14 +507,14 @@ window.config = {
           title: 'Jumping to Measurements in the Panel',
           text: 'Click the measurement in the measurement panel to jump to it.',
           attachTo: {
-            element: '[data-cy="data-row"]',
+            element: '[data-cy="measurement-item"]',
             on: 'left-start',
           },
           advanceOn: {
-            selector: '[data-cy="data-row"]',
+            selector: '[data-cy="measurement-item"]',
             event: 'click',
           },
-          beforeShowPromise: () => waitForElement('[data-cy="data-row"]'),
+          beforeShowPromise: () => waitForElement('[data-cy="measurement-item"]'),
         },
         {
           id: 'changeLayout',

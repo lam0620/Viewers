@@ -47,19 +47,20 @@
 
   .bg-black {
     --tw-bg-opacity: 1;
-    background-color: #27272b;
+    background-color: #607D8B;
     /*background color of main header*/
   }
 
   .bg-primary-dark {
     --tw-bg-opacity: 1;
-    background-color: #323237;
+    background-color: #78909c;
     /* background color of studies list */
   }
 
+  /* Header */
   .bg-secondary-dark {
     --tw-bg-opacity: 1;
-    background-color: rgb(1 28 41);
+    background-color: #527485;
   }
 
   /*border of list*/
@@ -71,7 +72,7 @@
   /* Filter the list to 100 studies*/
   .bg-primary-main {
     --tw-bg-opacity: 1;
-    background-color: #fe615a;
+    background-color: #795548;
   }
 
   .bg-indigo-dark {
@@ -79,7 +80,24 @@
     background-color: rgb(39 57 82);
     /*change*/
   }
-
+  /* series list header*/
+  .bg-popover {
+    --tw-bg-opacity: 1;
+    background-color: #607D8B;
+    /*change*/
+  }
+  /* image left 'study' header*/
+  .bg-bkg-med {
+    --tw-bg-opacity: 1;
+    background-color: #607D8B;
+    /*change*/
+  }
+  /* image left under 'study' header*/
+  .bg-muted {
+    --tw-bg-opacity: 1;
+    background-color: #607D8B;
+    /*change*/
+  }
   .text-white {
     --tw-text-opacity: 1;
     color: #d0d0d0;
